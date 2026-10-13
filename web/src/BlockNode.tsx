@@ -8,7 +8,7 @@ import { LiveValue, useLive } from './live'
 export type FlowNode = Node<{ block: Block; inputs: Port[]; outputs: Port[]; patch: Patch | null; keys: Record<string, string | null>; targets: string[] }, 'block'>
 export type RailFlowNode = Node<{ title: string; rails: Rail[]; side: 'in' | 'out' }, 'rail'>
 
-function subtitle(b: Block, patch: Patch | null, targets: string[]) {
+function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Port[]) {
   switch (b.kind) {
     case 'audio': return b.device || 'default device'
     case 'dmxin': return `${b.channels} faders`
@@ -44,8 +44,8 @@ function subtitle(b: Block, patch: Patch | null, targets: string[]) {
     case 'mix': return `${b.type}: a → b`
     case 'fade': return `↑ ${b.rise}s · ↓ ${b.fall}s · ${b.curve}`
     case 'counter': return `0…${b.max}`
-    case 'combine': return `${b.channels} → multichannel`
-    case 'split': return `multichannel → ${b.channels}`
+    case 'combine': return '→ multichannel'
+    case 'split': return outputs.length ? `multichannel → ${outputs.length}` : 'no Combine upstream'
     case 'cdj': return `player ${b.player}`
     case 'box': return b.size.map((v) => v.toFixed(1)).join(' × ') + ' m'
     case 'constant': return b.pulse > 0 ? `pulse ${b.pulse} Hz × ${b.value}` : `${b.type} ${b.value}`
@@ -65,7 +65,7 @@ export function BlockNode({ id, data, selected }: NodeProps<FlowNode>) {
     <div className={`td-node ${block.kind}${selected ? ' selected' : ''}`} title={KIND_INFO[block.kind]}>
       <div className="td-node-kind">{block.kind}{eye && <button className={`eye nodrag${focus.hidden.has(id) ? ' off' : ''}`} onClick={(e) => { e.stopPropagation(); focus.toggleHidden(id) }} title={focus.hidden.has(id) ? 'wires hidden: click to show them' : 'click to hide this node\'s wires (selecting it still shows them)'}>{focus.hidden.has(id) ? '◌' : '◉'}</button>}</div>
       <div className="td-node-name">{block.name}</div>
-      <div className="td-node-type">{subtitle(block, data.patch, data.targets)}</div>
+      <div className="td-node-type">{subtitle(block, data.patch, data.targets, data.outputs)}</div>
       <div className="td-ports">
         <div className="td-ports-in">
           {data.inputs.map((p) => (
