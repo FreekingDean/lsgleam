@@ -14,7 +14,7 @@ export class Head implements Light {
   private head = new THREE.Group()
   private lens = new THREE.MeshBasicMaterial({ color: 0x000000 })
   private beam: THREE.MeshBasicMaterial
-  private light: THREE.SpotLight
+  spot = spot(this.head, BEAM_ANGLE)
   private color = new THREE.Color()
   private pan: number
   private tilt: number
@@ -31,10 +31,8 @@ export class Head implements Light {
     lens.position.y = -0.151
     lens.rotation.x = -Math.PI / 2
     const b = beam(BEAM_LENGTH * Math.tan(BEAM_ANGLE), BEAM_LENGTH)
-    const s = spot(BEAM_ANGLE)
     this.beam = b.mat
-    this.light = s.light
-    this.head.add(body, lens, b.mesh, s.light, s.target)
+    this.head.add(body, lens, b.mesh)
     this.head.position.y = -0.25
     this.yoke.add(arms, this.head)
     this.yoke.position.y = -0.05
@@ -47,8 +45,8 @@ export class Head implements Light {
     this.yoke.rotation.y = ((v.Pan ?? 0.5) - 0.5) * this.pan * (Math.PI / 180)
     this.head.rotation.x = ((v.Tilt ?? 0.5) - 0.5) * this.tilt * (Math.PI / 180)
     this.color.set(WHEEL[Math.max(0, Math.min(WHEEL.length - 1, Math.round((v.Colorwheel ?? 0) * (WHEEL.length - 1))))])
-    this.light.color.copy(this.color)
-    this.light.intensity = dim * MAX_INTENSITY
+    this.spot.color.copy(this.color)
+    this.spot.intensity = dim * MAX_INTENSITY
     this.lens.color.copy(this.color).multiplyScalar(Math.min(1, dim * 1.4))
     this.beam.color.copy(this.color)
     this.beam.opacity = dim * BEAM_OPACITY

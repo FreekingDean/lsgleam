@@ -46,7 +46,8 @@ export class Designer {
   onChange: (tube: number, path: Point[]) => void = () => {}
   onSelect: (pick: Pick | null) => void = () => {}
 
-  constructor(canvas: HTMLCanvasElement, fixedStart: boolean) {
+  constructor(parent: HTMLElement, fixedStart: boolean) {
+    const canvas = parent.appendChild(document.createElement('canvas'))
     this.canvas = canvas
     this.fixedStart = fixedStart
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
@@ -168,5 +169,7 @@ export class Designer {
     this.orbit.dispose()
     disposeAll(this.scene)
     this.renderer.dispose()
+    this.renderer.forceContextLoss()
+    this.canvas.remove()
   }
 }

@@ -40,7 +40,7 @@ function ShapeMaker({ tubes, onMake }: { tubes: DesignTube[]; onMake: (tubes: De
 }
 
 export function TubeDesigner({ name, tubes: initial, onSave, onClose }: Props) {
-  const canvas = useRef<HTMLCanvasElement>(null)
+  const view = useRef<HTMLDivElement>(null)
   const designer = useRef<Designer>(null)
   const [tubes, setTubes] = useState(() => initial.map(rooted))
   const [active, setActive] = useState(0)
@@ -53,7 +53,7 @@ export function TubeDesigner({ name, tubes: initial, onSave, onClose }: Props) {
   }))
 
   useEffect(() => {
-    const d = new Designer(canvas.current!, true)
+    const d = new Designer(view.current!, true)
     d.onChange = (i, path) => change(i, { path })
     d.onSelect = (pick: Pick | null) => {
       if (pick) setActive(pick.tube)
@@ -61,7 +61,7 @@ export function TubeDesigner({ name, tubes: initial, onSave, onClose }: Props) {
     }
     designer.current = d
     const observer = new ResizeObserver(() => d.resize())
-    observer.observe(canvas.current!.parentElement!)
+    observer.observe(view.current!)
     return () => { observer.disconnect(); d.dispose(); designer.current = null }
   }, [])
 
@@ -88,7 +88,7 @@ export function TubeDesigner({ name, tubes: initial, onSave, onClose }: Props) {
   return (
     <div className="modal">
       <div className="designer">
-        <div className="designer-view"><canvas ref={canvas} /></div>
+        <div className="designer-view" ref={view} />
         <aside className="designer-side pars">
           <h2>{name}</h2>
           <div className="tube-tabs">

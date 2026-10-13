@@ -7,28 +7,30 @@ import { PlacementEditor } from './Placement'
 type Props = { show: Show; td: Td | null; connected: boolean; active: boolean; onPlace: (key: string, p: Placement) => void }
 
 export function Simulator({ show, td, connected, active, onPlace }: Props) {
-  const canvas = useRef<HTMLCanvasElement>(null)
+  const view = useRef<HTMLDivElement>(null)
   const scene = useRef<SimScene>(null)
   const place = useRef(onPlace)
   place.current = onPlace
   const [selected, setSelected] = useState<string | null>(null)
   const [mode, setMode] = useState<'translate' | 'rotate'>('translate')
   const [glError, setGlError] = useState('')
+  const [lost, setLost] = useState(false)
   const [timing, setTiming] = useState('')
   const fixtures = simFixtures(show)
 
   useEffect(() => {
     let s: SimScene
     try {
-      s = new SimScene(canvas.current!, (key, p) => place.current(key, p))
+      s = new SimScene(view.current!, (key, p) => place.current(key, p))
     } catch (e) {
       setGlError((e as Error).message)
       return
     }
     s.onSelect = setSelected
+    s.onLost = setLost
     scene.current = s
     const observer = new ResizeObserver(() => s.resize())
-    observer.observe(canvas.current!.parentElement!)
+    observer.observe(view.current!)
     return () => {
       observer.disconnect()
       s.dispose()
@@ -77,7 +79,7 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
     const report = setInterval(() => {
       const s = scene.current?.stats()
       const secs = (performance.now() - since) / 1000
-      setTiming(`${Math.round((s?.frames ?? 0) / secs)} fps · render ${s?.renderMs.toFixed(1)} ms · ${Math.round(polls / secs)} DMX/s · slowest ${Math.round(worst)} ms`)
+      setTiming(`${Math.round((s?.frames ?? 0) / secs)} fps · render ${s?.renderMs.toFixed(1)} ms · ${s?.programs} programs · ${s?.calls} draws · ${Math.round((s?.triangles ?? 0) / 1000)}k tris · ${Math.round(polls / secs)} DMX/s · slowest ${Math.round(worst)} ms`)
       polls = 0
       worst = 0
       since = performance.now()
@@ -93,9 +95,10 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
   const picked = current ?? device ?? tube
   return (
     <div className="sim">
-      <canvas ref={canvas} />
+      <div className="sim-view" ref={view} />
       <div className="sim-hud">
         {glError && <div className="error">The 3D view failed to start: {glError}</div>}
+        {lost && <div className="error">3D view lost the GPU, restoring…</div>}
         <div>{fixtures.length} fixtures · {tubes.length} tubes · {devices.length} devices · {connected ? 'live' : 'offline'}</div>
         {timing && <div className="hint">{timing}</div>}
         <div>{current ? `${current.name} · ${current.universe === null ? 'no DMX cable' : `U${current.universe} @${current.address}`}` : device ? device.name : tube ? `${tube.name} · ${tube.label}` : 'click a fixture to move it'}</div>

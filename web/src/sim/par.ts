@@ -6,7 +6,9 @@ const BEAM_ANGLE = Math.PI / 5
 const BEAM_OPACITY = 0.3
 const BEAM_LENGTH = 8
 
-export type Light = { object: THREE.Group; update(v: Record<string, number>): void; place(p: Placement): void; dispose(): void }
+export type Spot = { from: THREE.Object3D; to: THREE.Object3D; color: THREE.Color; intensity: number; angle: number }
+
+export type Light = { object: THREE.Group; spot?: Spot; update(v: Record<string, number>): void; place(p: Placement): void; dispose(): void }
 
 export function place(object: THREE.Object3D, p: Placement) {
   object.position.fromArray(p.position)
@@ -33,12 +35,11 @@ export function beam(radius: number, height: number) {
   return { mesh, mat }
 }
 
-export function spot(angle: number) {
-  const light = new THREE.SpotLight(0xffffff, 0, 0, angle, 0.4, 0)
-  const target = new THREE.Object3D()
-  target.position.set(0, -1, 0)
-  light.target = target
-  return { light, target }
+export function spot(from: THREE.Object3D, angle: number): Spot {
+  const to = new THREE.Object3D()
+  to.position.set(0, -1, 0)
+  from.add(to)
+  return { from, to, color: new THREE.Color(), intensity: 0, angle }
 }
 
 export class Par implements Light {
@@ -46,7 +47,7 @@ export class Par implements Light {
   private body = new THREE.MeshStandardMaterial({ color: 0x202028, metalness: 0.5, roughness: 0.5, emissive: 0x000000 })
   private lens = new THREE.MeshBasicMaterial({ color: 0x000000 })
   private beam: THREE.MeshBasicMaterial
-  private light: THREE.SpotLight
+  spot = spot(this.object, BEAM_ANGLE)
   private color = new THREE.Color()
 
   constructor(p: Placement) {
@@ -55,18 +56,16 @@ export class Par implements Light {
     lens.position.y = -0.112
     lens.rotation.x = -Math.PI / 2
     const b = beam(BEAM_LENGTH * Math.tan(BEAM_ANGLE), BEAM_LENGTH)
-    const s = spot(BEAM_ANGLE)
     this.beam = b.mat
-    this.light = s.light
-    this.object.add(body, lens, b.mesh, s.light, s.target)
+    this.object.add(body, lens, b.mesh)
     place(this.object, p)
   }
 
   update(v: Record<string, number>) {
     const dim = v.Dimmer ?? 1
     this.color.setRGB(v.Red ?? 0, v.Green ?? 0, v.Blue ?? 0, THREE.SRGBColorSpace)
-    this.light.color.copy(this.color)
-    this.light.intensity = dim * MAX_INTENSITY
+    this.spot.color.copy(this.color)
+    this.spot.intensity = dim * MAX_INTENSITY
     this.lens.color.copy(this.color).multiplyScalar(Math.min(1, dim * 1.4))
     this.body.emissive.copy(this.color)
     this.body.emissiveIntensity = dim

@@ -2,10 +2,12 @@ import * as THREE from 'three'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import { type Placement, type SimDevice, type SimFixture, type SimTube } from '../show'
 import type { DmxValues } from '../td'
-import { Par, placementOf, type Light } from './par'
+import { Par, placementOf, type Light, type Spot } from './par'
 import { Head } from './head'
 import { Device } from './device'
 import { Tube } from './tube'
+
+const POOL = 8
 
 export class SimScene {
   private renderer: THREE.WebGLRenderer
@@ -22,11 +24,15 @@ export class SimScene {
   private renderMs = 0
   private keys = new Set<string>()
   private clock = new THREE.Clock()
+  private events = new AbortController()
+  private pool: THREE.SpotLight[] = []
   onSelect: (key: string | null) => void = () => {}
+  onLost: (lost: boolean) => void = () => {}
   private canvas: HTMLCanvasElement
   private onPlace: (key: string, p: Placement) => void
 
-  constructor(canvas: HTMLCanvasElement, onPlace: (key: string, p: Placement) => void) {
+  constructor(parent: HTMLElement, onPlace: (key: string, p: Placement) => void) {
+    const canvas = parent.appendChild(document.createElement('canvas'))
     this.canvas = canvas
     this.onPlace = onPlace
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
@@ -45,6 +51,11 @@ export class SimScene {
     const grid = new THREE.GridHelper(120, 120, 0x2a2a35, 0x1a1a22)
     grid.position.y = 0.001
     this.scene.add(fill, floor, grid)
+    for (let i = 0; i < POOL; i++) {
+      const light = new THREE.SpotLight(0xffffff, 0, 0, 0.5, 0.4, 0)
+      this.pool.push(light)
+      this.scene.add(light, light.target)
+    }
     this.gizmo = new TransformControls(this.camera, canvas)
     this.gizmo.setSpace('world')
     this.scene.add(this.gizmo.getHelper())
@@ -52,26 +63,30 @@ export class SimScene {
       if (e.value) this.drag = null
       if (!e.value && this.selected) this.onPlace(this.selected, placementOf(this.lights.get(this.selected)!.light.object))
     })
+    const { signal } = this.events
     canvas.addEventListener('pointerdown', (e) => {
       this.down = { x: e.clientX, y: e.clientY }
       if (!this.gizmo.axis) this.drag = { button: e.button, x: e.clientX, y: e.clientY }
-    })
-    canvas.addEventListener('pointermove', (e) => this.look(e))
-    window.addEventListener('pointerup', this.release)
-    canvas.addEventListener('contextmenu', (e) => e.preventDefault())
+    }, { signal })
+    canvas.addEventListener('pointermove', (e) => this.look(e), { signal })
+    window.addEventListener('pointerup', () => { this.drag = null }, { signal })
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault(), { signal })
+    canvas.addEventListener('webglcontextlost', () => this.onLost(true), { signal })
+    canvas.addEventListener('webglcontextrestored', () => this.onLost(false), { signal })
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault()
       const forward = new THREE.Vector3()
       this.camera.getWorldDirection(forward)
       this.camera.position.addScaledVector(forward, -Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY) * 0.01, 2) * (e.shiftKey ? 3 : 1))
-    }, { passive: false })
-    canvas.addEventListener('pointerup', (e) => this.click(e))
+    }, { passive: false, signal })
+    canvas.addEventListener('pointerup', (e) => this.click(e), { signal })
     this.resize()
     this.animate()
   }
 
   stats() {
-    const out = { frames: this.frames, renderMs: this.renderMs }
+    const { programs, render } = this.renderer.info
+    const out = { frames: this.frames, renderMs: this.renderMs, programs: programs?.length ?? 0, calls: render.calls, triangles: render.triangles }
     this.frames = 0
     return out
   }
@@ -158,8 +173,6 @@ export class SimScene {
     this.camera.updateProjectionMatrix()
   }
 
-  private release = () => { this.drag = null }
-
   private look(e: PointerEvent) {
     const d = this.drag
     if (!d || this.gizmo.dragging) return
@@ -199,9 +212,25 @@ export class SimScene {
     this.camera.position.add(move)
   }
 
+  private aim() {
+    const spots = [...this.lights.values()].flatMap(({ light: { spot } }) => (spot && spot.intensity > 0 ? [spot] : []))
+    const power = (s: Spot) => s.intensity * (s.color.r + s.color.g + s.color.b)
+    spots.sort((a, b) => power(b) - power(a))
+    this.pool.forEach((light, i) => {
+      const s = spots[i]
+      light.intensity = s?.intensity ?? 0
+      if (!s) return
+      light.color.copy(s.color)
+      light.angle = s.angle
+      s.from.getWorldPosition(light.position)
+      s.to.getWorldPosition(light.target.position)
+    })
+  }
+
   private animate = () => {
     this.frame = requestAnimationFrame(this.animate)
     this.fly(Math.min(this.clock.getDelta(), 0.1))
+    this.aim()
     const t = performance.now()
     this.renderer.render(this.scene, this.camera)
     this.renderMs = Math.max(this.renderMs * 0.9, performance.now() - t)
@@ -212,7 +241,9 @@ export class SimScene {
     cancelAnimationFrame(this.frame)
     for (const { light } of this.lights.values()) light.dispose()
     this.gizmo.dispose()
-    window.removeEventListener('pointerup', this.release)
+    this.events.abort()
     this.renderer.dispose()
+    this.renderer.forceContextLoss()
+    this.canvas.remove()
   }
 }
