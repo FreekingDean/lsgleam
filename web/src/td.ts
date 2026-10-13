@@ -1,6 +1,6 @@
 import type { Bridge } from './bridge'
 import type { PortValues } from './live'
-import { SOURCE_KINDS, type Kind, AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, BLT_SIGNALS, audioSliceAlpha, combineNames, audioSlicePath, boardPlan, controllerPatch, hexToRgb, membersOf, ownersOf, tubeGeometry, patternMasks, profileOf, scenesOf, selectorSources, sequenceValues, sourcesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type Show, type StripBlock, type ValuesBlock } from './show'
+import { SOURCE_KINDS, type Kind, AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, BLT_SIGNALS, audioSliceAlpha, combineSlots, WIDE_TYPES, audioSlicePath, boardPlan, controllerPatch, hexToRgb, membersOf, ownersOf, tubeGeometry, patternMasks, profileOf, scenesOf, selectorSources, sequenceValues, sourcesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type Show, type StripBlock, type ValuesBlock } from './show'
 
 export type DmxValues = Record<string, number[]>
 
@@ -109,8 +109,6 @@ const TINTS = { dir: [0.3, 0.3, 0.34], hardware: [0.36, 0.56, 0.84], source: [0.
 const SHOW_DIR: Dir = ['show', 300, 0, 'Show: scenes, logic and fixtures', TINTS.dir]
 const LAYOUT_DIR: Dir = ['layout', -300, 0, 'Layout: Art-Net nodes, pixel boards and sources', TINTS.dir]
 const HARDWARE: Kind[] = ['artnet', 'dmxin', 'board']
-const tdSafe = (n: string) => n.replace(/[^A-Za-z0-9_]/g, '_').replace(/^(?=\d)/, '_')
-const tdNames = (names: string[]) => names.map(tdSafe).map((n, i, all) => (all.indexOf(n) < i ? `${n}_${i + 1}` : n))
 
 function tintOf(b: Block) {
   if (HARDWARE.includes(b.kind)) return TINTS.hardware
@@ -1325,38 +1323,22 @@ def build_not(b, sources):
     src.outputConnectors[0].connect(inv.inputConnectors[0])
     finish(c, named(c, sources, clamp, 'out', 400), 600)
 
-def build_combine(b, sources, names):
+def build_combine(b, sources, wide):
     c = new_block(b)
-    by_port = ports(c, sources)
     feeds = []
-    for k in range(len(names)):
-        port = 's%d' % (k + 1)
-        feed = by_port.get(port)
-        if feed is None:
-            feed = constant(c, 'no_' + port, [(port, 0)])
-            feed.nodeX, feed.nodeY = -300, -k * 100
-        feeds.append(feed)
-    merge = merge_into(c, feeds, 'merge', 0)
-    rename = c.create(renameCHOP, 'names')
-    rename.par.renamefrom = ' '.join('s%d' % (k + 1) for k in range(len(names)))
-    rename.par.renameto = ' '.join(names)
-    rename.nodeX = 0
-    merge.outputConnectors[0].connect(rename.inputConnectors[0])
-    finish(c, rename, 200)
+    for k, (port, feed) in enumerate(sorted(ports(c, sources).items(), key=lambda kv: int(kv[0][1:]))):
+        ren = c.create(renameCHOP, 'slot_' + port)
+        ren.par.renamefrom = '*'
+        ren.par.renameto = port + '_*' if wide else port
+        ren.nodeX, ren.nodeY = -100, -k * 100
+        feed.outputConnectors[0].connect(ren.inputConnectors[0])
+        feeds.append(ren)
+    finish(c, merge_into(c, feeds, 'merge', 0) or constant(c, 'nothing', [('none', 0)]), 200)
 
 def build_split(b, sources):
     c = new_block(b)
-    pad = constant(c, 'pad', [('s%d' % (k + 1), 0) for k in range(b['channels'])])
-    pad.nodeY = 150
-    src = ports(c, sources).get('in')
-    if src is None:
-        finish(c, pad, 200)
-        return
-    rename = c.create(renameCHOP, 'names')
-    rename.par.renamefrom = '*'
-    rename.par.renameto = 's[1-%d]' % b['channels']
-    src.outputConnectors[0].connect(rename.inputConnectors[0])
-    finish(c, merge_into(c, [pad, rename], 'merge', 0), 200)
+    src = ports(c, sources).get('in') or constant(c, 'nothing', [('none', 0)])
+    finish(c, src, 200)
 
 def build_counter(b, sources):
     c = new_block(b)
@@ -1544,7 +1526,7 @@ probe.destroy()
       const table = colorTable(block)
       return (`build_colors(${j(b)}, ${sources}, ${j(table)})`)
     }
-    if (block.kind === 'combine') return (`build_combine(${j(b)}, ${sources}, ${j(tdNames(combineNames(block)))})`)
+    if (block.kind === 'combine') return (`build_combine(${j(b)}, ${sources}, ${j(WIDE_TYPES.includes(combineSlots(show, block)[0]?.type ?? ''))})`)
     if (block.kind === 'values') return (`build_values(${j(b)}, ${sources}, ${j(valueTable(block))})`)
     if (block.kind === 'sequence') return (`build_sequence(${j(b)}, ${sources}, ${j(sequenceValues(block))})`)
     if (block.kind === 'group') {

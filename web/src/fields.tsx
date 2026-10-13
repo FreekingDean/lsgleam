@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { parseLength } from './show'
 
-export function Field({ label, value, onCommit, type = 'text', step }: { label: string; value: string | number; onCommit: (v: string) => void; type?: string; step?: number }) {
+export function Field({ label, value, onCommit, type = 'text', step, placeholder }: { label: string; value: string | number; onCommit: (v: string) => void; type?: string; step?: number; placeholder?: string }) {
   const [text, setText] = useState(String(value))
   const commit = () => text !== String(value) && onCommit(text)
   return (
     <div className="par">
       <label>{label}</label>
-      <input type={type} step={step} value={text} onChange={(e) => setText(e.target.value)} onBlur={commit} onKeyDown={(e) => e.key === 'Enter' && commit()} />
+      <input type={type} step={step} placeholder={placeholder} value={text} onChange={(e) => setText(e.target.value)} onBlur={commit} onKeyDown={(e) => e.key === 'Enter' && commit()} />
     </div>
   )
 }

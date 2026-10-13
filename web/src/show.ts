@@ -49,8 +49,8 @@ export type NotBlock = Base & { kind: 'not' }
 export type MixBlock = Base & { kind: 'mix'; type: 'signal' | 'color' }
 export type FadeBlock = Base & { kind: 'fade'; rise: number; fall: number; curve: 'linear' | 'smooth' }
 export type CounterBlock = Base & { kind: 'counter'; max: number }
-export type CombineBlock = Base & { kind: 'combine'; channels: number; names: string[] }
-export type SplitBlock = Base & { kind: 'split'; channels: number }
+export type CombineBlock = Base & { kind: 'combine'; names: Record<string, string> }
+export type SplitBlock = Base & { kind: 'split' }
 export type ConstantBlock = Base & { kind: 'constant'; type: 'signal' | 'index'; value: number; pulse: number }
 export type CdjBlock = Base & { kind: 'cdj'; player: number }
 export type BoxBlock = Base & { kind: 'box'; size: [number, number, number]; locked: boolean }
@@ -97,7 +97,7 @@ export const scenesOf = (show: Show) => show.blocks.filter((b): b is SceneBlock 
 
 export type Port = { id: string; label: string; type: string; hint?: string; chans?: string; strip?: string; profile?: string; multi?: boolean }
 
-export const TYPE_COLORS: Record<string, string> = { audio: '#e06c6c', signal: '#6cb86c', index: '#f39c12', number: '#9aa5b1', look: '#b07ddc', color: '#ff8fd0', fixture: '#4fb3bf', dmx: '#5c8ed6', pixel: '#ffd24a', pixels: '#ffd24a', multi: '#7fd4ff' }
+export const TYPE_COLORS: Record<string, string> = { audio: '#e06c6c', signal: '#6cb86c', index: '#f39c12', number: '#9aa5b1', look: '#b07ddc', color: '#ff8fd0', fixture: '#4fb3bf', dmx: '#5c8ed6', pixel: '#ffd24a', pixels: '#ffd24a', multi: '#7fd4ff', any: '#666b73' }
 
 export const KIND_INFO: Record<Kind, string> = {
   audio: 'Audio device input',
@@ -130,8 +130,8 @@ export const KIND_INFO: Record<Kind, string> = {
   mix: 'Crossfades two signals or colours: a × (1 − mix) + b × mix',
   fade: 'Ramps a signal linearly: up over the rise time, down over the fall time',
   counter: 'Counts triggers into an index, clamped at max',
-  combine: 'Bundles N signals into one multichannel wire, so one transform runs on all of them',
-  split: 'Unbundles a multichannel wire back into N signals',
+  combine: 'Bundles values of one type into one multichannel wire: wire into the open slot to add one',
+  split: 'Unbundles a multichannel wire back into the values its Combine bundled',
   cdj: 'A player sending audio into an audio input',
   box: 'A room, stage or other space with width, depth and height',
   tube: 'An LED tube or strip: LED count, pixel protocol and a 3D shape',
@@ -152,7 +152,8 @@ export const TYPE_INFO: Record<string, string> = {
   pixels: 'colour for every LED of a tube',
   dmx: '512 DMX channels',
   fixture: 'every channel of a fixture',
-  multi: 'several signals on one wire',
+  multi: 'several values on one wire',
+  any: 'any type: the first wire sets it',
 }
 
 const PORT_HINTS: Record<string, string> = {
@@ -317,22 +318,67 @@ export function multiFeeds(show: Show | undefined, b: Block, seen = new Set<stri
 
 const multiPort = (show: Show | undefined, b: Block, id: string): Port => ({ ...typed(id, multiFeeds(show, b).some((w) => w.port === id) ? 'multi' : 'signal'), multi: true })
 
-export const combineNames = (b: CombineBlock) => Array.from({ length: b.channels }, (_, i) => b.names[i]?.trim() || `m${i + 1}`)
+export const ELEMENT_TYPES = ['signal', 'index', 'number', 'color', 'look', 'audio']
+export const WIDE_TYPES = ['color', 'look', 'audio']
+const MAX_SLOTS = 32
+const slotNumber = (id: string) => Number(id.slice(1)) || 0
 
-export function combineOf(show: Show, id: string, seen = new Set<string>()): CombineBlock | undefined {
-  const b = show.blocks.find((x) => x.id === id)
-  if (!b || seen.has(id)) return undefined
+function sourcePort(show: Show, w: Wire, seen?: Set<string>) {
+  const from = show.blocks.find((b) => b.id === w.from)
+  return from && outputPorts(from, show, seen).find((p) => p.id === w.fromPort)
+}
+
+export function elementOf(show: Show | undefined, b: CombineBlock, seen = new Set<string>()) {
+  const path = new Set(seen).add(b.id)
+  return show?.wires.filter((w) => w.to === b.id).map((w) => sourcePort(show, w, path)?.type).find((t) => t && ELEMENT_TYPES.includes(t))
+}
+
+export function combineSlots(show: Show | undefined, b: CombineBlock, seen = new Set<string>()): Port[] {
+  if (!show || seen.has(b.id)) return []
+  const path = new Set(seen).add(b.id)
+  const type = elementOf(show, b, seen) ?? 'any'
+  const feeds = show.wires.filter((w) => w.to === b.id).sort((x, y) => slotNumber(x.port) - slotNumber(y.port))
+  return feeds.filter((w, i) => feeds.findIndex((x) => x.port === w.port) === i).map((w) => {
+    const from = show.blocks.find((x) => x.id === w.from)
+    const outs = from ? outputPorts(from, show, path) : []
+    return typed(w.port, type, b.names[w.port]?.trim() || (outs.length > 1 ? outs.find((p) => p.id === w.fromPort)?.label : from?.name) || w.port)
+  })
+}
+
+function combineInputs(show: Show | undefined, b: CombineBlock): Port[] {
+  const slots = combineSlots(show, b)
+  const open = `s${Math.max(0, ...[...slots.map((p) => p.id), ...Object.keys(b.names)].map(slotNumber)) + 1}`
+  return slots.length < MAX_SLOTS ? [...slots, typed(open, elementOf(show, b) ?? 'any', '+')] : slots
+}
+
+export function combineOf(show: Show, from: string, fromPort = 'out', seen = new Set<string>()): CombineBlock | undefined {
+  const b = show.blocks.find((x) => x.id === from)
+  if (!b || seen.has(b.id)) return undefined
+  const path = new Set(seen).add(b.id)
   if (b.kind === 'combine') return b
-  const feed = b.kind === 'split' ? show.wires.find((w) => w.to === id) : multiFeeds(show, b)[0]
-  return feed ? combineOf(show, feed.from, seen.add(id)) : undefined
+  const feed = b.kind === 'composite' ? show.wires.find((w) => w.to === fromPort) : b.kind === 'input' ? show.wires.find((w) => w.to === b.scene && w.port === b.id) : b.kind === 'output' ? show.wires.find((w) => w.to === b.id) : multiFeeds(show, b, seen)[0]
+  return feed && combineOf(show, feed.from, feed.fromPort, path)
+}
+
+export const splitSource = (show: Show, b: SplitBlock, seen = new Set<string>()) => {
+  const feed = show.wires.find((w) => w.to === b.id)
+  return feed && combineOf(show, feed.from, feed.fromPort, new Set(seen).add(b.id))
+}
+
+function perChannel(show: Show, w: Wire) {
+  const from = combineOf(show, w.from, w.fromPort)
+  return (from ? elementOf(show, from) ?? 'signal' : 'signal') === 'signal'
 }
 
 function wireOk(show: Show, w: Wire) {
-  const a = show.blocks.find((b) => b.id === w.from)
   const b = show.blocks.find((b) => b.id === w.to)
-  const source = a && outputPorts(a, show).find((p) => p.id === w.fromPort)
+  const source = sourcePort(show, w)
   const target = b && allInputPorts(b, show).find((p) => p.id === w.port)
-  if (!source || !target || (source.type !== 'multi' && target.type !== 'multi')) return true
+  if (!source) return show.blocks.find((x) => x.id === w.from)?.kind !== 'split'
+  if (!target) return true
+  if (b.kind === 'combine') return ELEMENT_TYPES.includes(source.type) && source.type === target.type
+  if (source.type !== 'multi' && target.type !== 'multi') return true
+  if (target.multi && source.type === 'multi' && !perChannel(show, w)) return false
   return source.type === target.type || (!!target.multi && show.wires.filter((x) => x.to === w.to && x.port === w.port && (x.scene ?? null) === (w.scene ?? null)).length === 1)
 }
 
@@ -384,7 +430,7 @@ function allInputPorts(b: Block, show?: Show): Port[] {
     case 'not': return [multiPort(show, b, 'signal')]
     case 'mix': return [...(b.type === 'color' ? [typed('a', 'color'), typed('b', 'color')] : [multiPort(show, b, 'a'), multiPort(show, b, 'b')]), typed('mix', 'signal', 'mix (0 = a, 1 = b)')]
     case 'fade': return [multiPort(show, b, 'signal')]
-    case 'combine': return combineNames(b).map((name, i) => typed(`s${i + 1}`, 'signal', name))
+    case 'combine': return combineInputs(show, b)
     case 'split': return [typed('in', 'multi', 'multichannel')]
     case 'counter': return [typed('trigger', 'signal', 'count'), typed('reset', 'signal')]
     case 'level': return [typed('audio', 'audio')]
@@ -467,11 +513,13 @@ export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Po
     case 'not': return [typed('out', flow, 'not')]
     case 'mix': return [typed('out', b.type === 'color' ? 'color' : flow, 'mixed')]
     case 'fade': return [typed('out', flow, 'faded')]
-    case 'combine': return [typed('out', 'multi', `${b.channels} signals`)]
+    case 'combine': {
+      const slots = combineSlots(show, b, seen)
+      return [typed('out', 'multi', slots.length ? `${slots.length} × ${slots[0].type}` : 'multichannel')]
+    }
     case 'split': {
-      const from = show && combineOf(show, b.id)
-      const names = from ? combineNames(from) : []
-      return Array.from({ length: b.channels }, (_, i) => typed(`s${i + 1}`, 'signal', names[i] ?? `signal ${i + 1}`))
+      const from = show && !seen.has(b.id) ? splitSource(show, b, seen) : undefined
+      return !from ? [] : combineSlots(show, from, new Set(seen).add(b.id)).map((p) => (WIDE_TYPES.includes(p.type) ? { ...p, chans: `${p.id}_*`, strip: `${p.id}_` } : { ...p, chans: p.id }))
     }
     case 'counter': return [typed('out', 'index', 'count')]
     case 'values': return b.rows.map((r, i) => ({ ...typed(`v${i}`, 'signal', r.name), chans: `v${i}` }))
@@ -530,7 +578,7 @@ export function sourcesOf(show: Show, id: string): Source[] {
     })
     return feeds.length ? [...feeds, { from: SELECTOR_ID, chan: null, port: SCENE_PORT, scene: scenes.length }] : []
   }
-  return show.wires.filter((w) => w.to === id).map((w) => ({ ...via(show, w), port: w.port, scene: null, ...(['color', 'multi'].includes(portOf(show, w)?.type ?? '') ? { keep: true } : {}) }))
+  return show.wires.filter((w) => w.to === id).map((w) => ({ ...via(show, w), port: w.port, scene: null, ...(block.kind === 'combine' || ['color', 'multi'].includes(portOf(show, w)?.type ?? '') ? { keep: true } : {}) }))
 }
 
 export const memberPort = (id: string, i: number) => `${id}:${i}`
@@ -870,12 +918,12 @@ export function canWire(show: Show, from: string, fromPort: string, to: string, 
   if (tab === null ? a.scene || b.scene : a.scene !== tab || b.scene !== tab) return false
   const source = outputPorts(a, show).find((p) => p.id === fromPort)
   const target = inputPorts(b, show, tab).find((p) => p.id === port)
-  if (!source || !target || !(source.type === target.type || (target.multi && source.type === 'multi')) || source.profile !== target.profile) return false
+  if (!source || !target || !(source.type === target.type || (target.multi && source.type === 'multi') || (target.type === 'any' && ELEMENT_TYPES.includes(source.type))) || source.profile !== target.profile) return false
   const here = show.wires.filter((w) => (w.scene ?? null) === tab)
   if (here.some((w) => w.from === from && w.fromPort === fromPort && w.to === to && w.port === port)) return false
   const output = target.type === 'fixture' || target.type === 'pixels'
   if (output && here.some((w) => w.to === to && w.from === from)) return false
-  if ((target.type !== 'signal' || source.type === 'multi') && !output && here.some((w) => w.to === to && w.port === port)) return false
+  if ((target.type !== 'signal' || source.type === 'multi' || b.kind === 'combine') && !output && here.some((w) => w.to === to && w.port === port)) return false
   const driven = drivenPorts(show, to, tab)
   for (const [master, channels] of exclusions(b)) {
     if (port === master && channels.some((ch) => driven.has(ch))) return false
@@ -989,10 +1037,10 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
       block = { ...base, id: `count${n}`, name: `count${n}`, kind: 'counter', max: 3 }
       break
     case 'combine':
-      block = { ...base, id: `comb${n}`, name: `combine${n}`, kind: 'combine', channels: 3, names: [] }
+      block = { ...base, id: `comb${n}`, name: `combine${n}`, kind: 'combine', names: {} }
       break
     case 'split':
-      block = { ...base, id: `split${n}`, name: `split${n}`, kind: 'split', channels: 3 }
+      block = { ...base, id: `split${n}`, name: `split${n}`, kind: 'split' }
       break
     case 'strip':
       block = { ...base, id: `px${n}`, name: `Pixels ${n}`, kind: 'strip', mode: 'band', color: '#ffffff', stops: [{ at: 0, color: '#ff2060' }, { at: 1, color: '#2060ff' }], spread: 0, along: 'tube', dimmer: 1, position: 0.5, width: 0.2, speed: 0.5 }
@@ -1097,14 +1145,16 @@ export function removeBlocks(show: Show, ids: string[]): Show {
   }))
 }
 
+const resized = (show: Show): Show => ({ ...show, blocks: show.blocks.map((b) => (b.kind === 'combine' || b.kind === 'split') && b.h !== blockHeight(b, show) ? { ...b, h: blockHeight(b, show) } : b) })
+
 export function addWire(show: Show, wire: Wire): Show {
-  return { ...show, wires: [...show.wires, wire] }
+  return resized({ ...show, wires: [...show.wires, wire] })
 }
 
 const sameWire = (a: Wire, b: Wire) => a.from === b.from && a.fromPort === b.fromPort && a.to === b.to && a.port === b.port && (a.scene ?? null) === (b.scene ?? null)
 
 export function removeWires(show: Show, wires: Wire[]): Show {
-  return pruneWires({ ...show, wires: show.wires.filter((w) => !wires.some((r) => sameWire(r, w))) })
+  return resized(pruneWires({ ...show, wires: show.wires.filter((w) => !wires.some((r) => sameWire(r, w))) }))
 }
 
 export const membersOf = (show: Show, set: string) => show.blocks.filter((b): b is TubeBlock => b.kind === 'tube' && b.set === set)

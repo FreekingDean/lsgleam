@@ -3,7 +3,7 @@ import { Field, LengthField, NumberBox, NumField } from './fields'
 import { PlacementEditor } from './Placement'
 import { bltConfig, bltExpressions, download } from './blt'
 import { TubeDesigner } from './TubeDesigner'
-import { STRIP_ALONG, type StripAlong, membersOf, type TubeDesign, type TubeSetBlock, STRIP_MODES, type StripBlock, type StripMode, PIXEL_PROTOCOLS, formatLength, outputUniverses, pixelChain, tubePatch, universesPerOutput, type BoardBlock, ceilingAt, onWall, chainOf, controllerPatch, fixturesOf, memberPort, type LightBlock, type BoxBlock, type CdjBlock, type Placement, AUDIOSLICE_SOURCES, BLT_SIGNALS, PATTERN_LABELS, PATTERN_MODES, POSITION_PORT, inputPorts, profileOf, scenesOf, type AudioBlock, type AudioSliceBlock, type Block, type BltBlock, type DmxInBlock, type DropBlock, type FixtureBlock, type HoldBlock, type RangeBlock, type GroupBlock, type GroupPosition, type LevelBlock, type Scene, type LooksBlock, type SequenceBlock, type ConstantBlock, type CounterBlock, type CombineBlock, type SplitBlock, combineNames, combineOf, type ArtnetBlock, type SceneBlock, type InputBlock, type InputType, INPUT_TYPES, type ColorsBlock, type ValuesBlock, type ManualBlock, type EqualsBlock, type Show, type PatternAdvance, type PatternBlock, type PatternMode, type Position, type StepsBlock, type GateBlock, type FadeBlock } from './show'
+import { STRIP_ALONG, type StripAlong, membersOf, type TubeDesign, type TubeSetBlock, STRIP_MODES, type StripBlock, type StripMode, PIXEL_PROTOCOLS, formatLength, outputUniverses, pixelChain, tubePatch, universesPerOutput, type BoardBlock, ceilingAt, onWall, chainOf, controllerPatch, fixturesOf, memberPort, type LightBlock, type BoxBlock, type CdjBlock, type Placement, AUDIOSLICE_SOURCES, BLT_SIGNALS, PATTERN_LABELS, PATTERN_MODES, POSITION_PORT, inputPorts, profileOf, scenesOf, type AudioBlock, type AudioSliceBlock, type Block, type BltBlock, type DmxInBlock, type DropBlock, type FixtureBlock, type HoldBlock, type RangeBlock, type GroupBlock, type GroupPosition, type LevelBlock, type Scene, type LooksBlock, type SequenceBlock, type ConstantBlock, type CounterBlock, type CombineBlock, type SplitBlock, combineSlots, splitSource, type ArtnetBlock, type SceneBlock, type InputBlock, type InputType, INPUT_TYPES, type ColorsBlock, type ValuesBlock, type ManualBlock, type EqualsBlock, type Show, type PatternAdvance, type PatternBlock, type PatternMode, type Position, type StepsBlock, type GateBlock, type FadeBlock } from './show'
 
 export type Layout = { placement: Placement; flip: boolean; onPlace: (p: Placement, flip?: boolean) => void }
 
@@ -417,25 +417,19 @@ function CounterPanel({ block, onPatch }: Props & { block: CounterBlock }) {
   )
 }
 
-function CombinePanel({ block, onPatch }: Props & { block: CombineBlock }) {
-  const names = combineNames(block)
+function CombinePanel({ show, block, onPatch }: Props & { block: CombineBlock }) {
+  const slots = combineSlots(show, block)
   return (
     <>
-      <NumField label="Channels" value={block.channels} onCommit={(v) => onPatch({ channels: Math.max(2, Math.min(32, Math.round(v))) })} step={1} />
-      {names.map((_, i) => <Field key={i} label={`Channel ${i + 1}`} value={block.names[i] ?? ''} onCommit={(v) => onPatch({ names: names.map((_, k) => (k === i ? v : block.names[k] ?? '')) })} />)}
-      <div className="help">Bundles its signals into one multichannel wire. Gate, Not, Fade, Range, Mix and And take it on their signal input and run on every channel; Split unbundles it. Blank names default to m1…mN; these label Split's outputs.</div>
+      {slots.map((p, i) => <Field key={p.id} label={`Slot ${i + 1}`} value={block.names[p.id] ?? ''} placeholder={p.label} onCommit={(v) => onPatch({ names: { ...block.names, [p.id]: v } })} />)}
+      <div className="help">Wire into the open + slot to add a value; removing its wire removes the slot. The first wire sets the type{slots.length ? ` (${slots[0].type})` : ''} and every slot takes that type. Gate, Not, Fade, Range, Mix and And run per channel on a signal Combine; Split unbundles any type. Blank names use the source's name.</div>
     </>
   )
 }
 
-function SplitPanel({ show, block, onPatch }: Props & { block: SplitBlock }) {
-  const from = combineOf(show, block.id)
-  return (
-    <>
-      <NumField label="Channels" value={block.channels} onCommit={(v) => onPatch({ channels: Math.max(2, Math.min(32, Math.round(v))) })} step={1} />
-      <div className="help">One signal output per channel of the multichannel wire, in order{from ? `, named after ${from.name}` : ''}.</div>
-    </>
-  )
+function SplitPanel({ show, block }: Props & { block: SplitBlock }) {
+  const from = splitSource(show, block)
+  return <div className="help">{from ? `One output per slot of ${from.name}, in order, with its names and type.` : 'No Combine upstream yet: wire a Combine into in, directly or through per-channel transforms and multichannel Inputs and Outputs.'}</div>
 }
 
 function EqualsPanel({ block, onPatch }: Props & { block: EqualsBlock }) {
@@ -879,7 +873,7 @@ function GroupPanel(props: Props & { block: GroupBlock }) {
 function HiddenPorts({ show, block, onPatch }: Props) {
   const hidden = new Set(block.hidden ?? [])
   const all = inputPorts({ ...block, hidden: [] }, show)
-  if (all.length < 2) return null
+  if (all.length < 2 || block.kind === 'combine') return null
   const toggle = (id: string, on: boolean) => {
     const next = new Set(hidden)
     if (on) next.delete(id)

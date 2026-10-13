@@ -193,6 +193,10 @@ export function normalize(raw: Partial<Show>): Show {
     if (sized.kind === 'tube') sized.length = sized.length ?? Math.round(pathLength(sized.path) * 1000) / 1000
     if (sized.kind === 'looks') sized.scenes = sized.scenes.map(({ level, ...s }: Scene & { level?: number }) => ({ ...s, window: s.window ?? [0, level ?? 1] }))
     if (sized.kind === 'audio') Object.assign(sized, { channels: sized.channels ?? Math.max(2, raw.cables?.filter((c) => c.to === sized.id).length ?? 0), stereo: sized.stereo ?? false })
+    if (sized.kind === 'combine' || sized.kind === 'split') {
+      const { channels: _channels, names, ...rest } = sized as typeof sized & { channels?: number; names?: string[] | Record<string, string> }
+      return (sized.kind === 'split' ? rest : { ...rest, names: Array.isArray(names) ? Object.fromEntries(names.flatMap((n, i) => (n.trim() ? [[`s${i + 1}`, n]] : []))) : names ?? {} }) as Block
+    }
     if (sized.kind === 'audioslice') Object.assign(sized, { apiPort: sized.apiPort ?? 8722, token: sized.token ?? '', smoothing: sized.smoothing ?? 0 })
     return sized
   })
