@@ -1,0 +1,7917 @@
+{
+  "nextId": 214,
+  "blocks": [
+    {
+      "x": 1900,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "net1",
+      "name": "Art-Net",
+      "kind": "artnet",
+      "protocol": "artnet",
+      "ip": "255.255.255.255",
+      "universes": [
+        0
+      ],
+      "inputs": [
+        1
+      ],
+      "active": true,
+      "sim": {
+        "position": [
+          3,
+          1,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": -900,
+      "y": 0,
+      "w": 160,
+      "h": 236,
+      "id": "as2",
+      "name": "AudioSlice",
+      "kind": "audioslice",
+      "port": 9002,
+      "signals": [
+        "kick/energy",
+        "kick/onset",
+        "bass/energy",
+        "snare/energy",
+        "snare/onset",
+        "hihat/energy",
+        "hihat/onset",
+        "perc/energy",
+        "other/energy",
+        "vocals/energy",
+        "beat/energy"
+      ],
+      "apiPort": 8722,
+      "token": "",
+      "smoothing": 0,
+      "sim": {
+        "position": [
+          -3,
+          1,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": -900,
+      "y": 1200,
+      "w": 160,
+      "h": 130,
+      "id": "box3",
+      "name": "Room",
+      "kind": "box",
+      "size": [
+        30.48,
+        9.144,
+        4.5
+      ],
+      "locked": true,
+      "sim": {
+        "position": [
+          0,
+          0,
+          0.4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": -900,
+      "y": 800,
+      "w": 160,
+      "h": 130,
+      "id": "cdj4",
+      "name": "CDJ 1",
+      "kind": "cdj",
+      "player": 1,
+      "sim": {
+        "position": [
+          -0.6,
+          1,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": -900,
+      "y": 900,
+      "w": 160,
+      "h": 130,
+      "id": "cdj5",
+      "name": "CDJ 2",
+      "kind": "cdj",
+      "player": 2,
+      "sim": {
+        "position": [
+          0.6,
+          1,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": -900,
+      "y": 1000,
+      "w": 160,
+      "h": 130,
+      "id": "audio6",
+      "name": "Scarlett",
+      "kind": "audio",
+      "device": "",
+      "channels": 8,
+      "stereo": true,
+      "sim": {
+        "position": [
+          1.8,
+          1,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": -900,
+      "y": 400,
+      "w": 160,
+      "h": 204,
+      "id": "blt7",
+      "name": "Beat Link Trigger",
+      "kind": "blt",
+      "port": 9001,
+      "decks": 2,
+      "master": true,
+      "signals": [
+        "playing",
+        "beat",
+        "song"
+      ],
+      "songs": [
+        "Winter song",
+        "Spring song",
+        "Summer song"
+      ],
+      "sim": {
+        "position": [
+          -1.8,
+          1,
+          4
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": -900,
+      "y": 1100,
+      "w": 160,
+      "h": 188,
+      "id": "dmxin8",
+      "name": "DMX controller",
+      "kind": "dmxin",
+      "channels": 8,
+      "sim": {
+        "position": [
+          3,
+          1,
+          5.5
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix9",
+      "name": "Kick 1",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 1,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -7,
+          0.5,
+          3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix10",
+      "name": "Kick 2",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 8,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -5,
+          0.5,
+          3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix11",
+      "name": "Kick 3",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 15,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -3,
+          0.5,
+          3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix12",
+      "name": "Kick 4",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 22,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -1,
+          0.5,
+          3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix13",
+      "name": "Kick 5",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 29,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          1,
+          0.5,
+          3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix14",
+      "name": "Kick 6",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 36,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          3,
+          0.5,
+          3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix15",
+      "name": "Kick 7",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 43,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          5,
+          0.5,
+          3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix16",
+      "name": "Kick 8",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 50,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          7,
+          0.5,
+          3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix17",
+      "name": "Bass 1",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 57,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -6,
+          4,
+          -3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix18",
+      "name": "Bass 2",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 64,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -2,
+          4,
+          -3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix19",
+      "name": "Bass 3",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 71,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          2,
+          4,
+          -3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix20",
+      "name": "Bass 4",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 78,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          6,
+          4,
+          -3
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix21",
+      "name": "Snare 1",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 85,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -5,
+          4,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix22",
+      "name": "Snare 2",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 92,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -1.7000000000000002,
+          4,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix23",
+      "name": "Snare 3",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 99,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          1.5999999999999996,
+          4,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix24",
+      "name": "Snare 4",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 106,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          4.899999999999999,
+          4,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix25",
+      "name": "Other outside 1",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 113,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -8,
+          3,
+          -1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix26",
+      "name": "Other outside 2",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 120,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -4,
+          3,
+          -1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix27",
+      "name": "Other outside 3",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 127,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          4,
+          3,
+          -1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix28",
+      "name": "Other outside 4",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 134,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          8,
+          3,
+          -1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix29",
+      "name": "Other center 1",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 141,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -6,
+          3,
+          -1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix30",
+      "name": "Other center 2",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 148,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          6,
+          3,
+          -1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix31",
+      "name": "Vocal outside 1",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 155,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -1.5,
+          2,
+          2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix32",
+      "name": "Vocal outside 2",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 162,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          1.5,
+          2,
+          2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix33",
+      "name": "Vocal center",
+      "kind": "fixture",
+      "profile": "par7",
+      "address": 169,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          0,
+          2,
+          2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix34",
+      "name": "Moving head 1",
+      "kind": "fixture",
+      "profile": "mh11",
+      "address": 176,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -7,
+          5,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix35",
+      "name": "Moving head 2",
+      "kind": "fixture",
+      "profile": "mh11",
+      "address": 187,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -5,
+          5,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix36",
+      "name": "Moving head 3",
+      "kind": "fixture",
+      "profile": "mh11",
+      "address": 198,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -3,
+          5,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix37",
+      "name": "Moving head 4",
+      "kind": "fixture",
+      "profile": "mh11",
+      "address": 209,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          -1,
+          5,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix38",
+      "name": "Moving head 5",
+      "kind": "fixture",
+      "profile": "mh11",
+      "address": 220,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          1,
+          5,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix39",
+      "name": "Moving head 6",
+      "kind": "fixture",
+      "profile": "mh11",
+      "address": 231,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          3,
+          5,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix40",
+      "name": "Moving head 7",
+      "kind": "fixture",
+      "profile": "mh11",
+      "address": 242,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          5,
+          5,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 1500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "fix41",
+      "name": "Moving head 8",
+      "kind": "fixture",
+      "profile": "mh11",
+      "address": 253,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "sim": {
+        "position": [
+          7,
+          5,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "x": 700,
+      "y": 600,
+      "w": 260,
+      "h": 588,
+      "id": "scene42",
+      "name": "Fall",
+      "kind": "scene",
+      "fadeIn": 0.3,
+      "fadeOut": 0.3
+    },
+    {
+      "x": 700,
+      "y": 140,
+      "w": 260,
+      "h": 588,
+      "id": "scene43",
+      "name": "Winter",
+      "kind": "scene",
+      "fadeIn": 0.3,
+      "fadeOut": 0.3
+    },
+    {
+      "x": 700,
+      "y": -320,
+      "w": 260,
+      "h": 588,
+      "id": "scene44",
+      "name": "Spring",
+      "kind": "scene",
+      "fadeIn": 0.3,
+      "fadeOut": 0.3
+    },
+    {
+      "x": 700,
+      "y": -780,
+      "w": 260,
+      "h": 588,
+      "id": "scene45",
+      "name": "Summer",
+      "kind": "scene",
+      "fadeIn": 0.3,
+      "fadeOut": 0.3
+    },
+    {
+      "x": -500,
+      "y": 900,
+      "w": 160,
+      "h": 130,
+      "id": "eq46",
+      "name": "Song Winter",
+      "kind": "equals",
+      "value": 0
+    },
+    {
+      "x": -500,
+      "y": 1050,
+      "w": 160,
+      "h": 130,
+      "id": "eq47",
+      "name": "Song Spring",
+      "kind": "equals",
+      "value": 1
+    },
+    {
+      "x": -500,
+      "y": 1200,
+      "w": 160,
+      "h": 130,
+      "id": "eq48",
+      "name": "Song Summer",
+      "kind": "equals",
+      "value": 2
+    },
+    {
+      "x": -500,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "id": "drop49",
+      "name": "Drop",
+      "kind": "drop",
+      "threshold": 0.2,
+      "beats": 12,
+      "cooldown": 8
+    },
+    {
+      "x": -200,
+      "y": 900,
+      "w": 160,
+      "h": 130,
+      "id": "latch50",
+      "name": "Primed",
+      "kind": "latch"
+    },
+    {
+      "x": 0,
+      "y": 600,
+      "w": 160,
+      "h": 130,
+      "id": "and51",
+      "name": "Season drop",
+      "kind": "and"
+    },
+    {
+      "x": 300,
+      "y": 600,
+      "w": 160,
+      "h": 130,
+      "id": "count52",
+      "name": "Season",
+      "kind": "counter",
+      "max": 3
+    },
+    {
+      "x": 500,
+      "y": 600,
+      "w": 160,
+      "h": 130,
+      "id": "manual53",
+      "name": "Season select",
+      "kind": "manual",
+      "active": 0
+    },
+    {
+      "x": 300,
+      "y": 300,
+      "w": 160,
+      "h": 130,
+      "id": "hold54",
+      "name": "Drop mode",
+      "kind": "hold",
+      "beats": 16
+    },
+    {
+      "x": -500,
+      "y": 1400,
+      "w": 160,
+      "h": 130,
+      "id": "seq55",
+      "name": "Flip A",
+      "kind": "sequence",
+      "values": [
+        0,
+        1
+      ],
+      "unit": 1,
+      "center": 0,
+      "every": 1
+    },
+    {
+      "x": -500,
+      "y": 1600,
+      "w": 160,
+      "h": 130,
+      "id": "seq56",
+      "name": "Flip B",
+      "kind": "sequence",
+      "values": [
+        1,
+        0
+      ],
+      "unit": 1,
+      "center": 0,
+      "every": 1
+    },
+    {
+      "x": -200,
+      "y": 1400,
+      "w": 160,
+      "h": 130,
+      "id": "and57",
+      "name": "Battle A",
+      "kind": "and"
+    },
+    {
+      "x": -200,
+      "y": 1600,
+      "w": 160,
+      "h": 130,
+      "id": "and58",
+      "name": "Battle B",
+      "kind": "and"
+    },
+    {
+      "x": 0,
+      "y": 1400,
+      "w": 160,
+      "h": 130,
+      "id": "steps59",
+      "name": "Battle A index",
+      "kind": "steps",
+      "steps": 2
+    },
+    {
+      "x": 0,
+      "y": 1600,
+      "w": 160,
+      "h": 130,
+      "id": "steps60",
+      "name": "Battle B index",
+      "kind": "steps",
+      "steps": 2
+    },
+    {
+      "x": 0,
+      "y": 300,
+      "w": 160,
+      "h": 130,
+      "id": "steps61",
+      "name": "Drop index",
+      "kind": "steps",
+      "steps": 3
+    },
+    {
+      "x": -200,
+      "y": 1800,
+      "w": 160,
+      "h": 130,
+      "id": "and62",
+      "name": "Battle kick",
+      "kind": "and"
+    },
+    {
+      "x": 0,
+      "y": 1800,
+      "w": 160,
+      "h": 130,
+      "id": "seq63",
+      "name": "Battle sway",
+      "kind": "sequence",
+      "values": [
+        0,
+        1,
+        -1,
+        2,
+        -1,
+        1,
+        -2
+      ],
+      "unit": 0.04,
+      "center": 0.5,
+      "every": 1
+    },
+    {
+      "x": 1200,
+      "y": 0,
+      "w": 160,
+      "h": 236,
+      "scene": "scene42",
+      "id": "grp64",
+      "name": "Kick PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 8,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "alternate",
+      "advance": "trigger",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 250,
+      "w": 160,
+      "h": 236,
+      "scene": "scene42",
+      "id": "grp65",
+      "name": "Bass PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "alternate",
+      "advance": "trigger",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 500,
+      "w": 160,
+      "h": 236,
+      "scene": "scene42",
+      "id": "grp66",
+      "name": "Snare PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 750,
+      "w": 160,
+      "h": 236,
+      "scene": "scene42",
+      "id": "grp67",
+      "name": "Other outsides",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1000,
+      "w": 160,
+      "h": 236,
+      "scene": "scene42",
+      "id": "grp68",
+      "name": "Other centers",
+      "kind": "group",
+      "profile": "par7",
+      "size": 2,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1250,
+      "w": 160,
+      "h": 236,
+      "scene": "scene42",
+      "id": "grp69",
+      "name": "Vocal outsides",
+      "kind": "group",
+      "profile": "par7",
+      "size": 2,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1500,
+      "w": 160,
+      "h": 204,
+      "scene": "scene42",
+      "id": "lt70",
+      "name": "Vocal center",
+      "kind": "light",
+      "profile": "par7",
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "positions": []
+    },
+    {
+      "x": 1200,
+      "y": 1750,
+      "w": 160,
+      "h": 236,
+      "scene": "scene42",
+      "id": "grp71",
+      "name": "Moving heads",
+      "kind": "group",
+      "profile": "mh11",
+      "size": 8,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "aims": {
+        "0": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "1": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "2": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "3": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "4": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "5": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "6": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "7": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        }
+      },
+      "positions": [
+        {
+          "name": "fan",
+          "members": {
+            "0": {
+              "Pan": 0.3,
+              "Tilt": 0.65
+            },
+            "1": {
+              "Pan": 0.35714285714285715,
+              "Tilt": 0.65
+            },
+            "2": {
+              "Pan": 0.41428571428571426,
+              "Tilt": 0.65
+            },
+            "3": {
+              "Pan": 0.4714285714285714,
+              "Tilt": 0.65
+            },
+            "4": {
+              "Pan": 0.5285714285714286,
+              "Tilt": 0.65
+            },
+            "5": {
+              "Pan": 0.5857142857142856,
+              "Tilt": 0.65
+            },
+            "6": {
+              "Pan": 0.6428571428571429,
+              "Tilt": 0.65
+            },
+            "7": {
+              "Pan": 0.7,
+              "Tilt": 0.65
+            }
+          }
+        },
+        {
+          "name": "cross",
+          "members": {
+            "0": {
+              "Pan": 0.7,
+              "Tilt": 0.45
+            },
+            "1": {
+              "Pan": 0.6428571428571428,
+              "Tilt": 0.45
+            },
+            "2": {
+              "Pan": 0.5857142857142856,
+              "Tilt": 0.45
+            },
+            "3": {
+              "Pan": 0.5285714285714285,
+              "Tilt": 0.45
+            },
+            "4": {
+              "Pan": 0.47142857142857136,
+              "Tilt": 0.45
+            },
+            "5": {
+              "Pan": 0.41428571428571426,
+              "Tilt": 0.45
+            },
+            "6": {
+              "Pan": 0.35714285714285704,
+              "Tilt": 0.45
+            },
+            "7": {
+              "Pan": 0.29999999999999993,
+              "Tilt": 0.45
+            }
+          }
+        }
+      ],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0,
+      "hidden": [
+        "Panfine",
+        "Tiltfine",
+        "Ptspeed",
+        "Automode",
+        "Reset"
+      ]
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in72",
+      "name": "kick",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 110,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in73",
+      "name": "kick hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 220,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in74",
+      "name": "bass",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 330,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in75",
+      "name": "snare",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 440,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in76",
+      "name": "snare hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 550,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in77",
+      "name": "hihat",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 660,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in78",
+      "name": "hihat hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 770,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in79",
+      "name": "perc",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 880,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in80",
+      "name": "other",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 990,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in81",
+      "name": "vocals",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1100,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in82",
+      "name": "beat",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1210,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in83",
+      "name": "battle",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1320,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in84",
+      "name": "battle B",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1430,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in85",
+      "name": "flip A",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1540,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in86",
+      "name": "flip B",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1650,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in87",
+      "name": "drop",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1760,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in88",
+      "name": "drop index",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1870,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in89",
+      "name": "season drop",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1980,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "in90",
+      "name": "sway",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 600,
+      "y": 0,
+      "w": 160,
+      "h": 140,
+      "scene": "scene42",
+      "id": "look91",
+      "name": "Kick look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ff2a00",
+          "window": [
+            0.35,
+            0.6
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#0030ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 250,
+      "w": 160,
+      "h": 140,
+      "scene": "scene42",
+      "id": "look92",
+      "name": "Bass look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ff6a00",
+          "window": [
+            0.35,
+            0.6
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#0070ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 500,
+      "w": 160,
+      "h": 140,
+      "scene": "scene42",
+      "id": "look93",
+      "name": "Snare look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ff9a1a",
+          "window": [
+            0.35,
+            0.6
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#00b0ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 750,
+      "w": 160,
+      "h": 140,
+      "scene": "scene42",
+      "id": "look94",
+      "name": "Other outside look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ff4d00",
+          "window": [
+            0.35,
+            0.6
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#2050ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1000,
+      "w": 160,
+      "h": 140,
+      "scene": "scene42",
+      "id": "look95",
+      "name": "Other center look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ff4d00",
+          "window": [
+            0.35,
+            0.6
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#2050ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        },
+        {
+          "name": "2",
+          "color": "#ffc400",
+          "window": [
+            0.35,
+            0.6
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1250,
+      "w": 160,
+      "h": 140,
+      "scene": "scene42",
+      "id": "look96",
+      "name": "Vocal outside look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ff7a30",
+          "window": [
+            0.35,
+            0.6
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#6090ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1500,
+      "w": 160,
+      "h": 140,
+      "scene": "scene42",
+      "id": "look97",
+      "name": "Vocal center look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ff7a30",
+          "window": [
+            0.35,
+            0.6
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#6090ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        },
+        {
+          "name": "2",
+          "color": "#b00020",
+          "window": [
+            0.35,
+            0.6
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1750,
+      "w": 160,
+      "h": 140,
+      "scene": "scene42",
+      "id": "look98",
+      "name": "Moving head look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffffff",
+          "window": [
+            0.35,
+            0.6
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffffff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 900,
+      "y": 1900,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "rng99",
+      "name": "Moving head colour",
+      "kind": "range",
+      "tame": [
+        0.2857142857142857,
+        0.2857142857142857
+      ],
+      "wild": [
+        0.7142857142857143,
+        0.7142857142857143
+      ]
+    },
+    {
+      "x": 300,
+      "y": 2100,
+      "w": 160,
+      "h": 130,
+      "scene": "scene42",
+      "id": "and100",
+      "name": "Drop kick",
+      "kind": "and"
+    },
+    {
+      "x": 1200,
+      "y": 0,
+      "w": 160,
+      "h": 236,
+      "scene": "scene43",
+      "id": "grp101",
+      "name": "Kick PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 8,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "alternate",
+      "advance": "trigger",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 250,
+      "w": 160,
+      "h": 236,
+      "scene": "scene43",
+      "id": "grp102",
+      "name": "Bass PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "alternate",
+      "advance": "trigger",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 500,
+      "w": 160,
+      "h": 236,
+      "scene": "scene43",
+      "id": "grp103",
+      "name": "Snare PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 750,
+      "w": 160,
+      "h": 236,
+      "scene": "scene43",
+      "id": "grp104",
+      "name": "Other outsides",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1000,
+      "w": 160,
+      "h": 236,
+      "scene": "scene43",
+      "id": "grp105",
+      "name": "Other centers",
+      "kind": "group",
+      "profile": "par7",
+      "size": 2,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1250,
+      "w": 160,
+      "h": 236,
+      "scene": "scene43",
+      "id": "grp106",
+      "name": "Vocal outsides",
+      "kind": "group",
+      "profile": "par7",
+      "size": 2,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1500,
+      "w": 160,
+      "h": 204,
+      "scene": "scene43",
+      "id": "lt107",
+      "name": "Vocal center",
+      "kind": "light",
+      "profile": "par7",
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "positions": []
+    },
+    {
+      "x": 1200,
+      "y": 1750,
+      "w": 160,
+      "h": 236,
+      "scene": "scene43",
+      "id": "grp108",
+      "name": "Moving heads",
+      "kind": "group",
+      "profile": "mh11",
+      "size": 8,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "aims": {
+        "0": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "1": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "2": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "3": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "4": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "5": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "6": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "7": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        }
+      },
+      "positions": [
+        {
+          "name": "fan",
+          "members": {
+            "0": {
+              "Pan": 0.3,
+              "Tilt": 0.65
+            },
+            "1": {
+              "Pan": 0.35714285714285715,
+              "Tilt": 0.65
+            },
+            "2": {
+              "Pan": 0.41428571428571426,
+              "Tilt": 0.65
+            },
+            "3": {
+              "Pan": 0.4714285714285714,
+              "Tilt": 0.65
+            },
+            "4": {
+              "Pan": 0.5285714285714286,
+              "Tilt": 0.65
+            },
+            "5": {
+              "Pan": 0.5857142857142856,
+              "Tilt": 0.65
+            },
+            "6": {
+              "Pan": 0.6428571428571429,
+              "Tilt": 0.65
+            },
+            "7": {
+              "Pan": 0.7,
+              "Tilt": 0.65
+            }
+          }
+        },
+        {
+          "name": "cross",
+          "members": {
+            "0": {
+              "Pan": 0.7,
+              "Tilt": 0.45
+            },
+            "1": {
+              "Pan": 0.6428571428571428,
+              "Tilt": 0.45
+            },
+            "2": {
+              "Pan": 0.5857142857142856,
+              "Tilt": 0.45
+            },
+            "3": {
+              "Pan": 0.5285714285714285,
+              "Tilt": 0.45
+            },
+            "4": {
+              "Pan": 0.47142857142857136,
+              "Tilt": 0.45
+            },
+            "5": {
+              "Pan": 0.41428571428571426,
+              "Tilt": 0.45
+            },
+            "6": {
+              "Pan": 0.35714285714285704,
+              "Tilt": 0.45
+            },
+            "7": {
+              "Pan": 0.29999999999999993,
+              "Tilt": 0.45
+            }
+          }
+        }
+      ],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0,
+      "hidden": [
+        "Panfine",
+        "Tiltfine",
+        "Ptspeed",
+        "Automode",
+        "Reset"
+      ]
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in109",
+      "name": "kick",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 110,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in110",
+      "name": "kick hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 220,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in111",
+      "name": "bass",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 330,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in112",
+      "name": "snare",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 440,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in113",
+      "name": "snare hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 550,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in114",
+      "name": "hihat",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 660,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in115",
+      "name": "hihat hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 770,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in116",
+      "name": "perc",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 880,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in117",
+      "name": "other",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 990,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in118",
+      "name": "vocals",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1100,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in119",
+      "name": "beat",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1210,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in120",
+      "name": "battle",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1320,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in121",
+      "name": "battle B",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1430,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in122",
+      "name": "flip A",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1540,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in123",
+      "name": "flip B",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1650,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in124",
+      "name": "drop",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1760,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in125",
+      "name": "drop index",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1870,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in126",
+      "name": "season drop",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1980,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "in127",
+      "name": "sway",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 600,
+      "y": 0,
+      "w": 160,
+      "h": 140,
+      "scene": "scene43",
+      "id": "look128",
+      "name": "Kick look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#0030ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffd000",
+          "window": [
+            0.12,
+            0.9
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 250,
+      "w": 160,
+      "h": 140,
+      "scene": "scene43",
+      "id": "look129",
+      "name": "Bass look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#0070ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#8000ff",
+          "window": [
+            0.12,
+            0.9
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 500,
+      "w": 160,
+      "h": 140,
+      "scene": "scene43",
+      "id": "look130",
+      "name": "Snare look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#00b0ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffe040",
+          "window": [
+            0.12,
+            0.9
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 750,
+      "w": 160,
+      "h": 140,
+      "scene": "scene43",
+      "id": "look131",
+      "name": "Other outside look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#2050ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#a040ff",
+          "window": [
+            0.12,
+            0.9
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1000,
+      "w": 160,
+      "h": 140,
+      "scene": "scene43",
+      "id": "look132",
+      "name": "Other center look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#2050ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#a040ff",
+          "window": [
+            0.12,
+            0.9
+          ]
+        },
+        {
+          "name": "2",
+          "color": "#e0f4ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1250,
+      "w": 160,
+      "h": 140,
+      "scene": "scene43",
+      "id": "look133",
+      "name": "Vocal outside look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#6090ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffd040",
+          "window": [
+            0.12,
+            0.9
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1500,
+      "w": 160,
+      "h": 140,
+      "scene": "scene43",
+      "id": "look134",
+      "name": "Vocal center look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#6090ff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffd040",
+          "window": [
+            0.12,
+            0.9
+          ]
+        },
+        {
+          "name": "2",
+          "color": "#00ffd0",
+          "window": [
+            0.25,
+            0.75
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1750,
+      "w": 160,
+      "h": 140,
+      "scene": "scene43",
+      "id": "look135",
+      "name": "Moving head look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffffff",
+          "window": [
+            0.25,
+            0.75
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffffff",
+          "window": [
+            0.12,
+            0.9
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 900,
+      "y": 1900,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "rng136",
+      "name": "Moving head colour",
+      "kind": "range",
+      "tame": [
+        0.7142857142857143,
+        0.7142857142857143
+      ],
+      "wild": [
+        0.8571428571428571,
+        0.8571428571428571
+      ]
+    },
+    {
+      "x": 300,
+      "y": 2100,
+      "w": 160,
+      "h": 130,
+      "scene": "scene43",
+      "id": "and137",
+      "name": "Drop kick",
+      "kind": "and"
+    },
+    {
+      "x": 1200,
+      "y": 0,
+      "w": 160,
+      "h": 236,
+      "scene": "scene44",
+      "id": "grp138",
+      "name": "Kick PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 8,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "alternate",
+      "advance": "trigger",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 250,
+      "w": 160,
+      "h": 236,
+      "scene": "scene44",
+      "id": "grp139",
+      "name": "Bass PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "alternate",
+      "advance": "trigger",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 500,
+      "w": 160,
+      "h": 236,
+      "scene": "scene44",
+      "id": "grp140",
+      "name": "Snare PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 750,
+      "w": 160,
+      "h": 236,
+      "scene": "scene44",
+      "id": "grp141",
+      "name": "Other outsides",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1000,
+      "w": 160,
+      "h": 236,
+      "scene": "scene44",
+      "id": "grp142",
+      "name": "Other centers",
+      "kind": "group",
+      "profile": "par7",
+      "size": 2,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1250,
+      "w": 160,
+      "h": 236,
+      "scene": "scene44",
+      "id": "grp143",
+      "name": "Vocal outsides",
+      "kind": "group",
+      "profile": "par7",
+      "size": 2,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1500,
+      "w": 160,
+      "h": 204,
+      "scene": "scene44",
+      "id": "lt144",
+      "name": "Vocal center",
+      "kind": "light",
+      "profile": "par7",
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "positions": []
+    },
+    {
+      "x": 1200,
+      "y": 1750,
+      "w": 160,
+      "h": 236,
+      "scene": "scene44",
+      "id": "grp145",
+      "name": "Moving heads",
+      "kind": "group",
+      "profile": "mh11",
+      "size": 8,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "aims": {
+        "0": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "1": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "2": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "3": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "4": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "5": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "6": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "7": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        }
+      },
+      "positions": [
+        {
+          "name": "fan",
+          "members": {
+            "0": {
+              "Pan": 0.3,
+              "Tilt": 0.65
+            },
+            "1": {
+              "Pan": 0.35714285714285715,
+              "Tilt": 0.65
+            },
+            "2": {
+              "Pan": 0.41428571428571426,
+              "Tilt": 0.65
+            },
+            "3": {
+              "Pan": 0.4714285714285714,
+              "Tilt": 0.65
+            },
+            "4": {
+              "Pan": 0.5285714285714286,
+              "Tilt": 0.65
+            },
+            "5": {
+              "Pan": 0.5857142857142856,
+              "Tilt": 0.65
+            },
+            "6": {
+              "Pan": 0.6428571428571429,
+              "Tilt": 0.65
+            },
+            "7": {
+              "Pan": 0.7,
+              "Tilt": 0.65
+            }
+          }
+        },
+        {
+          "name": "cross",
+          "members": {
+            "0": {
+              "Pan": 0.7,
+              "Tilt": 0.45
+            },
+            "1": {
+              "Pan": 0.6428571428571428,
+              "Tilt": 0.45
+            },
+            "2": {
+              "Pan": 0.5857142857142856,
+              "Tilt": 0.45
+            },
+            "3": {
+              "Pan": 0.5285714285714285,
+              "Tilt": 0.45
+            },
+            "4": {
+              "Pan": 0.47142857142857136,
+              "Tilt": 0.45
+            },
+            "5": {
+              "Pan": 0.41428571428571426,
+              "Tilt": 0.45
+            },
+            "6": {
+              "Pan": 0.35714285714285704,
+              "Tilt": 0.45
+            },
+            "7": {
+              "Pan": 0.29999999999999993,
+              "Tilt": 0.45
+            }
+          }
+        }
+      ],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0,
+      "hidden": [
+        "Panfine",
+        "Tiltfine",
+        "Ptspeed",
+        "Automode",
+        "Reset"
+      ]
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in146",
+      "name": "kick",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 110,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in147",
+      "name": "kick hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 220,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in148",
+      "name": "bass",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 330,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in149",
+      "name": "snare",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 440,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in150",
+      "name": "snare hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 550,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in151",
+      "name": "hihat",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 660,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in152",
+      "name": "hihat hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 770,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in153",
+      "name": "perc",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 880,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in154",
+      "name": "other",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 990,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in155",
+      "name": "vocals",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1100,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in156",
+      "name": "beat",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1210,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in157",
+      "name": "battle",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1320,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in158",
+      "name": "battle B",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1430,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in159",
+      "name": "flip A",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1540,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in160",
+      "name": "flip B",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1650,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in161",
+      "name": "drop",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1760,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in162",
+      "name": "drop index",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1870,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in163",
+      "name": "season drop",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1980,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "in164",
+      "name": "sway",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 600,
+      "y": 0,
+      "w": 160,
+      "h": 140,
+      "scene": "scene44",
+      "id": "look165",
+      "name": "Kick look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffd000",
+          "window": [
+            0.12,
+            0.9
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ff1000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 250,
+      "w": 160,
+      "h": 140,
+      "scene": "scene44",
+      "id": "look166",
+      "name": "Bass look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#8000ff",
+          "window": [
+            0.12,
+            0.9
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffb000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 500,
+      "w": 160,
+      "h": 140,
+      "scene": "scene44",
+      "id": "look167",
+      "name": "Snare look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffe040",
+          "window": [
+            0.12,
+            0.9
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffe000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 750,
+      "w": 160,
+      "h": 140,
+      "scene": "scene44",
+      "id": "look168",
+      "name": "Other outside look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#a040ff",
+          "window": [
+            0.12,
+            0.9
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ff3000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1000,
+      "w": 160,
+      "h": 140,
+      "scene": "scene44",
+      "id": "look169",
+      "name": "Other center look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#a040ff",
+          "window": [
+            0.12,
+            0.9
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ff3000",
+          "window": [
+            0,
+            1
+          ]
+        },
+        {
+          "name": "2",
+          "color": "#ffe000",
+          "window": [
+            0.12,
+            0.9
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1250,
+      "w": 160,
+      "h": 140,
+      "scene": "scene44",
+      "id": "look170",
+      "name": "Vocal outside look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffd040",
+          "window": [
+            0.12,
+            0.9
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffa000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1500,
+      "w": 160,
+      "h": 140,
+      "scene": "scene44",
+      "id": "look171",
+      "name": "Vocal center look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffd040",
+          "window": [
+            0.12,
+            0.9
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffa000",
+          "window": [
+            0,
+            1
+          ]
+        },
+        {
+          "name": "2",
+          "color": "#c040ff",
+          "window": [
+            0.12,
+            0.9
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1750,
+      "w": 160,
+      "h": 140,
+      "scene": "scene44",
+      "id": "look172",
+      "name": "Moving head look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffffff",
+          "window": [
+            0.12,
+            0.9
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffffff",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 900,
+      "y": 1900,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "rng173",
+      "name": "Moving head colour",
+      "kind": "range",
+      "tame": [
+        0.8571428571428571,
+        0.8571428571428571
+      ],
+      "wild": [
+        0.42857142857142855,
+        0.42857142857142855
+      ]
+    },
+    {
+      "x": 300,
+      "y": 2100,
+      "w": 160,
+      "h": 130,
+      "scene": "scene44",
+      "id": "seq174",
+      "name": "Snare sway",
+      "kind": "sequence",
+      "values": [
+        0,
+        1,
+        -1,
+        2,
+        -1,
+        1,
+        -2
+      ],
+      "unit": 0.04,
+      "center": 0.5,
+      "every": 1
+    },
+    {
+      "x": 1200,
+      "y": 0,
+      "w": 160,
+      "h": 236,
+      "scene": "scene45",
+      "id": "grp175",
+      "name": "Kick PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 8,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "alternate",
+      "advance": "trigger",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 250,
+      "w": 160,
+      "h": 236,
+      "scene": "scene45",
+      "id": "grp176",
+      "name": "Bass PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "alternate",
+      "advance": "trigger",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 500,
+      "w": 160,
+      "h": 236,
+      "scene": "scene45",
+      "id": "grp177",
+      "name": "Snare PARs",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 750,
+      "w": 160,
+      "h": 236,
+      "scene": "scene45",
+      "id": "grp178",
+      "name": "Other outsides",
+      "kind": "group",
+      "profile": "par7",
+      "size": 4,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1000,
+      "w": 160,
+      "h": 236,
+      "scene": "scene45",
+      "id": "grp179",
+      "name": "Other centers",
+      "kind": "group",
+      "profile": "par7",
+      "size": 2,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1250,
+      "w": 160,
+      "h": 236,
+      "scene": "scene45",
+      "id": "grp180",
+      "name": "Vocal outsides",
+      "kind": "group",
+      "profile": "par7",
+      "size": 2,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "aims": {},
+      "positions": [],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0
+    },
+    {
+      "x": 1200,
+      "y": 1500,
+      "w": 160,
+      "h": 204,
+      "scene": "scene45",
+      "id": "lt181",
+      "name": "Vocal center",
+      "kind": "light",
+      "profile": "par7",
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "positions": []
+    },
+    {
+      "x": 1200,
+      "y": 1750,
+      "w": 160,
+      "h": 236,
+      "scene": "scene45",
+      "id": "grp182",
+      "name": "Moving heads",
+      "kind": "group",
+      "profile": "mh11",
+      "size": 8,
+      "values": [
+        0.5,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "aims": {
+        "0": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "1": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "2": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "3": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "4": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "5": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "6": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        },
+        "7": {
+          "Pan": 0.5,
+          "Tilt": 0.5
+        }
+      },
+      "positions": [
+        {
+          "name": "fan",
+          "members": {
+            "0": {
+              "Pan": 0.3,
+              "Tilt": 0.65
+            },
+            "1": {
+              "Pan": 0.35714285714285715,
+              "Tilt": 0.65
+            },
+            "2": {
+              "Pan": 0.41428571428571426,
+              "Tilt": 0.65
+            },
+            "3": {
+              "Pan": 0.4714285714285714,
+              "Tilt": 0.65
+            },
+            "4": {
+              "Pan": 0.5285714285714286,
+              "Tilt": 0.65
+            },
+            "5": {
+              "Pan": 0.5857142857142856,
+              "Tilt": 0.65
+            },
+            "6": {
+              "Pan": 0.6428571428571429,
+              "Tilt": 0.65
+            },
+            "7": {
+              "Pan": 0.7,
+              "Tilt": 0.65
+            }
+          }
+        },
+        {
+          "name": "cross",
+          "members": {
+            "0": {
+              "Pan": 0.7,
+              "Tilt": 0.45
+            },
+            "1": {
+              "Pan": 0.6428571428571428,
+              "Tilt": 0.45
+            },
+            "2": {
+              "Pan": 0.5857142857142856,
+              "Tilt": 0.45
+            },
+            "3": {
+              "Pan": 0.5285714285714285,
+              "Tilt": 0.45
+            },
+            "4": {
+              "Pan": 0.47142857142857136,
+              "Tilt": 0.45
+            },
+            "5": {
+              "Pan": 0.41428571428571426,
+              "Tilt": 0.45
+            },
+            "6": {
+              "Pan": 0.35714285714285704,
+              "Tilt": 0.45
+            },
+            "7": {
+              "Pan": 0.29999999999999993,
+              "Tilt": 0.45
+            }
+          }
+        }
+      ],
+      "mode": "all",
+      "advance": "step",
+      "every": 1,
+      "floor": 0,
+      "hidden": [
+        "Panfine",
+        "Tiltfine",
+        "Ptspeed",
+        "Automode",
+        "Reset"
+      ]
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in183",
+      "name": "kick",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 110,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in184",
+      "name": "kick hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 220,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in185",
+      "name": "bass",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 330,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in186",
+      "name": "snare",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 440,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in187",
+      "name": "snare hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 550,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in188",
+      "name": "hihat",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 660,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in189",
+      "name": "hihat hit",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 770,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in190",
+      "name": "perc",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 880,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in191",
+      "name": "other",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 990,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in192",
+      "name": "vocals",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1100,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in193",
+      "name": "beat",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1210,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in194",
+      "name": "battle",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1320,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in195",
+      "name": "battle B",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1430,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in196",
+      "name": "flip A",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1540,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in197",
+      "name": "flip B",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1650,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in198",
+      "name": "drop",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1760,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in199",
+      "name": "drop index",
+      "kind": "input",
+      "type": "index"
+    },
+    {
+      "x": 0,
+      "y": 1870,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in200",
+      "name": "season drop",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 0,
+      "y": 1980,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "in201",
+      "name": "sway",
+      "kind": "input",
+      "type": "signal"
+    },
+    {
+      "x": 600,
+      "y": 0,
+      "w": 160,
+      "h": 140,
+      "scene": "scene45",
+      "id": "look202",
+      "name": "Kick look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ff1000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 250,
+      "w": 160,
+      "h": 140,
+      "scene": "scene45",
+      "id": "look203",
+      "name": "Bass look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffb000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 500,
+      "w": 160,
+      "h": 140,
+      "scene": "scene45",
+      "id": "look204",
+      "name": "Snare look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffe000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 750,
+      "w": 160,
+      "h": 140,
+      "scene": "scene45",
+      "id": "look205",
+      "name": "Other outside look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ff3000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1000,
+      "w": 160,
+      "h": 140,
+      "scene": "scene45",
+      "id": "look206",
+      "name": "Other center look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ff3000",
+          "window": [
+            0,
+            1
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ff3000",
+          "window": [
+            0,
+            1
+          ]
+        },
+        {
+          "name": "2",
+          "color": "#ffe000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1250,
+      "w": 160,
+      "h": 140,
+      "scene": "scene45",
+      "id": "look207",
+      "name": "Vocal outside look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffa000",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1500,
+      "w": 160,
+      "h": 140,
+      "scene": "scene45",
+      "id": "look208",
+      "name": "Vocal center look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffa000",
+          "window": [
+            0,
+            1
+          ]
+        },
+        {
+          "name": "1",
+          "color": "#ffa000",
+          "window": [
+            0,
+            1
+          ]
+        },
+        {
+          "name": "2",
+          "color": "#ff0030",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 1750,
+      "w": 160,
+      "h": 140,
+      "scene": "scene45",
+      "id": "look209",
+      "name": "Moving head look",
+      "kind": "looks",
+      "scenes": [
+        {
+          "name": "0",
+          "color": "#ffffff",
+          "window": [
+            0,
+            1
+          ]
+        }
+      ],
+      "advance": "step",
+      "every": 1
+    },
+    {
+      "x": 900,
+      "y": 1900,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "const210",
+      "name": "Moving head colour",
+      "kind": "constant",
+      "type": "signal",
+      "value": 0.42857142857142855,
+      "pulse": 0
+    },
+    {
+      "x": 300,
+      "y": 2100,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "seq211",
+      "name": "Snare sway",
+      "kind": "sequence",
+      "values": [
+        0,
+        2,
+        -2,
+        3,
+        -1,
+        1,
+        -3
+      ],
+      "unit": 0.04,
+      "center": 0.5,
+      "every": 1
+    },
+    {
+      "x": 300,
+      "y": 2300,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "seq212",
+      "name": "Beat flip",
+      "kind": "sequence",
+      "values": [
+        0,
+        1
+      ],
+      "unit": 1,
+      "center": 0,
+      "every": 1
+    },
+    {
+      "x": 600,
+      "y": 2300,
+      "w": 160,
+      "h": 130,
+      "scene": "scene45",
+      "id": "steps213",
+      "name": "Position",
+      "kind": "steps",
+      "steps": 2
+    }
+  ],
+  "wires": [
+    {
+      "from": "as2",
+      "fromPort": "kick_energy",
+      "to": "drop49",
+      "port": "signal"
+    },
+    {
+      "from": "as2",
+      "fromPort": "beat_energy",
+      "to": "drop49",
+      "port": "beat"
+    },
+    {
+      "from": "blt7",
+      "fromPort": "master_song",
+      "to": "eq46",
+      "port": "index"
+    },
+    {
+      "from": "eq46",
+      "fromPort": "out",
+      "to": "latch50",
+      "port": "set"
+    },
+    {
+      "from": "blt7",
+      "fromPort": "master_song",
+      "to": "eq47",
+      "port": "index"
+    },
+    {
+      "from": "eq47",
+      "fromPort": "out",
+      "to": "latch50",
+      "port": "set"
+    },
+    {
+      "from": "blt7",
+      "fromPort": "master_song",
+      "to": "eq48",
+      "port": "index"
+    },
+    {
+      "from": "eq48",
+      "fromPort": "out",
+      "to": "latch50",
+      "port": "set"
+    },
+    {
+      "from": "drop49",
+      "fromPort": "drop",
+      "to": "latch50",
+      "port": "reset"
+    },
+    {
+      "from": "drop49",
+      "fromPort": "drop",
+      "to": "and51",
+      "port": "a"
+    },
+    {
+      "from": "latch50",
+      "fromPort": "out",
+      "to": "and51",
+      "port": "b"
+    },
+    {
+      "from": "and51",
+      "fromPort": "out",
+      "to": "count52",
+      "port": "trigger"
+    },
+    {
+      "from": "count52",
+      "fromPort": "out",
+      "to": "manual53",
+      "port": "index"
+    },
+    {
+      "from": "manual53",
+      "fromPort": "s_scene42",
+      "to": "scene42",
+      "port": "on"
+    },
+    {
+      "from": "manual53",
+      "fromPort": "s_scene43",
+      "to": "scene43",
+      "port": "on"
+    },
+    {
+      "from": "manual53",
+      "fromPort": "s_scene44",
+      "to": "scene44",
+      "port": "on"
+    },
+    {
+      "from": "manual53",
+      "fromPort": "s_scene45",
+      "to": "scene45",
+      "port": "on"
+    },
+    {
+      "from": "and51",
+      "fromPort": "out",
+      "to": "hold54",
+      "port": "trigger"
+    },
+    {
+      "from": "as2",
+      "fromPort": "beat_energy",
+      "to": "hold54",
+      "port": "beat"
+    },
+    {
+      "from": "hold54",
+      "fromPort": "hold",
+      "to": "steps61",
+      "port": "signal"
+    },
+    {
+      "from": "as2",
+      "fromPort": "beat_energy",
+      "to": "seq55",
+      "port": "trigger"
+    },
+    {
+      "from": "seq55",
+      "fromPort": "out",
+      "to": "and57",
+      "port": "a"
+    },
+    {
+      "from": "latch50",
+      "fromPort": "out",
+      "to": "and57",
+      "port": "b"
+    },
+    {
+      "from": "and57",
+      "fromPort": "out",
+      "to": "steps59",
+      "port": "signal"
+    },
+    {
+      "from": "as2",
+      "fromPort": "beat_energy",
+      "to": "seq56",
+      "port": "trigger"
+    },
+    {
+      "from": "seq56",
+      "fromPort": "out",
+      "to": "and58",
+      "port": "a"
+    },
+    {
+      "from": "latch50",
+      "fromPort": "out",
+      "to": "and58",
+      "port": "b"
+    },
+    {
+      "from": "and58",
+      "fromPort": "out",
+      "to": "steps60",
+      "port": "signal"
+    },
+    {
+      "from": "as2",
+      "fromPort": "kick_onset",
+      "to": "and62",
+      "port": "a"
+    },
+    {
+      "from": "latch50",
+      "fromPort": "out",
+      "to": "and62",
+      "port": "b"
+    },
+    {
+      "from": "and62",
+      "fromPort": "out",
+      "to": "seq63",
+      "port": "trigger"
+    },
+    {
+      "from": "and51",
+      "fromPort": "out",
+      "to": "seq63",
+      "port": "reset"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp64:0",
+      "to": "fix9",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp64:1",
+      "to": "fix10",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp64:2",
+      "to": "fix11",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp64:3",
+      "to": "fix12",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp64:4",
+      "to": "fix13",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp64:5",
+      "to": "fix14",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp64:6",
+      "to": "fix15",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp64:7",
+      "to": "fix16",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp65:0",
+      "to": "fix17",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp65:1",
+      "to": "fix18",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp65:2",
+      "to": "fix19",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp65:3",
+      "to": "fix20",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp66:0",
+      "to": "fix21",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp66:1",
+      "to": "fix22",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp66:2",
+      "to": "fix23",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp66:3",
+      "to": "fix24",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp67:0",
+      "to": "fix25",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp67:1",
+      "to": "fix26",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp67:2",
+      "to": "fix27",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp67:3",
+      "to": "fix28",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp68:0",
+      "to": "fix29",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp68:1",
+      "to": "fix30",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp69:0",
+      "to": "fix31",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp69:1",
+      "to": "fix32",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "lt70",
+      "to": "fix33",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp71:0",
+      "to": "fix34",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp71:1",
+      "to": "fix35",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp71:2",
+      "to": "fix36",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp71:3",
+      "to": "fix37",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp71:4",
+      "to": "fix38",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp71:5",
+      "to": "fix39",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp71:6",
+      "to": "fix40",
+      "port": "in"
+    },
+    {
+      "from": "scene42",
+      "fromPort": "grp71:7",
+      "to": "fix41",
+      "port": "in"
+    },
+    {
+      "from": "as2",
+      "fromPort": "kick_energy",
+      "to": "scene42",
+      "port": "in72"
+    },
+    {
+      "from": "as2",
+      "fromPort": "kick_onset",
+      "to": "scene42",
+      "port": "in73"
+    },
+    {
+      "from": "as2",
+      "fromPort": "bass_energy",
+      "to": "scene42",
+      "port": "in74"
+    },
+    {
+      "from": "as2",
+      "fromPort": "snare_energy",
+      "to": "scene42",
+      "port": "in75"
+    },
+    {
+      "from": "as2",
+      "fromPort": "snare_onset",
+      "to": "scene42",
+      "port": "in76"
+    },
+    {
+      "from": "as2",
+      "fromPort": "hihat_energy",
+      "to": "scene42",
+      "port": "in77"
+    },
+    {
+      "from": "as2",
+      "fromPort": "hihat_onset",
+      "to": "scene42",
+      "port": "in78"
+    },
+    {
+      "from": "as2",
+      "fromPort": "perc_energy",
+      "to": "scene42",
+      "port": "in79"
+    },
+    {
+      "from": "as2",
+      "fromPort": "other_energy",
+      "to": "scene42",
+      "port": "in80"
+    },
+    {
+      "from": "as2",
+      "fromPort": "vocals_energy",
+      "to": "scene42",
+      "port": "in81"
+    },
+    {
+      "from": "as2",
+      "fromPort": "beat_energy",
+      "to": "scene42",
+      "port": "in82"
+    },
+    {
+      "from": "latch50",
+      "fromPort": "out",
+      "to": "scene42",
+      "port": "in83"
+    },
+    {
+      "from": "and58",
+      "fromPort": "out",
+      "to": "scene42",
+      "port": "in84"
+    },
+    {
+      "from": "steps59",
+      "fromPort": "out",
+      "to": "scene42",
+      "port": "in85"
+    },
+    {
+      "from": "steps60",
+      "fromPort": "out",
+      "to": "scene42",
+      "port": "in86"
+    },
+    {
+      "from": "hold54",
+      "fromPort": "hold",
+      "to": "scene42",
+      "port": "in87"
+    },
+    {
+      "from": "steps61",
+      "fromPort": "out",
+      "to": "scene42",
+      "port": "in88"
+    },
+    {
+      "from": "and51",
+      "fromPort": "out",
+      "to": "scene42",
+      "port": "in89"
+    },
+    {
+      "from": "seq63",
+      "fromPort": "out",
+      "to": "scene42",
+      "port": "in90"
+    },
+    {
+      "from": "in72",
+      "fromPort": "out",
+      "to": "look91",
+      "port": "dimmer",
+      "scene": "scene42"
+    },
+    {
+      "from": "in83",
+      "fromPort": "out",
+      "to": "look91",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in87",
+      "fromPort": "out",
+      "to": "look91",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in85",
+      "fromPort": "out",
+      "to": "look91",
+      "port": "offset",
+      "scene": "scene42"
+    },
+    {
+      "from": "look91",
+      "fromPort": "look",
+      "to": "grp64",
+      "port": "look",
+      "scene": "scene42"
+    },
+    {
+      "from": "in74",
+      "fromPort": "out",
+      "to": "look92",
+      "port": "dimmer",
+      "scene": "scene42"
+    },
+    {
+      "from": "in83",
+      "fromPort": "out",
+      "to": "look92",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in87",
+      "fromPort": "out",
+      "to": "look92",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in86",
+      "fromPort": "out",
+      "to": "look92",
+      "port": "offset",
+      "scene": "scene42"
+    },
+    {
+      "from": "look92",
+      "fromPort": "look",
+      "to": "grp65",
+      "port": "look",
+      "scene": "scene42"
+    },
+    {
+      "from": "in75",
+      "fromPort": "out",
+      "to": "look93",
+      "port": "dimmer",
+      "scene": "scene42"
+    },
+    {
+      "from": "in83",
+      "fromPort": "out",
+      "to": "look93",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in87",
+      "fromPort": "out",
+      "to": "look93",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in85",
+      "fromPort": "out",
+      "to": "look93",
+      "port": "offset",
+      "scene": "scene42"
+    },
+    {
+      "from": "look93",
+      "fromPort": "look",
+      "to": "grp66",
+      "port": "look",
+      "scene": "scene42"
+    },
+    {
+      "from": "in80",
+      "fromPort": "out",
+      "to": "look94",
+      "port": "dimmer",
+      "scene": "scene42"
+    },
+    {
+      "from": "in83",
+      "fromPort": "out",
+      "to": "look94",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in87",
+      "fromPort": "out",
+      "to": "look94",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in85",
+      "fromPort": "out",
+      "to": "look94",
+      "port": "offset",
+      "scene": "scene42"
+    },
+    {
+      "from": "look94",
+      "fromPort": "look",
+      "to": "grp67",
+      "port": "look",
+      "scene": "scene42"
+    },
+    {
+      "from": "in80",
+      "fromPort": "out",
+      "to": "look95",
+      "port": "dimmer",
+      "scene": "scene42"
+    },
+    {
+      "from": "in83",
+      "fromPort": "out",
+      "to": "look95",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in87",
+      "fromPort": "out",
+      "to": "look95",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in86",
+      "fromPort": "out",
+      "to": "look95",
+      "port": "offset",
+      "scene": "scene42"
+    },
+    {
+      "from": "in88",
+      "fromPort": "out",
+      "to": "look95",
+      "port": "scene",
+      "scene": "scene42"
+    },
+    {
+      "from": "look95",
+      "fromPort": "look",
+      "to": "grp68",
+      "port": "look",
+      "scene": "scene42"
+    },
+    {
+      "from": "in81",
+      "fromPort": "out",
+      "to": "look96",
+      "port": "dimmer",
+      "scene": "scene42"
+    },
+    {
+      "from": "in83",
+      "fromPort": "out",
+      "to": "look96",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in87",
+      "fromPort": "out",
+      "to": "look96",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in85",
+      "fromPort": "out",
+      "to": "look96",
+      "port": "offset",
+      "scene": "scene42"
+    },
+    {
+      "from": "look96",
+      "fromPort": "look",
+      "to": "grp69",
+      "port": "look",
+      "scene": "scene42"
+    },
+    {
+      "from": "in81",
+      "fromPort": "out",
+      "to": "look97",
+      "port": "dimmer",
+      "scene": "scene42"
+    },
+    {
+      "from": "in83",
+      "fromPort": "out",
+      "to": "look97",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in87",
+      "fromPort": "out",
+      "to": "look97",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in86",
+      "fromPort": "out",
+      "to": "look97",
+      "port": "offset",
+      "scene": "scene42"
+    },
+    {
+      "from": "in88",
+      "fromPort": "out",
+      "to": "look97",
+      "port": "scene",
+      "scene": "scene42"
+    },
+    {
+      "from": "look97",
+      "fromPort": "look",
+      "to": "lt70",
+      "port": "look",
+      "scene": "scene42"
+    },
+    {
+      "from": "in75",
+      "fromPort": "out",
+      "to": "look98",
+      "port": "dimmer",
+      "scene": "scene42"
+    },
+    {
+      "from": "in77",
+      "fromPort": "out",
+      "to": "look98",
+      "port": "dimmer",
+      "scene": "scene42"
+    },
+    {
+      "from": "in79",
+      "fromPort": "out",
+      "to": "look98",
+      "port": "dimmer",
+      "scene": "scene42"
+    },
+    {
+      "from": "in83",
+      "fromPort": "out",
+      "to": "look98",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in87",
+      "fromPort": "out",
+      "to": "look98",
+      "port": "wild",
+      "scene": "scene42"
+    },
+    {
+      "from": "in86",
+      "fromPort": "out",
+      "to": "look98",
+      "port": "offset",
+      "scene": "scene42"
+    },
+    {
+      "from": "look98",
+      "fromPort": "look",
+      "to": "grp71",
+      "port": "look",
+      "scene": "scene42"
+    },
+    {
+      "from": "in84",
+      "fromPort": "out",
+      "to": "rng99",
+      "port": "amount",
+      "scene": "scene42"
+    },
+    {
+      "from": "rng99",
+      "fromPort": "out",
+      "to": "grp71",
+      "port": "Colorwheel",
+      "scene": "scene42"
+    },
+    {
+      "from": "in82",
+      "fromPort": "out",
+      "to": "grp64",
+      "port": "trigger",
+      "scene": "scene42"
+    },
+    {
+      "from": "in82",
+      "fromPort": "out",
+      "to": "grp65",
+      "port": "trigger",
+      "scene": "scene42"
+    },
+    {
+      "from": "in73",
+      "fromPort": "out",
+      "to": "and100",
+      "port": "a",
+      "scene": "scene42"
+    },
+    {
+      "from": "in87",
+      "fromPort": "out",
+      "to": "and100",
+      "port": "b",
+      "scene": "scene42"
+    },
+    {
+      "from": "and100",
+      "fromPort": "out",
+      "to": "grp64",
+      "port": "trigger",
+      "scene": "scene42"
+    },
+    {
+      "from": "and100",
+      "fromPort": "out",
+      "to": "grp65",
+      "port": "trigger",
+      "scene": "scene42"
+    },
+    {
+      "from": "in90",
+      "fromPort": "out",
+      "to": "grp71",
+      "port": "nudge",
+      "scene": "scene42"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp101:0",
+      "to": "fix9",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp101:1",
+      "to": "fix10",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp101:2",
+      "to": "fix11",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp101:3",
+      "to": "fix12",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp101:4",
+      "to": "fix13",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp101:5",
+      "to": "fix14",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp101:6",
+      "to": "fix15",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp101:7",
+      "to": "fix16",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp102:0",
+      "to": "fix17",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp102:1",
+      "to": "fix18",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp102:2",
+      "to": "fix19",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp102:3",
+      "to": "fix20",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp103:0",
+      "to": "fix21",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp103:1",
+      "to": "fix22",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp103:2",
+      "to": "fix23",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp103:3",
+      "to": "fix24",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp104:0",
+      "to": "fix25",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp104:1",
+      "to": "fix26",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp104:2",
+      "to": "fix27",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp104:3",
+      "to": "fix28",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp105:0",
+      "to": "fix29",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp105:1",
+      "to": "fix30",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp106:0",
+      "to": "fix31",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp106:1",
+      "to": "fix32",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "lt107",
+      "to": "fix33",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp108:0",
+      "to": "fix34",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp108:1",
+      "to": "fix35",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp108:2",
+      "to": "fix36",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp108:3",
+      "to": "fix37",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp108:4",
+      "to": "fix38",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp108:5",
+      "to": "fix39",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp108:6",
+      "to": "fix40",
+      "port": "in"
+    },
+    {
+      "from": "scene43",
+      "fromPort": "grp108:7",
+      "to": "fix41",
+      "port": "in"
+    },
+    {
+      "from": "as2",
+      "fromPort": "kick_energy",
+      "to": "scene43",
+      "port": "in109"
+    },
+    {
+      "from": "as2",
+      "fromPort": "kick_onset",
+      "to": "scene43",
+      "port": "in110"
+    },
+    {
+      "from": "as2",
+      "fromPort": "bass_energy",
+      "to": "scene43",
+      "port": "in111"
+    },
+    {
+      "from": "as2",
+      "fromPort": "snare_energy",
+      "to": "scene43",
+      "port": "in112"
+    },
+    {
+      "from": "as2",
+      "fromPort": "snare_onset",
+      "to": "scene43",
+      "port": "in113"
+    },
+    {
+      "from": "as2",
+      "fromPort": "hihat_energy",
+      "to": "scene43",
+      "port": "in114"
+    },
+    {
+      "from": "as2",
+      "fromPort": "hihat_onset",
+      "to": "scene43",
+      "port": "in115"
+    },
+    {
+      "from": "as2",
+      "fromPort": "perc_energy",
+      "to": "scene43",
+      "port": "in116"
+    },
+    {
+      "from": "as2",
+      "fromPort": "other_energy",
+      "to": "scene43",
+      "port": "in117"
+    },
+    {
+      "from": "as2",
+      "fromPort": "vocals_energy",
+      "to": "scene43",
+      "port": "in118"
+    },
+    {
+      "from": "as2",
+      "fromPort": "beat_energy",
+      "to": "scene43",
+      "port": "in119"
+    },
+    {
+      "from": "latch50",
+      "fromPort": "out",
+      "to": "scene43",
+      "port": "in120"
+    },
+    {
+      "from": "and58",
+      "fromPort": "out",
+      "to": "scene43",
+      "port": "in121"
+    },
+    {
+      "from": "steps59",
+      "fromPort": "out",
+      "to": "scene43",
+      "port": "in122"
+    },
+    {
+      "from": "steps60",
+      "fromPort": "out",
+      "to": "scene43",
+      "port": "in123"
+    },
+    {
+      "from": "hold54",
+      "fromPort": "hold",
+      "to": "scene43",
+      "port": "in124"
+    },
+    {
+      "from": "steps61",
+      "fromPort": "out",
+      "to": "scene43",
+      "port": "in125"
+    },
+    {
+      "from": "and51",
+      "fromPort": "out",
+      "to": "scene43",
+      "port": "in126"
+    },
+    {
+      "from": "seq63",
+      "fromPort": "out",
+      "to": "scene43",
+      "port": "in127"
+    },
+    {
+      "from": "in109",
+      "fromPort": "out",
+      "to": "look128",
+      "port": "dimmer",
+      "scene": "scene43"
+    },
+    {
+      "from": "in120",
+      "fromPort": "out",
+      "to": "look128",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in124",
+      "fromPort": "out",
+      "to": "look128",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in122",
+      "fromPort": "out",
+      "to": "look128",
+      "port": "offset",
+      "scene": "scene43"
+    },
+    {
+      "from": "look128",
+      "fromPort": "look",
+      "to": "grp101",
+      "port": "look",
+      "scene": "scene43"
+    },
+    {
+      "from": "in111",
+      "fromPort": "out",
+      "to": "look129",
+      "port": "dimmer",
+      "scene": "scene43"
+    },
+    {
+      "from": "in120",
+      "fromPort": "out",
+      "to": "look129",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in124",
+      "fromPort": "out",
+      "to": "look129",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in123",
+      "fromPort": "out",
+      "to": "look129",
+      "port": "offset",
+      "scene": "scene43"
+    },
+    {
+      "from": "look129",
+      "fromPort": "look",
+      "to": "grp102",
+      "port": "look",
+      "scene": "scene43"
+    },
+    {
+      "from": "in112",
+      "fromPort": "out",
+      "to": "look130",
+      "port": "dimmer",
+      "scene": "scene43"
+    },
+    {
+      "from": "in120",
+      "fromPort": "out",
+      "to": "look130",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in124",
+      "fromPort": "out",
+      "to": "look130",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in122",
+      "fromPort": "out",
+      "to": "look130",
+      "port": "offset",
+      "scene": "scene43"
+    },
+    {
+      "from": "look130",
+      "fromPort": "look",
+      "to": "grp103",
+      "port": "look",
+      "scene": "scene43"
+    },
+    {
+      "from": "in117",
+      "fromPort": "out",
+      "to": "look131",
+      "port": "dimmer",
+      "scene": "scene43"
+    },
+    {
+      "from": "in120",
+      "fromPort": "out",
+      "to": "look131",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in124",
+      "fromPort": "out",
+      "to": "look131",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in122",
+      "fromPort": "out",
+      "to": "look131",
+      "port": "offset",
+      "scene": "scene43"
+    },
+    {
+      "from": "look131",
+      "fromPort": "look",
+      "to": "grp104",
+      "port": "look",
+      "scene": "scene43"
+    },
+    {
+      "from": "in117",
+      "fromPort": "out",
+      "to": "look132",
+      "port": "dimmer",
+      "scene": "scene43"
+    },
+    {
+      "from": "in120",
+      "fromPort": "out",
+      "to": "look132",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in124",
+      "fromPort": "out",
+      "to": "look132",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in123",
+      "fromPort": "out",
+      "to": "look132",
+      "port": "offset",
+      "scene": "scene43"
+    },
+    {
+      "from": "in125",
+      "fromPort": "out",
+      "to": "look132",
+      "port": "scene",
+      "scene": "scene43"
+    },
+    {
+      "from": "look132",
+      "fromPort": "look",
+      "to": "grp105",
+      "port": "look",
+      "scene": "scene43"
+    },
+    {
+      "from": "in118",
+      "fromPort": "out",
+      "to": "look133",
+      "port": "dimmer",
+      "scene": "scene43"
+    },
+    {
+      "from": "in120",
+      "fromPort": "out",
+      "to": "look133",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in124",
+      "fromPort": "out",
+      "to": "look133",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in122",
+      "fromPort": "out",
+      "to": "look133",
+      "port": "offset",
+      "scene": "scene43"
+    },
+    {
+      "from": "look133",
+      "fromPort": "look",
+      "to": "grp106",
+      "port": "look",
+      "scene": "scene43"
+    },
+    {
+      "from": "in118",
+      "fromPort": "out",
+      "to": "look134",
+      "port": "dimmer",
+      "scene": "scene43"
+    },
+    {
+      "from": "in120",
+      "fromPort": "out",
+      "to": "look134",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in124",
+      "fromPort": "out",
+      "to": "look134",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in123",
+      "fromPort": "out",
+      "to": "look134",
+      "port": "offset",
+      "scene": "scene43"
+    },
+    {
+      "from": "in125",
+      "fromPort": "out",
+      "to": "look134",
+      "port": "scene",
+      "scene": "scene43"
+    },
+    {
+      "from": "look134",
+      "fromPort": "look",
+      "to": "lt107",
+      "port": "look",
+      "scene": "scene43"
+    },
+    {
+      "from": "in112",
+      "fromPort": "out",
+      "to": "look135",
+      "port": "dimmer",
+      "scene": "scene43"
+    },
+    {
+      "from": "in114",
+      "fromPort": "out",
+      "to": "look135",
+      "port": "dimmer",
+      "scene": "scene43"
+    },
+    {
+      "from": "in116",
+      "fromPort": "out",
+      "to": "look135",
+      "port": "dimmer",
+      "scene": "scene43"
+    },
+    {
+      "from": "in120",
+      "fromPort": "out",
+      "to": "look135",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in124",
+      "fromPort": "out",
+      "to": "look135",
+      "port": "wild",
+      "scene": "scene43"
+    },
+    {
+      "from": "in123",
+      "fromPort": "out",
+      "to": "look135",
+      "port": "offset",
+      "scene": "scene43"
+    },
+    {
+      "from": "look135",
+      "fromPort": "look",
+      "to": "grp108",
+      "port": "look",
+      "scene": "scene43"
+    },
+    {
+      "from": "in121",
+      "fromPort": "out",
+      "to": "rng136",
+      "port": "amount",
+      "scene": "scene43"
+    },
+    {
+      "from": "rng136",
+      "fromPort": "out",
+      "to": "grp108",
+      "port": "Colorwheel",
+      "scene": "scene43"
+    },
+    {
+      "from": "in119",
+      "fromPort": "out",
+      "to": "grp101",
+      "port": "trigger",
+      "scene": "scene43"
+    },
+    {
+      "from": "in119",
+      "fromPort": "out",
+      "to": "grp102",
+      "port": "trigger",
+      "scene": "scene43"
+    },
+    {
+      "from": "in110",
+      "fromPort": "out",
+      "to": "and137",
+      "port": "a",
+      "scene": "scene43"
+    },
+    {
+      "from": "in124",
+      "fromPort": "out",
+      "to": "and137",
+      "port": "b",
+      "scene": "scene43"
+    },
+    {
+      "from": "and137",
+      "fromPort": "out",
+      "to": "grp101",
+      "port": "trigger",
+      "scene": "scene43"
+    },
+    {
+      "from": "and137",
+      "fromPort": "out",
+      "to": "grp102",
+      "port": "trigger",
+      "scene": "scene43"
+    },
+    {
+      "from": "in127",
+      "fromPort": "out",
+      "to": "grp108",
+      "port": "nudge",
+      "scene": "scene43"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp138:0",
+      "to": "fix9",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp138:1",
+      "to": "fix10",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp138:2",
+      "to": "fix11",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp138:3",
+      "to": "fix12",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp138:4",
+      "to": "fix13",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp138:5",
+      "to": "fix14",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp138:6",
+      "to": "fix15",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp138:7",
+      "to": "fix16",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp139:0",
+      "to": "fix17",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp139:1",
+      "to": "fix18",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp139:2",
+      "to": "fix19",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp139:3",
+      "to": "fix20",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp140:0",
+      "to": "fix21",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp140:1",
+      "to": "fix22",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp140:2",
+      "to": "fix23",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp140:3",
+      "to": "fix24",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp141:0",
+      "to": "fix25",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp141:1",
+      "to": "fix26",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp141:2",
+      "to": "fix27",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp141:3",
+      "to": "fix28",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp142:0",
+      "to": "fix29",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp142:1",
+      "to": "fix30",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp143:0",
+      "to": "fix31",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp143:1",
+      "to": "fix32",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "lt144",
+      "to": "fix33",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp145:0",
+      "to": "fix34",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp145:1",
+      "to": "fix35",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp145:2",
+      "to": "fix36",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp145:3",
+      "to": "fix37",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp145:4",
+      "to": "fix38",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp145:5",
+      "to": "fix39",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp145:6",
+      "to": "fix40",
+      "port": "in"
+    },
+    {
+      "from": "scene44",
+      "fromPort": "grp145:7",
+      "to": "fix41",
+      "port": "in"
+    },
+    {
+      "from": "as2",
+      "fromPort": "kick_energy",
+      "to": "scene44",
+      "port": "in146"
+    },
+    {
+      "from": "as2",
+      "fromPort": "kick_onset",
+      "to": "scene44",
+      "port": "in147"
+    },
+    {
+      "from": "as2",
+      "fromPort": "bass_energy",
+      "to": "scene44",
+      "port": "in148"
+    },
+    {
+      "from": "as2",
+      "fromPort": "snare_energy",
+      "to": "scene44",
+      "port": "in149"
+    },
+    {
+      "from": "as2",
+      "fromPort": "snare_onset",
+      "to": "scene44",
+      "port": "in150"
+    },
+    {
+      "from": "as2",
+      "fromPort": "hihat_energy",
+      "to": "scene44",
+      "port": "in151"
+    },
+    {
+      "from": "as2",
+      "fromPort": "hihat_onset",
+      "to": "scene44",
+      "port": "in152"
+    },
+    {
+      "from": "as2",
+      "fromPort": "perc_energy",
+      "to": "scene44",
+      "port": "in153"
+    },
+    {
+      "from": "as2",
+      "fromPort": "other_energy",
+      "to": "scene44",
+      "port": "in154"
+    },
+    {
+      "from": "as2",
+      "fromPort": "vocals_energy",
+      "to": "scene44",
+      "port": "in155"
+    },
+    {
+      "from": "as2",
+      "fromPort": "beat_energy",
+      "to": "scene44",
+      "port": "in156"
+    },
+    {
+      "from": "latch50",
+      "fromPort": "out",
+      "to": "scene44",
+      "port": "in157"
+    },
+    {
+      "from": "and58",
+      "fromPort": "out",
+      "to": "scene44",
+      "port": "in158"
+    },
+    {
+      "from": "steps59",
+      "fromPort": "out",
+      "to": "scene44",
+      "port": "in159"
+    },
+    {
+      "from": "steps60",
+      "fromPort": "out",
+      "to": "scene44",
+      "port": "in160"
+    },
+    {
+      "from": "hold54",
+      "fromPort": "hold",
+      "to": "scene44",
+      "port": "in161"
+    },
+    {
+      "from": "steps61",
+      "fromPort": "out",
+      "to": "scene44",
+      "port": "in162"
+    },
+    {
+      "from": "and51",
+      "fromPort": "out",
+      "to": "scene44",
+      "port": "in163"
+    },
+    {
+      "from": "seq63",
+      "fromPort": "out",
+      "to": "scene44",
+      "port": "in164"
+    },
+    {
+      "from": "in146",
+      "fromPort": "out",
+      "to": "look165",
+      "port": "dimmer",
+      "scene": "scene44"
+    },
+    {
+      "from": "in157",
+      "fromPort": "out",
+      "to": "look165",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in161",
+      "fromPort": "out",
+      "to": "look165",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in159",
+      "fromPort": "out",
+      "to": "look165",
+      "port": "offset",
+      "scene": "scene44"
+    },
+    {
+      "from": "look165",
+      "fromPort": "look",
+      "to": "grp138",
+      "port": "look",
+      "scene": "scene44"
+    },
+    {
+      "from": "in148",
+      "fromPort": "out",
+      "to": "look166",
+      "port": "dimmer",
+      "scene": "scene44"
+    },
+    {
+      "from": "in157",
+      "fromPort": "out",
+      "to": "look166",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in161",
+      "fromPort": "out",
+      "to": "look166",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in160",
+      "fromPort": "out",
+      "to": "look166",
+      "port": "offset",
+      "scene": "scene44"
+    },
+    {
+      "from": "look166",
+      "fromPort": "look",
+      "to": "grp139",
+      "port": "look",
+      "scene": "scene44"
+    },
+    {
+      "from": "in149",
+      "fromPort": "out",
+      "to": "look167",
+      "port": "dimmer",
+      "scene": "scene44"
+    },
+    {
+      "from": "in157",
+      "fromPort": "out",
+      "to": "look167",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in161",
+      "fromPort": "out",
+      "to": "look167",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in159",
+      "fromPort": "out",
+      "to": "look167",
+      "port": "offset",
+      "scene": "scene44"
+    },
+    {
+      "from": "look167",
+      "fromPort": "look",
+      "to": "grp140",
+      "port": "look",
+      "scene": "scene44"
+    },
+    {
+      "from": "in154",
+      "fromPort": "out",
+      "to": "look168",
+      "port": "dimmer",
+      "scene": "scene44"
+    },
+    {
+      "from": "in157",
+      "fromPort": "out",
+      "to": "look168",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in161",
+      "fromPort": "out",
+      "to": "look168",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in159",
+      "fromPort": "out",
+      "to": "look168",
+      "port": "offset",
+      "scene": "scene44"
+    },
+    {
+      "from": "look168",
+      "fromPort": "look",
+      "to": "grp141",
+      "port": "look",
+      "scene": "scene44"
+    },
+    {
+      "from": "in154",
+      "fromPort": "out",
+      "to": "look169",
+      "port": "dimmer",
+      "scene": "scene44"
+    },
+    {
+      "from": "in157",
+      "fromPort": "out",
+      "to": "look169",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in161",
+      "fromPort": "out",
+      "to": "look169",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in160",
+      "fromPort": "out",
+      "to": "look169",
+      "port": "offset",
+      "scene": "scene44"
+    },
+    {
+      "from": "in162",
+      "fromPort": "out",
+      "to": "look169",
+      "port": "scene",
+      "scene": "scene44"
+    },
+    {
+      "from": "look169",
+      "fromPort": "look",
+      "to": "grp142",
+      "port": "look",
+      "scene": "scene44"
+    },
+    {
+      "from": "in155",
+      "fromPort": "out",
+      "to": "look170",
+      "port": "dimmer",
+      "scene": "scene44"
+    },
+    {
+      "from": "in157",
+      "fromPort": "out",
+      "to": "look170",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in161",
+      "fromPort": "out",
+      "to": "look170",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in159",
+      "fromPort": "out",
+      "to": "look170",
+      "port": "offset",
+      "scene": "scene44"
+    },
+    {
+      "from": "look170",
+      "fromPort": "look",
+      "to": "grp143",
+      "port": "look",
+      "scene": "scene44"
+    },
+    {
+      "from": "in155",
+      "fromPort": "out",
+      "to": "look171",
+      "port": "dimmer",
+      "scene": "scene44"
+    },
+    {
+      "from": "in157",
+      "fromPort": "out",
+      "to": "look171",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in161",
+      "fromPort": "out",
+      "to": "look171",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in160",
+      "fromPort": "out",
+      "to": "look171",
+      "port": "offset",
+      "scene": "scene44"
+    },
+    {
+      "from": "in162",
+      "fromPort": "out",
+      "to": "look171",
+      "port": "scene",
+      "scene": "scene44"
+    },
+    {
+      "from": "look171",
+      "fromPort": "look",
+      "to": "lt144",
+      "port": "look",
+      "scene": "scene44"
+    },
+    {
+      "from": "in149",
+      "fromPort": "out",
+      "to": "look172",
+      "port": "dimmer",
+      "scene": "scene44"
+    },
+    {
+      "from": "in151",
+      "fromPort": "out",
+      "to": "look172",
+      "port": "dimmer",
+      "scene": "scene44"
+    },
+    {
+      "from": "in153",
+      "fromPort": "out",
+      "to": "look172",
+      "port": "dimmer",
+      "scene": "scene44"
+    },
+    {
+      "from": "in157",
+      "fromPort": "out",
+      "to": "look172",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in161",
+      "fromPort": "out",
+      "to": "look172",
+      "port": "wild",
+      "scene": "scene44"
+    },
+    {
+      "from": "in160",
+      "fromPort": "out",
+      "to": "look172",
+      "port": "offset",
+      "scene": "scene44"
+    },
+    {
+      "from": "look172",
+      "fromPort": "look",
+      "to": "grp145",
+      "port": "look",
+      "scene": "scene44"
+    },
+    {
+      "from": "in158",
+      "fromPort": "out",
+      "to": "rng173",
+      "port": "amount",
+      "scene": "scene44"
+    },
+    {
+      "from": "rng173",
+      "fromPort": "out",
+      "to": "grp145",
+      "port": "Colorwheel",
+      "scene": "scene44"
+    },
+    {
+      "from": "in147",
+      "fromPort": "out",
+      "to": "grp138",
+      "port": "trigger",
+      "scene": "scene44"
+    },
+    {
+      "from": "in156",
+      "fromPort": "out",
+      "to": "grp139",
+      "port": "trigger",
+      "scene": "scene44"
+    },
+    {
+      "from": "in150",
+      "fromPort": "out",
+      "to": "seq174",
+      "port": "trigger",
+      "scene": "scene44"
+    },
+    {
+      "from": "in163",
+      "fromPort": "out",
+      "to": "seq174",
+      "port": "reset",
+      "scene": "scene44"
+    },
+    {
+      "from": "seq174",
+      "fromPort": "out",
+      "to": "grp145",
+      "port": "nudge",
+      "scene": "scene44"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp175:0",
+      "to": "fix9",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp175:1",
+      "to": "fix10",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp175:2",
+      "to": "fix11",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp175:3",
+      "to": "fix12",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp175:4",
+      "to": "fix13",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp175:5",
+      "to": "fix14",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp175:6",
+      "to": "fix15",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp175:7",
+      "to": "fix16",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp176:0",
+      "to": "fix17",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp176:1",
+      "to": "fix18",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp176:2",
+      "to": "fix19",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp176:3",
+      "to": "fix20",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp177:0",
+      "to": "fix21",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp177:1",
+      "to": "fix22",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp177:2",
+      "to": "fix23",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp177:3",
+      "to": "fix24",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp178:0",
+      "to": "fix25",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp178:1",
+      "to": "fix26",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp178:2",
+      "to": "fix27",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp178:3",
+      "to": "fix28",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp179:0",
+      "to": "fix29",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp179:1",
+      "to": "fix30",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp180:0",
+      "to": "fix31",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp180:1",
+      "to": "fix32",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "lt181",
+      "to": "fix33",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp182:0",
+      "to": "fix34",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp182:1",
+      "to": "fix35",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp182:2",
+      "to": "fix36",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp182:3",
+      "to": "fix37",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp182:4",
+      "to": "fix38",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp182:5",
+      "to": "fix39",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp182:6",
+      "to": "fix40",
+      "port": "in"
+    },
+    {
+      "from": "scene45",
+      "fromPort": "grp182:7",
+      "to": "fix41",
+      "port": "in"
+    },
+    {
+      "from": "as2",
+      "fromPort": "kick_energy",
+      "to": "scene45",
+      "port": "in183"
+    },
+    {
+      "from": "as2",
+      "fromPort": "kick_onset",
+      "to": "scene45",
+      "port": "in184"
+    },
+    {
+      "from": "as2",
+      "fromPort": "bass_energy",
+      "to": "scene45",
+      "port": "in185"
+    },
+    {
+      "from": "as2",
+      "fromPort": "snare_energy",
+      "to": "scene45",
+      "port": "in186"
+    },
+    {
+      "from": "as2",
+      "fromPort": "snare_onset",
+      "to": "scene45",
+      "port": "in187"
+    },
+    {
+      "from": "as2",
+      "fromPort": "hihat_energy",
+      "to": "scene45",
+      "port": "in188"
+    },
+    {
+      "from": "as2",
+      "fromPort": "hihat_onset",
+      "to": "scene45",
+      "port": "in189"
+    },
+    {
+      "from": "as2",
+      "fromPort": "perc_energy",
+      "to": "scene45",
+      "port": "in190"
+    },
+    {
+      "from": "as2",
+      "fromPort": "other_energy",
+      "to": "scene45",
+      "port": "in191"
+    },
+    {
+      "from": "as2",
+      "fromPort": "vocals_energy",
+      "to": "scene45",
+      "port": "in192"
+    },
+    {
+      "from": "as2",
+      "fromPort": "beat_energy",
+      "to": "scene45",
+      "port": "in193"
+    },
+    {
+      "from": "latch50",
+      "fromPort": "out",
+      "to": "scene45",
+      "port": "in194"
+    },
+    {
+      "from": "and58",
+      "fromPort": "out",
+      "to": "scene45",
+      "port": "in195"
+    },
+    {
+      "from": "steps59",
+      "fromPort": "out",
+      "to": "scene45",
+      "port": "in196"
+    },
+    {
+      "from": "steps60",
+      "fromPort": "out",
+      "to": "scene45",
+      "port": "in197"
+    },
+    {
+      "from": "hold54",
+      "fromPort": "hold",
+      "to": "scene45",
+      "port": "in198"
+    },
+    {
+      "from": "steps61",
+      "fromPort": "out",
+      "to": "scene45",
+      "port": "in199"
+    },
+    {
+      "from": "and51",
+      "fromPort": "out",
+      "to": "scene45",
+      "port": "in200"
+    },
+    {
+      "from": "seq63",
+      "fromPort": "out",
+      "to": "scene45",
+      "port": "in201"
+    },
+    {
+      "from": "in183",
+      "fromPort": "out",
+      "to": "look202",
+      "port": "dimmer",
+      "scene": "scene45"
+    },
+    {
+      "from": "in194",
+      "fromPort": "out",
+      "to": "look202",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "in198",
+      "fromPort": "out",
+      "to": "look202",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "look202",
+      "fromPort": "look",
+      "to": "grp175",
+      "port": "look",
+      "scene": "scene45"
+    },
+    {
+      "from": "in185",
+      "fromPort": "out",
+      "to": "look203",
+      "port": "dimmer",
+      "scene": "scene45"
+    },
+    {
+      "from": "in194",
+      "fromPort": "out",
+      "to": "look203",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "in198",
+      "fromPort": "out",
+      "to": "look203",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "look203",
+      "fromPort": "look",
+      "to": "grp176",
+      "port": "look",
+      "scene": "scene45"
+    },
+    {
+      "from": "in186",
+      "fromPort": "out",
+      "to": "look204",
+      "port": "dimmer",
+      "scene": "scene45"
+    },
+    {
+      "from": "in194",
+      "fromPort": "out",
+      "to": "look204",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "in198",
+      "fromPort": "out",
+      "to": "look204",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "look204",
+      "fromPort": "look",
+      "to": "grp177",
+      "port": "look",
+      "scene": "scene45"
+    },
+    {
+      "from": "in191",
+      "fromPort": "out",
+      "to": "look205",
+      "port": "dimmer",
+      "scene": "scene45"
+    },
+    {
+      "from": "in194",
+      "fromPort": "out",
+      "to": "look205",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "in198",
+      "fromPort": "out",
+      "to": "look205",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "look205",
+      "fromPort": "look",
+      "to": "grp178",
+      "port": "look",
+      "scene": "scene45"
+    },
+    {
+      "from": "in191",
+      "fromPort": "out",
+      "to": "look206",
+      "port": "dimmer",
+      "scene": "scene45"
+    },
+    {
+      "from": "in194",
+      "fromPort": "out",
+      "to": "look206",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "in198",
+      "fromPort": "out",
+      "to": "look206",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "in199",
+      "fromPort": "out",
+      "to": "look206",
+      "port": "scene",
+      "scene": "scene45"
+    },
+    {
+      "from": "look206",
+      "fromPort": "look",
+      "to": "grp179",
+      "port": "look",
+      "scene": "scene45"
+    },
+    {
+      "from": "in192",
+      "fromPort": "out",
+      "to": "look207",
+      "port": "dimmer",
+      "scene": "scene45"
+    },
+    {
+      "from": "in194",
+      "fromPort": "out",
+      "to": "look207",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "in198",
+      "fromPort": "out",
+      "to": "look207",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "look207",
+      "fromPort": "look",
+      "to": "grp180",
+      "port": "look",
+      "scene": "scene45"
+    },
+    {
+      "from": "in192",
+      "fromPort": "out",
+      "to": "look208",
+      "port": "dimmer",
+      "scene": "scene45"
+    },
+    {
+      "from": "in194",
+      "fromPort": "out",
+      "to": "look208",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "in198",
+      "fromPort": "out",
+      "to": "look208",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "in199",
+      "fromPort": "out",
+      "to": "look208",
+      "port": "scene",
+      "scene": "scene45"
+    },
+    {
+      "from": "look208",
+      "fromPort": "look",
+      "to": "lt181",
+      "port": "look",
+      "scene": "scene45"
+    },
+    {
+      "from": "in186",
+      "fromPort": "out",
+      "to": "look209",
+      "port": "dimmer",
+      "scene": "scene45"
+    },
+    {
+      "from": "in188",
+      "fromPort": "out",
+      "to": "look209",
+      "port": "dimmer",
+      "scene": "scene45"
+    },
+    {
+      "from": "in190",
+      "fromPort": "out",
+      "to": "look209",
+      "port": "dimmer",
+      "scene": "scene45"
+    },
+    {
+      "from": "in194",
+      "fromPort": "out",
+      "to": "look209",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "in198",
+      "fromPort": "out",
+      "to": "look209",
+      "port": "wild",
+      "scene": "scene45"
+    },
+    {
+      "from": "look209",
+      "fromPort": "look",
+      "to": "grp182",
+      "port": "look",
+      "scene": "scene45"
+    },
+    {
+      "from": "const210",
+      "fromPort": "out",
+      "to": "grp182",
+      "port": "Colorwheel",
+      "scene": "scene45"
+    },
+    {
+      "from": "in184",
+      "fromPort": "out",
+      "to": "grp175",
+      "port": "trigger",
+      "scene": "scene45"
+    },
+    {
+      "from": "in184",
+      "fromPort": "out",
+      "to": "grp176",
+      "port": "trigger",
+      "scene": "scene45"
+    },
+    {
+      "from": "in187",
+      "fromPort": "out",
+      "to": "seq211",
+      "port": "trigger",
+      "scene": "scene45"
+    },
+    {
+      "from": "in200",
+      "fromPort": "out",
+      "to": "seq211",
+      "port": "reset",
+      "scene": "scene45"
+    },
+    {
+      "from": "seq211",
+      "fromPort": "out",
+      "to": "grp182",
+      "port": "nudge",
+      "scene": "scene45"
+    },
+    {
+      "from": "in193",
+      "fromPort": "out",
+      "to": "seq212",
+      "port": "trigger",
+      "scene": "scene45"
+    },
+    {
+      "from": "seq212",
+      "fromPort": "out",
+      "to": "steps213",
+      "port": "signal",
+      "scene": "scene45"
+    },
+    {
+      "from": "steps213",
+      "fromPort": "out",
+      "to": "grp182",
+      "port": "position",
+      "scene": "scene45"
+    }
+  ],
+  "cables": [
+    {
+      "from": "cdj4",
+      "fromPort": "out",
+      "to": "audio6",
+      "port": "in1"
+    },
+    {
+      "from": "cdj5",
+      "fromPort": "out",
+      "to": "audio6",
+      "port": "in3"
+    },
+    {
+      "from": "dmxin8",
+      "fromPort": "out",
+      "to": "net1",
+      "port": "i1"
+    },
+    {
+      "from": "net1",
+      "fromPort": "u0",
+      "to": "fix9",
+      "port": "in"
+    },
+    {
+      "from": "fix9",
+      "fromPort": "out",
+      "to": "fix10",
+      "port": "in"
+    },
+    {
+      "from": "fix10",
+      "fromPort": "out",
+      "to": "fix11",
+      "port": "in"
+    },
+    {
+      "from": "fix11",
+      "fromPort": "out",
+      "to": "fix12",
+      "port": "in"
+    },
+    {
+      "from": "fix12",
+      "fromPort": "out",
+      "to": "fix13",
+      "port": "in"
+    },
+    {
+      "from": "fix13",
+      "fromPort": "out",
+      "to": "fix14",
+      "port": "in"
+    },
+    {
+      "from": "fix14",
+      "fromPort": "out",
+      "to": "fix15",
+      "port": "in"
+    },
+    {
+      "from": "fix15",
+      "fromPort": "out",
+      "to": "fix16",
+      "port": "in"
+    },
+    {
+      "from": "fix16",
+      "fromPort": "out",
+      "to": "fix17",
+      "port": "in"
+    },
+    {
+      "from": "fix17",
+      "fromPort": "out",
+      "to": "fix18",
+      "port": "in"
+    },
+    {
+      "from": "fix18",
+      "fromPort": "out",
+      "to": "fix19",
+      "port": "in"
+    },
+    {
+      "from": "fix19",
+      "fromPort": "out",
+      "to": "fix20",
+      "port": "in"
+    },
+    {
+      "from": "fix20",
+      "fromPort": "out",
+      "to": "fix21",
+      "port": "in"
+    },
+    {
+      "from": "fix21",
+      "fromPort": "out",
+      "to": "fix22",
+      "port": "in"
+    },
+    {
+      "from": "fix22",
+      "fromPort": "out",
+      "to": "fix23",
+      "port": "in"
+    },
+    {
+      "from": "fix23",
+      "fromPort": "out",
+      "to": "fix24",
+      "port": "in"
+    },
+    {
+      "from": "fix24",
+      "fromPort": "out",
+      "to": "fix25",
+      "port": "in"
+    },
+    {
+      "from": "fix25",
+      "fromPort": "out",
+      "to": "fix26",
+      "port": "in"
+    },
+    {
+      "from": "fix26",
+      "fromPort": "out",
+      "to": "fix27",
+      "port": "in"
+    },
+    {
+      "from": "fix27",
+      "fromPort": "out",
+      "to": "fix28",
+      "port": "in"
+    },
+    {
+      "from": "fix28",
+      "fromPort": "out",
+      "to": "fix29",
+      "port": "in"
+    },
+    {
+      "from": "fix29",
+      "fromPort": "out",
+      "to": "fix30",
+      "port": "in"
+    },
+    {
+      "from": "fix30",
+      "fromPort": "out",
+      "to": "fix31",
+      "port": "in"
+    },
+    {
+      "from": "fix31",
+      "fromPort": "out",
+      "to": "fix32",
+      "port": "in"
+    },
+    {
+      "from": "fix32",
+      "fromPort": "out",
+      "to": "fix33",
+      "port": "in"
+    },
+    {
+      "from": "fix33",
+      "fromPort": "out",
+      "to": "fix34",
+      "port": "in"
+    },
+    {
+      "from": "fix34",
+      "fromPort": "out",
+      "to": "fix35",
+      "port": "in"
+    },
+    {
+      "from": "fix35",
+      "fromPort": "out",
+      "to": "fix36",
+      "port": "in"
+    },
+    {
+      "from": "fix36",
+      "fromPort": "out",
+      "to": "fix37",
+      "port": "in"
+    },
+    {
+      "from": "fix37",
+      "fromPort": "out",
+      "to": "fix38",
+      "port": "in"
+    },
+    {
+      "from": "fix38",
+      "fromPort": "out",
+      "to": "fix39",
+      "port": "in"
+    },
+    {
+      "from": "fix39",
+      "fromPort": "out",
+      "to": "fix40",
+      "port": "in"
+    },
+    {
+      "from": "fix40",
+      "fromPort": "out",
+      "to": "fix41",
+      "port": "in"
+    }
+  ]
+}
