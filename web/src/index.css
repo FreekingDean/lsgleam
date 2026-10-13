@@ -20,7 +20,7 @@ header {
   display: flex; gap: 8px; align-items: center;
   padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--border);
 }
-header input, header button, .panel input, .panel select, .panel button {
+header input, header button, .panel input, .panel select, .panel button, .palette-view input, .palette-view button {
   background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font: inherit;
 }
 header .url { width: 180px; }
@@ -191,6 +191,15 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .designer-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
 .par .slider .slider-num { width: 100%; min-width: 0; padding: 2px 4px; font-size: 11px; font-variant-numeric: tabular-nums; }
 .color-steps .slider-num { width: 56px; padding: 2px 4px; font-size: 11px; }
+
+.palette-main { overflow: auto; padding: 16px; }
+.palette-fixture { margin-bottom: 20px; }
+.palette-fixture h4 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.palette-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.palette-name { width: 140px; flex: 0 0 auto; display: flex; gap: 4px; color: var(--muted); }
+.palette-name input { min-width: 0; flex: 1; }
+.palette-cell { width: 64px; flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.palette-view .palette-swatch { width: 64px; height: 48px; padding: 0; border: 1px solid var(--border); border-radius: 4px; background: none; }
 
 .tube-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
 .tube-tabs button { flex: 0 0 auto; }

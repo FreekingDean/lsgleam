@@ -6,13 +6,14 @@ import {
 import '@xyflow/react/dist/style.css'
 import { Bridge } from './bridge'
 import { Td, colorTable, valueTable } from './td'
-import { ceilingAt, ownersOf, membersOf, setDesign, type Cable, type TubeDesign, boardUniverses, tubePatch, EMPTY_SHOW, INPUTS_ID, LAYOUT, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, TYPE_COLORS, FIXTURE_PORT, addCable, addWire, canCable, canWire, fixturesOf, inputRail, outputRail, placeUnit, removeCables, unitsOf, unitPatch, type Rail, type Unit, copyBlocks, diffShows, downstream, pasteBlocks, drivenPorts, inputPorts, moveScene, newBlock, outputPorts, patchBlock, patchOf, portOf, profileOf, removeBlocks, repatch, removeWires, scenesOf, visibleBlocks, visibleWires, type Block, type Clip, type PaletteItem, type Placement, type Show, type Wire } from './show'
+import { ceilingAt, ownersOf, membersOf, setDesign, type Cable, type TubeDesign, boardUniverses, tubePatch, EMPTY_SHOW, INPUTS_ID, LAYOUT, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, TYPE_COLORS, FIXTURE_PORT, addCable, addWire, canCable, canWire, fixturesOf, inputRail, outputRail, placeUnit, removeCables, unitsOf, unitPatch, type Rail, type Unit, copyBlocks, diffShows, downstream, pasteBlocks, drivenPorts, inputPorts, moveScene, newBlock, outputPorts, patchBlock, patchOf, portOf, profileOf, removeBlocks, repatch, removeWires, scenesOf, visibleBlocks, visibleWires, type Block, type Clip, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './show'
 import { normalize } from './migrate'
 import { BlockNode, RailNode, type FlowNode, type RailFlowNode } from './BlockNode'
 import { BoxNode, UnitNode, type BoxFlowNode, type UnitFlowNode } from './UnitNode'
 import { BlockPanel } from './BlockPanel'
 import { MultiPanel } from './MultiPanel'
 import { Palette } from './Palette'
+import { PaletteView } from './PaletteView'
 import { Simulator } from './Simulator'
 import { download } from './blt'
 import { ConnectContext, FocusContext, PickContext, portKey, type PortKey } from './connect'
@@ -200,6 +201,7 @@ function Editor() {
   const [debug, setDebug] = useState(false)
   const [page, setPage] = useState<'build' | 'simulate'>('build')
   const [tab, setTab] = useState<string | null>(null)
+  const [paletteId, setPaletteId] = useState<string | null>(null)
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const pickedRef = useRef(picked)
   pickedRef.current = picked
@@ -296,7 +298,7 @@ function Editor() {
       const t = td.current!
       if (d.removed.length) await t.destroy(d.removed)
       for (const b of d.moved) await t.move(b.id, b.x, b.y)
-      const ids = [...new Set([...d.rebuilt, ...wireTargets(target, d.wires).filter((id) => target.blocks.some((b) => b.id === id) || id === SELECTOR_ID), ...(d.scenes ? [SELECTOR_ID, ...target.blocks.filter((b) => b.kind === 'manual').map((b) => b.id)] : []), ...(d.cables ? cabled(target) : [])])]
+      const ids = [...new Set([...d.rebuilt, ...wireTargets(target, d.wires).filter((id) => target.blocks.some((b) => b.id === id) || id === SELECTOR_ID), ...(d.scenes ? [SELECTOR_ID, ...target.blocks.filter((b) => b.kind === 'manual').map((b) => b.id)] : []), ...(d.cables ? cabled(target) : []), ...(d.responses ? target.blocks.filter((b) => b.kind === 'fixture').map((b) => b.id) : [])])]
       await rebuild(target, ids)
       await t.saveShow(target)
     })
@@ -549,9 +551,7 @@ function Editor() {
     })
   }, [commit, rebuild])
 
-  const patchSelected = useCallback((patch: Partial<Block>) => {
-    const selectedId = sel
-    if (!selectedId) return
+  const patchById = useCallback((selectedId: string, patch: Partial<Block>) => {
     const next = patchBlock(showRef.current, selectedId, patch)
     const block = next.blocks.find((b) => b.id === selectedId)!
     const cosmetic = Object.keys(patch).every((k) => k === 'name') && block.kind !== 'input'
@@ -581,7 +581,16 @@ function Editor() {
       return
     }
     commit(next, cosmetic ? undefined : () => rebuild(next, [block.id]))
-  }, [sel, commit, commitDiff, rebuild])
+  }, [commit, commitDiff, rebuild])
+
+  const patchSelected = useCallback((patch: Partial<Block>) => { if (sel) patchById(sel, patch) }, [sel, patchById])
+
+  const closePalette = useCallback(() => setPaletteId(null), [])
+
+  const setResponse = useCallback((profile: string, response: ColorResponse) => {
+    const next = { ...showRef.current, responses: { ...showRef.current.responses, [profile]: response } }
+    commit(next, () => rebuild(next, next.blocks.filter((b) => b.kind === 'fixture' && profileOf(b).id === profile).map((b) => b.id)))
+  }, [commit, rebuild])
 
   const changeDesign = useCallback((design: TubeDesign) => commitDiff(setDesign(showRef.current, design)), [commitDiff])
 
@@ -597,6 +606,7 @@ function Editor() {
 
   const onNodeDoubleClick = useCallback((_: unknown, n: AnyNode) => {
     if ('block' in n.data && (n.data.block.kind === 'scene' || n.data.block.kind === 'composite')) setTab(n.id)
+    if ('block' in n.data && n.data.block.kind === 'colors') setPaletteId(n.id)
   }, [])
 
   const setValueOf = useCallback((selectedId: string, index: number, value: number, member?: string) => {
@@ -648,6 +658,7 @@ function Editor() {
   const selected = show.blocks.find((b) => b.id === sel) ?? null
   const unit = tab === LAYOUT ? unitsOf(show).find((u) => u.key === selectedId) : undefined
   const tabBlock = show.blocks.find((b) => b.id === tab)
+  const paletteBlock = show.blocks.find((b) => b.id === paletteId)
   const focused = new Set(tab === LAYOUT ? [] : multi)
   const shownEdges = edges.map((e) => {
     const lit = hovered !== null && ((e.target === OUTPUTS_ID && e.targetHandle === hovered) || (e.source === INPUTS_ID && e.sourceHandle === hovered))
@@ -734,9 +745,10 @@ function Editor() {
         )}
         {selected && (
           <div className="panel-wrap" onMouseUp={saveValues} onTouchEnd={saveValues}>
-            <BlockPanel show={show} block={selected} driven={driven} onPatch={patchSelected} onOpenScene={setTab} onMoveScene={reorderScene} onPatchOther={patchOther} onResetPattern={() => tdDo(() => td.current!.resetPattern(selected.id))} onDesign={changeDesign} layout={unit && { placement: unit.placement, flip: unit.flip, onPlace: (p, flip) => commit(placeUnit(showRef.current, unit.key, p, flip)) }} onValue={setValue} listAudioDevices={listAudioDevices} readValues={readValues} configureAudioSlice={configureAudioSlice} />
+            <BlockPanel show={show} block={selected} driven={driven} onPatch={patchSelected} onOpenScene={setTab} onMoveScene={reorderScene} onPatchOther={patchOther} onResetPattern={() => tdDo(() => td.current!.resetPattern(selected.id))} onDesign={changeDesign} layout={unit && { placement: unit.placement, flip: unit.flip, onPlace: (p, flip) => commit(placeUnit(showRef.current, unit.key, p, flip)) }} onValue={setValue} listAudioDevices={listAudioDevices} readValues={readValues} configureAudioSlice={configureAudioSlice} onOpenPalette={setPaletteId} />
           </div>
         )}
+        {paletteBlock?.kind === 'colors' && <PaletteView show={show} block={paletteBlock} onPatch={(patch) => patchById(paletteBlock.id, patch)} onResponse={setResponse} onClose={closePalette} />}
       </main>
       <main hidden={page !== 'simulate'}>
         <Simulator show={show} td={td.current} connected={connected} active={page === 'simulate'} onPlace={placeSim} />

@@ -188,7 +188,7 @@ export function normalize(raw: Partial<Show>): Show {
     if (sized.kind === 'audioslice') Object.assign(sized, { apiPort: sized.apiPort ?? 8722, token: sized.token ?? '', smoothing: sized.smoothing ?? 0 })
     return sized
   })
-  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), designs: raw.designs ?? [] })
+  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(raw.responses ? { responses: raw.responses } : {}), designs: raw.designs ?? [] })
   const used = new Map<string, number>()
   const cables = draft.cables.map((c) => {
     if (c.port !== 'in' || draft.blocks.find((b) => b.id === c.to)?.kind !== 'audio') return c

@@ -22,6 +22,7 @@ type Props = {
   listAudioDevices: () => Promise<[string, string][]>
   readValues: (names: string[], member?: string) => Promise<Record<string, number>>
   configureAudioSlice: () => Promise<string>
+  onOpenPalette: (id: string) => void
 }
 
 function Protocol({ value, onChange }: { value: 'artnet' | 'sacn'; onChange: (v: 'artnet' | 'sacn') => void }) {
@@ -527,13 +528,14 @@ function ValuesPanel({ block, onPatch }: Props & { block: ValuesBlock }) {
   )
 }
 
-function ColorsPanel({ block, onPatch }: Props & { block: ColorsBlock }) {
+function ColorsPanel({ block, onPatch, onOpenPalette }: Props & { block: ColorsBlock }) {
   const steps = Array.from({ length: block.steps }, (_, k) => k)
   const rows = (next: ColorsBlock['rows']) => onPatch({ rows: next })
   const setColor = (i: number, k: number, color: string) => rows(block.rows.map((r, n) => (n === i ? { ...r, colors: steps.map((s) => (s === k ? color : r.colors[s] ?? '#000000')) } : r)))
   return (
     <>
       <NumField label="Steps" value={block.steps} onCommit={(v) => onPatch({ steps: Math.max(1, Math.min(32, Math.round(v))) })} step={1} />
+      <div className="par"><label /><button onClick={() => onOpenPalette(block.id)} title="or double-click the node">palette view</button></div>
       <div className="positions-head">
         <h4>Colours</h4>
         <button onClick={() => rows([...block.rows, { name: `colour ${block.rows.length + 1}`, colors: steps.map(() => '#ffffff') }])}>add</button>
