@@ -220,8 +220,12 @@ export function hexToRgb(hex: string): [number, number, number] {
 export const rgbToHex = (rgb: number[]) => `#${rgb.map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0')).join('')}`
 export const isRgb = (p: FixtureProfile) => RGB.every((n) => p.channels.some((ch) => ch.name === n))
 export const responseOf = (show: Show, profile: string) => show.responses?.[profile] ?? NO_RESPONSE
-const toSrgb = (l: number) => (l <= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055)
-export const previewColor = (rgb: number[], r: ColorResponse) => rgbToHex(rgb.map((v, c) => toSrgb(Math.min(r.multiplier[c] * v ** r.gamma, 1))))
+export const toSrgb = (l: number) => (l <= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055)
+export const previewLight = (rgb: number[], r: ColorResponse) => {
+  const light = rgb.map((v, c) => v ** r.gamma * r.multiplier[c])
+  const level = Math.max(...light)
+  return { light: light.map((l) => l / Math.max(1, level)), level }
+}
 export const sequenceValues = (b: SequenceBlock) => (b.values.length ? b.values : [0]).map((v) => b.center + v * b.unit)
 
 export const PATTERN_MODES: PatternMode[] = ['all', 'alternate', 'alternate2', 'chase', 'outsidein', 'fillin', 'fillout']
