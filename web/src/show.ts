@@ -73,8 +73,8 @@ export type Kind = Block['kind']
 export type Wire = { from: string; fromPort: string; to: string; port: string; scene?: string }
 export type Cable = { from: string; fromPort: string; to: string; port: string }
 export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; responses?: Record<string, ColorResponse> }
-export type ColorResponse = { multiplier: [number, number, number] }
-export const NO_RESPONSE: ColorResponse = { multiplier: [1, 1, 1] }
+export type ColorResponse = { multiplier: [number, number, number]; gamma: number }
+export const NO_RESPONSE: ColorResponse = { multiplier: [1, 1, 1], gamma: 1 }
 
 export const EMPTY_SHOW: Show = { nextId: 1, blocks: [], wires: [], cables: [] }
 export const SELECTOR_ID = 'lsgleam_scene'
@@ -220,7 +220,8 @@ export function hexToRgb(hex: string): [number, number, number] {
 export const rgbToHex = (rgb: number[]) => `#${rgb.map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0')).join('')}`
 export const isRgb = (p: FixtureProfile) => RGB.every((n) => p.channels.some((ch) => ch.name === n))
 export const responseOf = (show: Show, profile: string) => show.responses?.[profile] ?? NO_RESPONSE
-export const sentColor = (rgb: number[], r: ColorResponse) => rgb.map((v, c) => Math.min(v * r.multiplier[c], 1)) as [number, number, number]
+const toSrgb = (l: number) => (l <= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055)
+export const previewColor = (rgb: number[], r: ColorResponse) => rgbToHex(rgb.map((v, c) => toSrgb(Math.min(r.multiplier[c] * v ** r.gamma, 1))))
 export const sequenceValues = (b: SequenceBlock) => (b.values.length ? b.values : [0]).map((v) => b.center + v * b.unit)
 
 export const PATTERN_MODES: PatternMode[] = ['all', 'alternate', 'alternate2', 'chase', 'outsidein', 'fillin', 'fillout']
@@ -778,7 +779,7 @@ export function diffShows(from: Show, to: Show) {
   const z = new Set(to.wires.map(key))
   const wires = [...from.wires.filter((w) => !z.has(key(w))), ...to.wires.filter((w) => !a.has(key(w)))]
   const sceneOrder = (s: Show) => scenesOf(s).map((x) => x.id).join(',')
-  return { removed, rebuilt, moved, wires, scenes: sceneOrder(from) !== sceneOrder(to), cables: JSON.stringify(from.cables) !== JSON.stringify(to.cables), responses: JSON.stringify(from.responses) !== JSON.stringify(to.responses) }
+  return { removed, rebuilt, moved, wires, scenes: sceneOrder(from) !== sceneOrder(to), cables: JSON.stringify(from.cables) !== JSON.stringify(to.cables) }
 }
 
 export function moveScene(show: Show, id: string, dir: -1 | 1): Show {

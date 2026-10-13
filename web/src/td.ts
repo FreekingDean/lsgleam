@@ -1,6 +1,6 @@
 import type { Bridge } from './bridge'
 import type { PortValues } from './live'
-import { SOURCE_KINDS, type Kind, AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, BLT_SIGNALS, audioSliceAlpha, audioSlicePath, boardPlan, controllerPatch, hexToRgb, membersOf, responseOf, ownersOf, tubeGeometry, patternMasks, profileOf, scenesOf, selectorSources, sequenceValues, sourcesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type FixtureBlock, type Show, type StripBlock, type ValuesBlock } from './show'
+import { SOURCE_KINDS, type Kind, AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, BLT_SIGNALS, audioSliceAlpha, audioSlicePath, boardPlan, controllerPatch, hexToRgb, membersOf, ownersOf, tubeGeometry, patternMasks, profileOf, scenesOf, selectorSources, sequenceValues, sourcesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type Show, type StripBlock, type ValuesBlock } from './show'
 
 export type DmxValues = Record<string, number[]>
 
@@ -965,28 +965,12 @@ def finish(c, last, x=800):
     out.nodeX = x
     last.outputConnectors[0].connect(out.inputConnectors[0])
 
-def build_fixture(b, profile, sources, gains=None):
+def build_fixture(b, profile, sources):
     c = new_block(b)
     pairs = [(ch['name'], b['values'][i]) for i, ch in enumerate(profile['channels'])]
     home = constant(c, 'default_channels', pairs)
     home.nodeX, home.nodeY = -1400, 600
     blend = ports(c, sources, {'channels': home}).get('channels') or home
-    if gains:
-        table = constant(c, 'gains', [(n, gains.get(n, 1)) for n, v in pairs])
-        comp = c.create(mathCHOP, 'multiply')
-        comp.par.chopop = 'mul'
-        comp.par.match = 'name'
-        cap = c.create(limitCHOP, 'cap')
-        cap.par.type = 'clamp'
-        cap.par.min = 0
-        cap.par.max = 1
-        table.nodeX, table.nodeY = -600, -150
-        comp.nodeX, comp.nodeY = -400, 0
-        cap.nodeX, cap.nodeY = -200, 0
-        blend.outputConnectors[0].connect(comp.inputConnectors[0])
-        table.outputConnectors[0].connect(comp.inputConnectors[1])
-        comp.outputConnectors[0].connect(cap.inputConnectors[0])
-        blend = cap
     scale = c.create(mathCHOP, 'scale')
     scale.par.torange2 = 255
     scale.par.integer = 'round'
@@ -1469,10 +1453,6 @@ def build_artnet(b, sources):
 
 
 export const colorTable = (b: ColorsBlock): [string, number][][] => Array.from({ length: b.steps }, (_, k) => b.rows.flatMap((r, i) => hexToRgb(r.colors[k] ?? '#000000').map((v, ch): [string, number] => [`c${i}_${['Red', 'Green', 'Blue'][ch]}`, v])))
-export function fixtureGains(show: Show, b: FixtureBlock) {
-  const gains = responseOf(show, profileOf(b).id).multiplier
-  return gains.some((g) => g !== 1) ? { Red: gains[0], Green: gains[1], Blue: gains[2] } : null
-}
 export const valueTable = (b: ValuesBlock): [string, number][][] => Array.from({ length: b.steps }, (_, k) => b.rows.map((r, i): [string, number] => [`v${i}`, r.values[k] ?? 0]))
 const stripConfig = (b: StripBlock) => ({ mode: b.mode, rgb: hexToRgb(b.color), dimmer: b.dimmer, position: b.position, width: b.width, speed: b.speed, spread: b.spread, stops: b.mode === 'ramp' ? b.stops.map((s) => [s.at, hexToRgb(s.color)]) : [] })
 
@@ -1530,7 +1510,7 @@ probe.destroy()
     if (block.kind === 'board') return (`build_board(${j(b)}, ${sources}, ${j(boardPlan(show, block).plan)})`)
     if (block.kind === 'tube') return (`build_tube(${j(b)}, ${sources}, ${j(tubeGeometry(show, block))})`)
     if (block.kind === 'strip') return (`build_strip(${j(b)}, ${sources}, ${j(stripConfig(block))})`)
-    if (block.kind === 'fixture') return (`build_fixture(${j(b)}, ${j(profileOf(block))}, ${sources}, ${j(fixtureGains(show, block))})`)
+    if (block.kind === 'fixture') return (`build_fixture(${j(b)}, ${j(profileOf(block))}, ${sources})`)
     if (block.kind === 'light') return (`build_light(${j(b)}, ${j(profileOf(block))}, ${sources})`)
     if (block.kind === 'dmxin') {
       const patch = controllerPatch(show, block.id)

@@ -167,9 +167,9 @@ function setsFromTubes(show: Show): Show {
 
 type OldResponse = Partial<ColorResponse> & { strength?: [number, number, number]; compensate?: boolean }
 
-function multiplierOf({ multiplier, strength, compensate }: OldResponse): ColorResponse {
-  if (multiplier) return { multiplier }
-  return { multiplier: compensate && strength ? strength.map((s) => Math.min(...strength) / s) as ColorResponse['multiplier'] : [1, 1, 1] }
+function multiplierOf({ multiplier, gamma = 1, strength, compensate }: OldResponse): ColorResponse {
+  if (multiplier) return { multiplier, gamma }
+  return { multiplier: compensate && strength ? strength.map((s) => Math.min(...strength) / s) as ColorResponse['multiplier'] : [1, 1, 1], gamma }
 }
 
 export function normalize(raw: Partial<Show>): Show {

@@ -298,7 +298,7 @@ function Editor() {
       const t = td.current!
       if (d.removed.length) await t.destroy(d.removed)
       for (const b of d.moved) await t.move(b.id, b.x, b.y)
-      const ids = [...new Set([...d.rebuilt, ...wireTargets(target, d.wires).filter((id) => target.blocks.some((b) => b.id === id) || id === SELECTOR_ID), ...(d.scenes ? [SELECTOR_ID, ...target.blocks.filter((b) => b.kind === 'manual').map((b) => b.id)] : []), ...(d.cables ? cabled(target) : []), ...(d.responses ? target.blocks.filter((b) => b.kind === 'fixture').map((b) => b.id) : [])])]
+      const ids = [...new Set([...d.rebuilt, ...wireTargets(target, d.wires).filter((id) => target.blocks.some((b) => b.id === id) || id === SELECTOR_ID), ...(d.scenes ? [SELECTOR_ID, ...target.blocks.filter((b) => b.kind === 'manual').map((b) => b.id)] : []), ...(d.cables ? cabled(target) : [])])]
       await rebuild(target, ids)
       await t.saveShow(target)
     })
@@ -588,9 +588,8 @@ function Editor() {
   const closePalette = useCallback(() => setPaletteId(null), [])
 
   const setResponse = useCallback((profile: string, response: ColorResponse) => {
-    const next = { ...showRef.current, responses: { ...showRef.current.responses, [profile]: response } }
-    commit(next, () => rebuild(next, next.blocks.filter((b) => b.kind === 'fixture' && profileOf(b).id === profile).map((b) => b.id)))
-  }, [commit, rebuild])
+    commit({ ...showRef.current, responses: { ...showRef.current.responses, [profile]: response } })
+  }, [commit])
 
   const changeDesign = useCallback((design: TubeDesign) => commitDiff(setDesign(showRef.current, design)), [commitDiff])
 
