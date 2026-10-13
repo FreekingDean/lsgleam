@@ -6,7 +6,8 @@ import {
 import '@xyflow/react/dist/style.css'
 import { Bridge } from './bridge'
 import { Td, colorTable, valueTable } from './td'
-import { ceilingAt, ownersOf, membersOf, setDesign, type Cable, type TubeDesign, boardUniverses, tubePatch, EMPTY_SHOW, INPUTS_ID, LAYOUT, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, TYPE_COLORS, FIXTURE_PORT, addCable, addWire, canCable, canWire, fixturesOf, inputRail, outputRail, placeUnit, removeCables, unitsOf, unitPatch, type Rail, type Unit, copyBlocks, diffShows, downstream, hasProfile, pasteBlocks, drivenPorts, inputPorts, moveScene, newBlock, outputPorts, patchBlock, patchOf, portOf, profileOf, removeBlocks, repatch, removeWires, scenesOf, visibleBlocks, visibleWires, type Block, type Clip, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './show'
+import { RAIL_W, SCALE, flipY, railHeight, railSpots, unitSize } from './spots'
+import { ceilingAt, ownersOf, membersOf, setDesign, type Cable, type TubeDesign, boardUniverses, tubePatch, EMPTY_SHOW, INPUTS_ID, LAYOUT, LAYOUT_KINDS, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, TYPE_COLORS, FIXTURE_PORT, addCable, addWire, canCable, canWire, fixturesOf, inputRail, outputRail, placeUnit, removeCables, unitsOf, unitPatch, type Rail, type Unit, copyBlocks, diffShows, downstream, hasProfile, pasteBlocks, drivenPorts, inputPorts, moveScene, newBlock, outputPorts, patchBlock, patchOf, portOf, profileOf, removeBlocks, repatch, removeWires, scenesOf, visibleBlocks, visibleWires, type Block, type Clip, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './show'
 import { normalize } from './migrate'
 import { FIXTURES, setCustomProfiles, type FixtureProfile } from './fixtures'
 import { addComposite, addDesign, addPalette, setProfile, type ColorPalette } from './library'
@@ -24,19 +25,10 @@ import { ConnectContext, FocusContext, PickContext, portKey, type PortKey } from
 import { LiveContext, liveKey, outputValue, record, type PortValues } from './live'
 
 const NODE_TYPES = { block: BlockNode, unit: UnitNode, box: BoxNode, rail: RailNode }
-const SCALE = 100
 type AnyNode = FlowNode | UnitFlowNode | BoxFlowNode | RailFlowNode
-const unitSize = (u: Unit): [number, number] => {
-  if (u.block.kind === 'box') return [u.block.size[0] * SCALE, u.block.size[1] * SCALE]
-  const side = Math.max(100, 54 + Math.max(u.inputs.length, u.outputs.length) * 16)
-  return [side, side]
-}
 const GRID = 20
-const RAIL_W = 240
-const railHeight = (rails: Rail[]) => 50 + rails.reduce((h, r) => h + 22 + r.ports.length * 18, 0)
 
 const snap = (v: number) => Math.round(v / GRID) * GRID
-const flipY = (y: number, h: number) => -y - h
 
 function unitSub(show: Show, u: Unit) {
   const b = u.block
@@ -58,16 +50,6 @@ function unitSub(show: Show, u: Unit) {
   if (b.kind === 'board') return `${b.ip} · U${b.startUniverse}–${b.startUniverse + boardUniverses(b).length - 1}`
   if (b.kind === 'box') return b.size.map((v) => `${Number((v / 0.3048).toFixed(1))}`).join(' × ') + ' ft'
   return b.kind
-}
-
-function railSpots(show: Show): Record<string, { x: number; y: number }> {
-  const blocks = visibleBlocks(show, null)
-  const top = Math.min(0, ...blocks.map((b) => flipY(b.y, b.h)))
-  return {
-    [INPUTS_ID]: { x: Math.min(0, ...blocks.map((b) => b.x)) - RAIL_W - 160, y: top },
-    [OUTPUTS_ID]: { x: Math.max(400, ...blocks.map((b) => b.x + b.w)) + 160, y: top },
-    ...show.rails,
-  }
 }
 
 function railNodes(show: Show): RailFlowNode[] {
@@ -310,6 +292,7 @@ function Editor() {
       const t = td.current!
       if (d.removed.length) await t.destroy(d.removed)
       for (const b of d.moved) await t.move(b.id, b.x, b.y)
+      await t.place(target, [INPUTS_ID, OUTPUTS_ID, ...target.blocks.filter((b) => LAYOUT_KINDS.includes(b.kind)).map((b) => b.id)])
       const ids = [...new Set([...d.rebuilt, ...wireTargets(target, d.wires).filter((id) => target.blocks.some((b) => b.id === id) || id === SELECTOR_ID), ...(d.scenes ? [SELECTOR_ID, ...target.blocks.filter((b) => b.kind === 'manual').map((b) => b.id)] : []), ...(d.cables ? cabled(target) : [])])]
       await rebuild(target, ids)
       await t.saveShow(target)
@@ -533,9 +516,11 @@ function Editor() {
   const onNodeDragStop = useCallback((_: unknown, _n: AnyNode, dragged: AnyNode[]) => {
     let next = showRef.current
     const moved: [string, number, number][] = []
+    const placed: string[] = []
     for (const n of dragged) {
       if (n.type === 'rail') {
         next = { ...next, rails: { ...next.rails, [n.id]: { x: Math.round(n.position.x), y: Math.round(n.position.y) } } }
+        placed.push(n.id)
         continue
       }
       if (n.type === 'unit' || n.type === 'box') {
@@ -543,6 +528,7 @@ function Editor() {
         const [w, h] = unitSize(u)
         const p = u.placement
         next = placeUnit(next, n.id, { ...p, position: [(n.position.x + w / 2) / SCALE, p.position[1], (n.position.y + h / 2) / SCALE] })
+        placed.push(n.id)
         continue
       }
       const x = Math.round(n.position.x)
@@ -550,7 +536,10 @@ function Editor() {
       next = patchBlock(next, n.id, { x, y })
       moved.push([n.id, x, y])
     }
-    commit(next, async () => { for (const [id, x, y] of moved) await td.current!.move(id, x, y) })
+    commit(next, async () => {
+      for (const [id, x, y] of moved) await td.current!.move(id, x, y)
+      if (placed.length) await td.current!.place(next, placed)
+    })
   }, [commit])
 
   const sel = selectedId

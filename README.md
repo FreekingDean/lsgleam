@@ -143,11 +143,12 @@ Each block is rebuilt as a whole (destroy COMP, recreate from the model) when a 
 
 Everything generated lives in one Base COMP, `/project1/lsgleam`, laid out like the app:
 
-- `layout/`: Art-Net nodes, DMX controllers, pixel boards and sources (audio, BLT, AudioSlice).
-- `show/`: show-tab blocks, scene select, the selector and every fixture (the Outputs rail). Each scene is a COMP `show/<scene id>` holding its blocks, and each LED tubes node is a COMP `show/<tset id>` holding its tubes.
+- `layout/`: Art-Net nodes, DMX controllers, pixel boards and sources (audio, BLT, AudioSlice), each at its layout-tab spot and size.
+- `show/`: the show tab. Show blocks, scene COMPs and composites sit where their nodes are; `inputs` and `outputs` COMPs sit where the Inputs and Outputs rails are. `inputs` takes each layout source in and has one output per source port used on the show tab, in rail order. `outputs` holds the fixtures and one COMP per LED tubes node (`outputs/<tset id>/<tubes>`), in rail order. Each scene is a COMP `show/<scene id>` holding its blocks, composites nest like the app, and the selector `lsgleam_scene` sits beside them.
 - Blocks are COMPs named by id, tagged `lsgleam`, coloured by kind (hardware blue, sources red, fixtures and tubes teal, outputs yellow, inputs green, logic grey, scenes purple) with the app name as their node comment.
-- Wires inside a COMP are real wires. A wire that crosses levels climbs out through an Out CHOP `out_<source id>` on each container and down through an In CHOP `in_<source id>`, so at show level you see sources → scene COMPs → fixtures wired like the show tab, and fixtures → `layout` → Art-Net nodes.
-- On connect, lsgleam COMPs left flat in `/project1` by older versions are destroyed and the tree is rebuilt.
+- Wires inside a COMP are real wires. A wire that crosses levels climbs out through an Out CHOP on each container and down through an In CHOP, so at show level you see inputs → show blocks / scene COMPs → outputs wired like the show tab, and outputs → `layout` → Art-Net nodes. TD orders a COMP's connectors by the alphanumeric names of its In/Out CHOPs, so these are named `in<k>_…`/`out<k>_…` with `k` the port's index on the node (scene and composite ports, rail order for `inputs`/`outputs`), sit on the container's left/right edge in that order, and are renamed when the order changes (TD keeps their wires).
+- Dragging a node, a rail or a layout unit moves its COMP.
+- On connect, lsgleam COMPs left flat in `/project1` by older versions, and trees built with an older layout, are destroyed and the tree is rebuilt.
 
 Anything hand-edited inside a `lsgleam`-tagged COMP is lost on its next rebuild. Nothing outside `/project1/lsgleam` is touched except the `lsgleam_show` DAT.
 
