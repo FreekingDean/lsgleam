@@ -924,57 +924,29 @@ def build_hold(b, sources):
     out.nodeX = 1000
     name.outputConnectors[0].connect(out.inputConnectors[0])
 
-def lerp(c, name, x, y, a, nx):
-    inv = c.create(mathCHOP, name + '_inv')
-    inv.par.gain = -1
-    inv.par.postoff = 1
-    a.outputConnectors[0].connect(inv.inputConnectors[0])
-    px = c.create(mathCHOP, name + '_x')
-    px.par.chopop = 'mul'
-    x.outputConnectors[0].connect(px.inputConnectors[0])
-    inv.outputConnectors[0].connect(px.inputConnectors[1])
-    py = c.create(mathCHOP, name + '_y')
-    py.par.chopop = 'mul'
-    y.outputConnectors[0].connect(py.inputConnectors[0])
-    a.outputConnectors[0].connect(py.inputConnectors[1])
-    out = c.create(mathCHOP, name)
-    out.par.chopop = 'add'
-    px.outputConnectors[0].connect(out.inputConnectors[0])
-    py.outputConnectors[0].connect(out.inputConnectors[1])
-    for k, o in enumerate((inv, px, py, out)):
-        o.nodeX, o.nodeY = nx + k * 150, -150 if name == 'lo' else -300
-    return out
-
 def build_range(b, sources):
     c = new_block(b)
     by_port = ports(c, sources)
     signal = by_port.get('signal') or constant(c, 'nosignal', [('signal', 0)])
-    amount = by_port.get('amount') or constant(c, 'noamount', [('amount', 0)])
-    amt = c.create(limitCHOP, 'amount_clamp')
-    amt.par.type = 'clamp'
-    amt.par.min = 0
-    amt.par.max = 1
-    amt.nodeX, amt.nodeY = 0, -450
-    amount.outputConnectors[0].connect(amt.inputConnectors[0])
-    edge = lambda port, v: by_port.get(port) or constant(c, 'set_' + port, [(port, v)])
-    lo = lerp(c, 'lo', edge('tameMin', b['tame'][0]), edge('wildMin', b['wild'][0]), amt, 200)
-    hi = lerp(c, 'hi', edge('tameMax', b['tame'][1]), edge('wildMax', b['wild'][1]), amt, 200)
-    span = c.create(mathCHOP, 'span')
-    span.par.chopop = 'sub'
-    span.nodeX, span.nodeY = 900, -300
-    hi.outputConnectors[0].connect(span.inputConnectors[0])
-    lo.outputConnectors[0].connect(span.inputConnectors[1])
-    scaled = c.create(mathCHOP, 'scaled')
-    scaled.par.chopop = 'mul'
-    scaled.nodeX, scaled.nodeY = 1100, 0
-    signal.outputConnectors[0].connect(scaled.inputConnectors[0])
-    span.outputConnectors[0].connect(scaled.inputConnectors[1])
-    lifted = c.create(mathCHOP, 'lifted')
-    lifted.par.chopop = 'add'
-    lifted.nodeX = 1300
-    scaled.outputConnectors[0].connect(lifted.inputConnectors[0])
-    lo.outputConnectors[0].connect(lifted.inputConnectors[1])
-    finish(c, named(c, sources, lifted, 'signal', 1500), 1700)
+    def drive(par, port, v, fn='%s'):
+        if port in by_port:
+            par.expr = fn % ("op('%s')[0]" % by_port[port].name)
+        else:
+            par.val = v
+    sides = []
+    for k, side in enumerate(('tame', 'wild')):
+        m = c.create(mathCHOP, side)
+        m.nodeX, m.nodeY = 0, -k * 150
+        drive(m.par.torange1, side + 'Min', b[side][0])
+        drive(m.par.torange2, side + 'Max', b[side][1])
+        signal.outputConnectors[0].connect(m.inputConnectors[0])
+        sides.append(m)
+    cross = c.create(crossCHOP, 'cross')
+    cross.nodeX = 200
+    drive(cross.par.cross, 'amount', 0, 'tdu.clamp(%s, 0, 1)')
+    for m in sides:
+        m.outputConnectors[0].connect(cross)
+    finish(c, named(c, sources, cross, 'signal', 400), 600)
 
 def build_values(b, sources, table):
     c = new_block(b)
