@@ -1,6 +1,7 @@
 import type { Bridge } from './bridge'
 import type { PortValues } from './live'
-import { SOURCE_KINDS, type Kind, AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, BLT_SIGNALS, audioSliceAlpha, audioSlicePath, boardPlan, controllerPatch, hexToRgb, membersOf, ownersOf, tubeGeometry, patternMasks, profileOf, scenesOf, selectorSources, sequenceValues, sourcesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type Show, type StripBlock, type ValuesBlock } from './show'
+import { railSpot, unitSpot, type Spot } from './spots'
+import { INPUTS_ID, NODE_H, NODE_W, OUTPUTS_ID, RAIL_SEP, SOURCE_KINDS, type Kind, inputPorts, inputRail, outputPorts, outputRail, unitsOf, AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, BLT_SIGNALS, audioSliceAlpha, audioSlicePath, boardPlan, controllerPatch, hexToRgb, membersOf, ownersOf, tubeGeometry, patternMasks, profileOf, scenesOf, selectorSources, sequenceValues, sourcesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type Show, type StripBlock, type TubeBlock, type ValuesBlock } from './show'
 
 export type DmxValues = Record<string, number[]>
 
@@ -104,11 +105,10 @@ def onCook(scriptOp):
     return
 `
 
-type Dir = [string, number, number, string, number[]]
+type Dir = { name: string; label: string; tint: number[]; order: string[]; rail?: [string, string, string | null][] } & Spot
 const TINTS = { dir: [0.3, 0.3, 0.34], hardware: [0.36, 0.56, 0.84], source: [0.88, 0.42, 0.42], fixture: [0.31, 0.7, 0.75], scene: [0.69, 0.49, 0.86], composite: [0.45, 0.62, 0.55], output: [0.95, 0.71, 0.27], input: [0.42, 0.72, 0.42], logic: [0.55, 0.55, 0.6] }
-const SHOW_DIR: Dir = ['show', 300, 0, 'Show: scenes, logic and fixtures', TINTS.dir]
-const LAYOUT_DIR: Dir = ['layout', -300, 0, 'Layout: Art-Net nodes, pixel boards and sources', TINTS.dir]
 const HARDWARE: Kind[] = ['artnet', 'dmxin', 'board']
+const ROW = 200
 
 function tintOf(b: Block) {
   if (HARDWARE.includes(b.kind)) return TINTS.hardware
@@ -119,15 +119,60 @@ function tintOf(b: Block) {
   return TINTS.logic
 }
 
+const sources = (show: Show) => show.blocks.filter((b) => SOURCE_KINDS.includes(b.kind))
+const inLayout = (b: Block) => HARDWARE.includes(b.kind) || SOURCE_KINDS.includes(b.kind)
+const isOutput = (b: Block) => b.kind === 'fixture' || b.kind === 'tube'
+
+function outputOrder(show: Show) {
+  const seen = new Set<string>()
+  return outputRail(show).flatMap((r) => r.ports.map((p) => p.id)).flatMap((id) => {
+    const set = show.blocks.find((b): b is TubeBlock => b.id === id && b.kind === 'tube')?.set
+    if (!set || seen.has(set)) return [id]
+    seen.add(set)
+    return [set, id]
+  })
+}
+
+function railPorts(show: Show): [string, string, string | null][] {
+  return inputRail(show).flatMap((r) => r.ports.map((p): [string, string, string | null] => {
+    const [id, port] = p.id.split(RAIL_SEP)
+    const outs = outputPorts(show.blocks.find((b) => b.id === id)!, show)
+    return [id, port, p.chans ?? (outs.length > 1 ? port : null)]
+  }))
+}
+
+const showDir = (show: Show): Dir => ({ name: 'show', x: 300, y: 0, w: NODE_W, h: NODE_H, label: 'Show: the show tab', tint: TINTS.dir, order: sources(show).map((b) => b.id) })
+const layoutDir = (show: Show): Dir => ({ name: 'layout', x: -300, y: 0, w: NODE_W, h: NODE_H, label: 'Layout: Art-Net nodes, pixel boards and sources', tint: TINTS.dir, order: sources(show).map((b) => b.id) })
+const inputsDir = (show: Show): Dir => ({ name: 'inputs', ...railSpot(show, INPUTS_ID), label: 'Inputs: layout sources used on the show tab', tint: TINTS.source, order: [...sources(show).map((b) => b.id), ...railPorts(show).map(([id, port]) => `${id}_${port}`)], rail: railPorts(show) })
+const outputsDir = (show: Show): Dir => ({ name: 'outputs', ...railSpot(show, OUTPUTS_ID), label: 'Outputs: fixtures and LED tubes', tint: TINTS.fixture, order: outputOrder(show) })
+
+function spotOf(show: Show, b: Block): Spot {
+  const size = { w: b.w, h: b.h }
+  if (inLayout(b)) {
+    const u = unitsOf(show).find((u) => u.key === b.id)
+    return u ? unitSpot(u) : { x: b.x, y: b.y, ...size }
+  }
+  if (b.kind === 'tube' && b.set) return { x: 0, y: -membersOf(show, b.set).findIndex((t) => t.id === b.id) * ROW, ...size }
+  if (isOutput(b) || b.kind === 'tubeset') return { x: 0, y: -outputOrder(show).filter((id) => show.blocks.find((x) => x.id === id && !(x.kind === 'tube' && x.set))).indexOf(b.id) * ROW, ...size }
+  return { x: b.x, y: b.y, ...size }
+}
+
+function ownerDir(show: Show, o: Block): Dir {
+  const tint = o.kind === 'scene' ? TINTS.scene : o.kind === 'composite' ? TINTS.composite : TINTS.fixture
+  const order = o.kind === 'tubeset' ? membersOf(show, o.id).map((t) => t.id) : [...inputPorts(o, show).map((p) => p.id), ...outputPorts(o, show).map((p) => p.id.split(':')[0])]
+  return { name: o.id, ...spotOf(show, o), label: o.name, tint, order: [...new Set(order)] }
+}
+
 function dirsOf(show: Show, b: Block): Dir[] {
-  if (HARDWARE.includes(b.kind) || SOURCE_KINDS.includes(b.kind)) return [LAYOUT_DIR]
-  return [SHOW_DIR, ...ownersOf(show, b).map((o): Dir => [o.id, o.x, o.y, o.name, o.kind === 'scene' ? TINTS.scene : o.kind === 'composite' ? TINTS.composite : TINTS.fixture])]
+  if (inLayout(b)) return [layoutDir(show)]
+  return [showDir(show), ...(isOutput(b) ? [outputsDir(show)] : []), ...ownersOf(show, b).map((o) => ownerDir(show, o))]
 }
 
 function placed(show: Show, b: Block) {
-  const spot = b.kind === 'tube' && b.set ? { x: membersOf(show, b.set).findIndex((t) => t.id === b.id) * 220, y: 0 } : {}
-  return { ...b, ...spot, _dirs: dirsOf(show, b), _tint: tintOf(b) }
+  return { ...b, ...spotOf(show, b), _dirs: dirsOf(show, b), _tint: tintOf(b) }
 }
+
+const railCode = (show: Show) => `RAIL = ${j([showDir(show), inputsDir(show)])}`
 
 const PRELUDE = `
 import json
@@ -147,53 +192,124 @@ def home():
 
 LS = home()
 
+RAIL = None
+
 def find(name):
     found = LS.findChildren(name=name, tags=['lsgleam'])
     return found[0] if found else None
 
+def find_dir(name):
+    found = LS.findChildren(name=name, tags=['lsgleam_dir'])
+    return found[0] if found else None
+
+def tidy(p):
+    order = p.storage.get('order', [])
+    nodes = [o for o in p.children if 'lsgleam' in o.tags or 'lsgleam_dir' in o.tags]
+    left = min([o.nodeX for o in nodes], default=0) - 400
+    right = max([o.nodeX + o.nodeWidth for o in nodes], default=0) + 250
+    top = max([o.nodeY + o.nodeHeight for o in nodes], default=0)
+    wires = [o for o in p.children if o.storage.get('wire')]
+    rank = lambda o: order.index(o.storage['rank']) if o.storage['rank'] in order else len(order)
+    names = []
+    for side, x in (('in', left), ('sel', (left + right) // 2), ('out', right)):
+        mine = sorted((o for o in wires if o.storage['wire'][0] == side), key=lambda o: (rank(o), o.storage['wire'][1]))
+        for i, o in enumerate(mine):
+            o.nodeX, o.nodeY = x, top - (i + 1) * 120
+            names.append((o, '%s%d_%s' % (side, rank(o), o.storage['wire'][1])))
+    renamed = [(o, name) for o, name in names if o.name != name]
+    for k, (o, name) in enumerate(renamed):
+        o.name = 'renaming%d' % k
+    for o, name in renamed:
+        o.name = name
+
 def ensure(dirs):
     p = LS
-    for name, x, y, label, tint in dirs:
-        d = p.op(name)
-        if d is None:
-            d = p.create(baseCOMP, name)
-            d.tags.add('lsgleam_dir')
-        d.nodeX, d.nodeY = x, y
-        d.comment = label
-        d.color = tuple(tint)
-        p = d
+    for d in dirs:
+        c = p.op(d['name'])
+        if c is None:
+            c = p.create(baseCOMP, d['name'])
+            c.tags.add('lsgleam_dir')
+        c.nodeX, c.nodeY = d['x'], d['y']
+        c.nodeWidth, c.nodeHeight = d['w'], d['h']
+        c.comment = d['label']
+        c.color = tuple(d['tint'])
+        c.store('order', d['order'])
+        if 'rail' in d:
+            c.store('rail', d['rail'])
+        tidy(c)
+        p = c
     return p
 
-def wire(src, dst, conn):
+def port_op(p, kind, side, label, rank, ids):
+    for o in p.children:
+        if o.storage.get('wire') == [side, label]:
+            return o
+    o = p.create(kind)
+    o.store('wire', [side, label])
+    o.store('rank', rank)
+    o.store('ids', ids)
+    o.tags.add('lsgleam_wire')
+    tidy(p)
+    return o
+
+def outlet(p, x):
+    return next(k for k in p.outputConnectors if k.outOP is not None and k.outOP.path == x.path)
+
+def inlet(p, x):
+    return next(k for k in p.inputConnectors if k.inOP is not None and k.inOP.path == x.path)
+
+def lift(src, above):
+    o, out = src, src.outputConnectors[0]
+    while o.parent().path not in above:
+        p = o.parent()
+        x = port_op(p, outCHOP, 'out', src.name, src.name, [src.name])
+        x.inputConnectors[0].connect(out)
+        out = outlet(p, x)
+        o = p
+    return o, out
+
+def tap(src, chan):
+    box = ensure(RAIL)
+    port = next((p for s, p, c in box.storage.get('rail', []) if s == src.name and c == chan), chan or 'out')
+    label = src.name + '_' + port
+    sel = port_op(box, selectCHOP if chan else nullCHOP, 'sel', label, label, [src.name])
+    if chan:
+        sel.par.channames = chan
+    wire(src, sel, sel.inputConnectors[0])
+    x = port_op(box, outCHOP, 'out', label, label, [src.name])
+    sel.outputConnectors[0].connect(x.inputConnectors[0])
+    return box, outlet(box, x)
+
+def wire(src, dst, conn, chan=None):
     above = set()
     a = dst.parent()
     while a is not None and a.path != LS.parent().path:
         above.add(a.path)
         a = a.parent()
-    o, out = src, src.outputConnectors[0]
-    while o.parent().path not in above:
-        p = o.parent()
-        name = 'out_' + src.name
-        x = p.op(name)
-        if x is None:
-            x = p.create(outCHOP, name)
-            x.nodeX, x.nodeY = 4000, -len(p.ops('out_*')) * 100
-        x.inputConnectors[0].connect(out)
-        out = next(k for k in p.outputConnectors if k.outOP is not None and k.outOP.path == x.path)
-        o = p
+    show = LS.path + '/show/'
+    if RAIL and src.parent().path == LS.path + '/layout' and dst.path.startswith(show) and not dst.path.startswith(show + 'inputs/'):
+        o, out = tap(src, chan)
+    else:
+        o, out = lift(src, above)
     level = o.parent().path
     d, target = dst, conn
     while d.parent().path != level:
         p = d.parent()
-        name = 'in_' + src.name
-        x = p.op(name)
-        if x is None:
-            x = p.create(inCHOP, name)
-            x.nodeX, x.nodeY = -2000, -len(p.ops('in_*')) * 100
+        if d.name in p.storage.get('order', []):
+            x = port_op(p, inCHOP, 'in', src.name + '_' + d.name, d.name, [src.name, d.name])
+        else:
+            x = port_op(p, inCHOP, 'in', src.name, src.name, [src.name])
         x.outputConnectors[0].connect(target)
-        target = next(k for k in p.inputConnectors if k.inOP is not None and k.inOP.path == x.path)
+        target = inlet(p, x)
         d = p
     out.connect(target)
+
+def put(name, spot):
+    o = find(name) or find_dir(name)
+    if o:
+        o.nodeX, o.nodeY = spot['x'], spot['y']
+        o.nodeWidth, o.nodeHeight = spot['w'], spot['h']
+        tidy(o.parent())
 
 def chain(*ops, y=0):
     for i, o in enumerate(ops):
@@ -205,12 +321,17 @@ def new_block(b):
     old = find(b['id'])
     if old:
         old.destroy()
-    c = ensure(b['_dirs']).create(baseCOMP, b['id'])
+    p = ensure(b['_dirs'])
+    for o in p.children:
+        if o.storage.get('ids', [])[1:] == [b['id']]:
+            o.destroy()
+    c = p.create(baseCOMP, b['id'])
     c.nodeX, c.nodeY = b['x'], b['y']
     c.nodeWidth, c.nodeHeight = b['w'], b['h']
     c.tags.add('lsgleam')
     c.comment = b.get('name', '')
     c.color = tuple(b['_tint'])
+    tidy(p)
     return c
 
 def inputs(c, sources, rename=False):
@@ -248,7 +369,7 @@ def inputs(c, sources, rename=False):
             by_name[o.name] = conn
     for i, src in enumerate(sources):
         conn = by_name.get('in%d' % (i + 1), c.inputConnectors[i])
-        wire(find(src['from']), c, conn)
+        wire(find(src['from']), c, conn, src.get('chan'))
     return ends
 
 def mix(c, name, ends, x, y):
@@ -1489,6 +1610,9 @@ d.text = ${JSON.stringify(JSON.stringify(show, null, 2))}
   legacy() {
     return this.run<number>(`
 old = [c for c in ROOT.children if 'lsgleam' in c.tags]
+if LS.storage.get('tree') != 2:
+    old += LS.children
+    LS.store('tree', 2)
 for c in old:
     c.destroy()
 result = len(old)
@@ -1535,7 +1659,7 @@ probe.destroy()
 
   private selectorCode(show: Show) {
     const scenes = scenesOf(show)
-    return `build_selector(${j({ id: SELECTOR_ID, name: 'scene selector', x: -400, y: -300, w: 160, h: 130, _dirs: [SHOW_DIR], _tint: TINTS.logic })}, ${scenes.length}, ${j(scenes.map((s) => [s.fadeIn, s.fadeOut]))}, ${j(selectorSources(show).flat())})`
+    return `build_selector(${j({ id: SELECTOR_ID, name: 'scene selector', x: -400, y: -300, w: 160, h: 130, _dirs: [showDir(show)], _tint: TINTS.logic })}, ${scenes.length}, ${j(scenes.map((s) => [s.fadeIn, s.fadeOut]))}, ${j(selectorSources(show).flat())})`
   }
 
   build(show: Show, block: Block) {
@@ -1547,12 +1671,21 @@ probe.destroy()
   }
 
   async buildAll(show: Show, ids: string[]) {
-    for (const id of new Set(ids.flatMap((id) => [id, ...membersOf(show, id).map((t) => t.id)]))) {
+    for (const id of new Set(ids.flatMap((id) => [id, ...membersOf(show, id).map((t) => t.id).filter((t) => !ids.includes(t))]))) {
       const block = show.blocks.find((b) => b.id === id)
       const code = id === SELECTOR_ID ? this.selectorCode(show) : block ? this.buildCode(show, block) : null
-      if (code) await this.run<null>(code)
+      if (code) await this.run<null>(`${railCode(show)}\n${code}`)
     }
-    return null
+    return this.place(show, [INPUTS_ID, OUTPUTS_ID])
+  }
+
+  place(show: Show, ids: string[]) {
+    return this.run<null>(ids.map((id) => {
+      if (id === INPUTS_ID) return `ensure(${j([showDir(show), inputsDir(show)])})`
+      if (id === OUTPUTS_ID) return `ensure(${j([showDir(show), outputsDir(show)])})`
+      const b = show.blocks.find((x) => x.id === id)
+      return b ? `put(${JSON.stringify(id)}, ${j(spotOf(show, b))})` : ''
+    }).join('\n'))
   }
 
   setColors(id: string, table: [string, number][][]) {
@@ -1591,18 +1724,19 @@ for k in range(${count}):
 
   destroy(ids: string[]) {
     return this.run<null>(`
-for name in ${j(ids)}:
-    for o in LS.findChildren(name=name) + LS.findChildren(name='out_' + name) + LS.findChildren(name='in_' + name):
-        if o.valid:
-            o.destroy()
+gone = set(${j(ids)})
+for o in LS.findChildren(tags=['lsgleam']) + LS.findChildren(tags=['lsgleam_dir']) + LS.findChildren(tags=['lsgleam_wire']):
+    if o.valid and (o.name in gone and 'lsgleam_wire' not in o.tags or gone & set(o.storage.get('ids', []))):
+        o.destroy()
 `)
   }
 
   move(id: string, x: number, y: number) {
     return this.run<null>(`
-o = find(${JSON.stringify(id)}) or next(iter(LS.findChildren(name=${JSON.stringify(id)}, tags=['lsgleam_dir'])), None)
+o = find(${JSON.stringify(id)}) or find_dir(${JSON.stringify(id)})
 if o:
     o.nodeX, o.nodeY = ${x}, ${y}
+    tidy(o.parent())
 `)
   }
 
