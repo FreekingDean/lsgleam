@@ -12,9 +12,10 @@ type LegacyDmxIn = Block & { node?: string; universe?: number }
 
 function migrate(raw: Legacy): Show {
   const blocks = raw.blocks.map((b) => ({ ...b, kind: LEGACY_KINDS[b.kind] ?? b.kind }) as Block)
-  const outputs = blocks.filter((b) => (b.kind as string) === 'output') as unknown as LegacyOutput[]
+  const legacyOutput = (b: Block) => b.kind === 'output' && 'universe' in b
+  const outputs = blocks.filter(legacyOutput) as unknown as LegacyOutput[]
   const patched = blocks.map((b) => {
-    if ((b.kind as string) === 'output') {
+    if (legacyOutput(b)) {
       const o = b as unknown as LegacyOutput
       return { id: b.id, name: b.name, x: b.x, y: b.y, w: b.w, h: b.h, kind: 'artnet', protocol: o.protocol, ip: o.ip, universes: [o.universe], inputs: [], active: o.active } as Block
     }
@@ -195,7 +196,7 @@ export function normalize(raw: Partial<Show>): Show {
     if (sized.kind === 'audioslice') Object.assign(sized, { apiPort: sized.apiPort ?? 8722, token: sized.token ?? '', smoothing: sized.smoothing ?? 0 })
     return sized
   })
-  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(raw.responses ? { responses: Object.fromEntries(Object.entries(raw.responses).map(([id, r]) => [id, multiplierOf(r)])) } : {}), designs: raw.designs ?? [] })
+  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(raw.profiles?.length ? { profiles: raw.profiles } : {}), ...(raw.responses ? { responses: Object.fromEntries(Object.entries(raw.responses).map(([id, r]) => [id, multiplierOf(r)])) } : {}), designs: raw.designs ?? [] })
   const used = new Map<string, number>()
   const cables = draft.cables.map((c) => {
     if (c.port !== 'in' || draft.blocks.find((b) => b.id === c.to)?.kind !== 'audio') return c

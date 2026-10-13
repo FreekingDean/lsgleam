@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FIXTURES } from './fixtures'
+import { allProfiles } from './fixtures'
 import { NumberBox } from './fields'
 import { hexToRgb, isRgb, previewLight, profileOf, responseOf, rgbToHex, toSrgb, type ColorResponse, type ColorsBlock, type Show } from './show'
 
@@ -50,7 +50,7 @@ function ResponseEditor({ response, onChange, onCommit }: { response: ColorRespo
 
 export function PaletteView({ show, block, onPatch, onResponse, onClose }: Props) {
   const used = new Set(show.blocks.flatMap((b) => (b.kind === 'fixture' ? [profileOf(b).id] : [])))
-  const profiles = FIXTURES.filter(isRgb).sort((a, b) => Number(used.has(b.id)) - Number(used.has(a.id)))
+  const profiles = allProfiles().filter(isRgb).sort((a, b) => Number(used.has(b.id)) - Number(used.has(a.id)))
   const [profileId, setProfileId] = useState(profiles[0].id)
   const [dragging, setDragging] = useState<ColorResponse | null>(null)
   const [selected, setSelected] = useState({ row: 0, step: 0 })

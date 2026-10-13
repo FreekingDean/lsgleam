@@ -6,8 +6,12 @@ import {
 import '@xyflow/react/dist/style.css'
 import { Bridge } from './bridge'
 import { Td, colorTable, valueTable } from './td'
-import { ceilingAt, ownersOf, membersOf, setDesign, type Cable, type TubeDesign, boardUniverses, tubePatch, EMPTY_SHOW, INPUTS_ID, LAYOUT, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, TYPE_COLORS, FIXTURE_PORT, addCable, addWire, canCable, canWire, fixturesOf, inputRail, outputRail, placeUnit, removeCables, unitsOf, unitPatch, type Rail, type Unit, copyBlocks, diffShows, downstream, pasteBlocks, drivenPorts, inputPorts, moveScene, newBlock, outputPorts, patchBlock, patchOf, portOf, profileOf, removeBlocks, repatch, removeWires, scenesOf, visibleBlocks, visibleWires, type Block, type Clip, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './show'
+import { ceilingAt, ownersOf, membersOf, setDesign, type Cable, type TubeDesign, boardUniverses, tubePatch, EMPTY_SHOW, INPUTS_ID, LAYOUT, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, TYPE_COLORS, FIXTURE_PORT, addCable, addWire, canCable, canWire, fixturesOf, inputRail, outputRail, placeUnit, removeCables, unitsOf, unitPatch, type Rail, type Unit, copyBlocks, diffShows, downstream, hasProfile, pasteBlocks, drivenPorts, inputPorts, moveScene, newBlock, outputPorts, patchBlock, patchOf, portOf, profileOf, removeBlocks, repatch, removeWires, scenesOf, visibleBlocks, visibleWires, type Block, type Clip, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './show'
 import { normalize } from './migrate'
+import { FIXTURES, setCustomProfiles, type FixtureProfile } from './fixtures'
+import { addComposite, addDesign, addPalette, setProfile, type ColorPalette } from './library'
+import { LibraryView } from './LibraryView'
+import { ProfileEditor } from './ProfileEditor'
 import { BlockNode, RailNode, type FlowNode, type RailFlowNode } from './BlockNode'
 import { BoxNode, UnitNode, type BoxFlowNode, type UnitFlowNode } from './UnitNode'
 import { BlockPanel } from './BlockPanel'
@@ -73,6 +77,11 @@ function railNodes(show: Show): RailFlowNode[] {
 }
 
 const withRails = (show: Show): Show => ({ ...show, rails: railSpots(show) })
+
+function load(raw: Partial<Show>) {
+  setCustomProfiles(raw.profiles ?? [])
+  return withRails(normalize(raw))
+}
 
 function toNodes(show: Show, prev: AnyNode[], tab: string | null): AnyNode[] {
   const selected = new Set(prev.filter((n) => n.selected).map((n) => n.id))
@@ -202,6 +211,8 @@ function Editor() {
   const [page, setPage] = useState<'build' | 'simulate'>('build')
   const [tab, setTab] = useState<string | null>(null)
   const [paletteId, setPaletteId] = useState<string | null>(null)
+  const [library, setLibrary] = useState(false)
+  const [editing, setEditing] = useState<FixtureProfile | null | undefined>(undefined)
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const pickedRef = useRef(picked)
   pickedRef.current = picked
@@ -234,6 +245,7 @@ function Editor() {
   const { screenToFlowPosition, fitView } = useReactFlow()
 
   const apply = useCallback((next: Show) => {
+    setCustomProfiles(next.profiles ?? [])
     showRef.current = next
     setShow(next)
     setNodes((prev) => toNodes(next, prev, tabRef.current))
@@ -273,7 +285,7 @@ function Editor() {
 
   const sync = useCallback(async () => {
     const t = td.current!
-    const loaded = withRails(normalize(await t.loadShow() ?? {}))
+    const loaded = load(await t.loadShow() ?? {})
     apply(loaded)
     await t.legacy()
     const present = new Set(await t.existing())
@@ -324,7 +336,7 @@ function Editor() {
 
   const importShow = useCallback((file: File) => {
     file.text().then((text) => {
-      const loaded = withRails(normalize(JSON.parse(text)))
+      const loaded = load(JSON.parse(text))
       commit(loaded, async () => {
         const t = td.current!
         const present = await t.existing()
@@ -591,6 +603,30 @@ function Editor() {
     commit({ ...showRef.current, responses: { ...showRef.current.responses, [profile]: response } })
   }, [commit])
 
+  const saveProfile = useCallback((profile: FixtureProfile) => {
+    const next = setProfile(showRef.current, profile)
+    commit(next, () => rebuild(next, next.blocks.filter((b) => hasProfile(b) && b.profile === profile.id).map((b) => b.id)))
+  }, [commit, rebuild])
+
+  const libraryTab = useCallback((): [string | null, number, number] => {
+    if (tabRef.current === LAYOUT) return [null, 0, 0]
+    const p = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+    return [tabRef.current, snap(p.x), snap(flipY(p.y, NODE_H))]
+  }, [screenToFlowPosition])
+
+  const placePalette = useCallback((palette: ColorPalette) => {
+    const [next, block] = addPalette(showRef.current, palette, ...libraryTab())
+    commit(next, () => rebuild(next, [block.id]))
+  }, [commit, rebuild, libraryTab])
+
+  const placeComposite = useCallback((clip: Clip) => {
+    const [next, ids] = addComposite(showRef.current, clip, ...libraryTab())
+    commit(next, () => rebuild(next, ids))
+  }, [commit, rebuild, libraryTab])
+
+  const closeLibrary = useCallback(() => setLibrary(false), [])
+  const closeEditor = useCallback(() => setEditing(undefined), [])
+
   const changeDesign = useCallback((design: TubeDesign) => commitDiff(setDesign(showRef.current, design)), [commitDiff])
 
   const patchOther = useCallback((id: string, patch: Partial<Block>) => {
@@ -683,6 +719,7 @@ function Editor() {
         <button onClick={rebuildAll} disabled={!connected}>rebuild all</button>
         <button onClick={exportShow} title="download the show as JSON">export</button>
         <label className="toggle" title="load a show JSON, replacing the current one"><input type="file" accept="application/json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) importShow(f); e.target.value = '' }} />import</label>
+        <button onClick={() => setLibrary(true)} title="import, use and export shared fixture profiles, tube designs, palettes and composites">library</button>
         <button onClick={repatchAll} disabled={!connected} title="number DMX addresses along each cable chain">repatch</button>
         <label className="toggle"><input type="checkbox" checked={debug} onChange={(e) => setDebug(e.target.checked)} /> debug</label>
         <span className="error">{error}</span>
@@ -694,7 +731,7 @@ function Editor() {
         {openPath.filter((o) => o.kind === 'composite').map((o) => <button key={o.id} className={`composite-tab${tab === o.id ? ' on' : ''}`} onClick={() => setTab(o.id)}>› {o.name}</button>)}
       </nav>
       <main hidden={page !== 'build'}>
-        <Palette onAdd={addAtCenter} tab={tab} composite={tabBlock?.kind === 'composite'} designs={show.designs ?? []} />
+        <Palette onAdd={addAtCenter} tab={tab} composite={tabBlock?.kind === 'composite'} designs={show.designs ?? []} profiles={[...FIXTURES, ...(show.profiles ?? [])]} onNewProfile={() => setEditing(null)} />
         <ConnectContext value={canConnect}>
         <PickContext value={picks}>
         <FocusContext value={focus}>
@@ -748,6 +785,8 @@ function Editor() {
           </div>
         )}
         {paletteBlock?.kind === 'colors' && <PaletteView show={show} block={paletteBlock} onPatch={(patch) => patchById(paletteBlock.id, patch)} onResponse={setResponse} onClose={closePalette} />}
+        {library && <LibraryView show={show} onFixture={saveProfile} onDesign={(d) => commit(addDesign(showRef.current, d))} onPalette={placePalette} onComposite={placeComposite} onEditProfile={setEditing} onClose={closeLibrary} />}
+        {editing !== undefined && <ProfileEditor profile={editing} taken={(show.profiles ?? []).map((p) => p.id)} onSave={saveProfile} onClose={closeEditor} />}
       </main>
       <main hidden={page !== 'simulate'}>
         <Simulator show={show} td={td.current} connected={connected} active={page === 'simulate'} onPlace={placeSim} />

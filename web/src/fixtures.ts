@@ -28,3 +28,8 @@ export const FIXTURES: FixtureProfile[] = [
     ],
   },
 ]
+
+let custom: FixtureProfile[] = []
+export const setCustomProfiles = (profiles: FixtureProfile[]) => { custom = profiles }
+export const allProfiles = () => [...FIXTURES, ...custom]
+export const findProfile = (id: string) => allProfiles().find((f) => f.id === id) ?? FIXTURES[0]
