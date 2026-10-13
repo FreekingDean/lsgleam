@@ -171,7 +171,7 @@ Palette categories follow the signal: Inputs → Transformers → Fixtures → O
   - Each wired port gets In → (Select) → Rename to the channel, merged into a Replace over the sliders → Limit 0–1 → Out.
   - Positionable profiles get an orange `position` port and a Positions list: "store current" reads live Pan/Tilt from TD, "go" moves the sliders there, "set" overwrites. When `position` is wired, a Switch CHOP picks one Constant per stored position (input 0 is the aim) and the Pan/Tilt ports are locked.
   - A group runs each member through its own `m<i>_` chain, with its pattern slot as Dimmer and its own position Switch, then merges them.
-- Profiles live in `web/src/fixtures.ts`.
+- Built-in profiles live in `web/src/fixtures.ts`; custom ones are saved in the show (see Libraries).
 
 Any block with inputs gets one In CHOP per wire plus a Merge; wires are real TD connections made when the target is built, so rebuilding a block also rebuilds everything it feeds. Node heights grow with port count and are pinned in TD.
 
@@ -192,6 +192,16 @@ The "simulate" tab is a port of ArtNetPreview's Three.js scene (floor, grid, orb
 `shows/seasons.json` is a full example: 25 PARs and 8 moving heads chained on universe 0 inside a 100 × 30 ft room, an 8-fader DMX controller on in universe 1 (unwired, ready for overrides), two CDJs into a Scarlett's first two stereo pairs, four season scenes (Fall → Winter → Spring → Summer, each wider in brightness window and busier in patterns), song-primed battles and drop-triggered season changes. A listed BLT song primes a Latch; the next drop (Drop × Latch) advances a Counter into Scene select. While primed, two sides of the show tab flip between this season's and the next season's look on every beat (Looks `offset`), and a Hold gives 16 beats of drop mode after the change (wide windows, centre lights in their drop shade).
 
 "export" downloads the show as JSON (the same document stored in `/project1/lsgleam_show`). "import" loads one, runs it through the same migrations as a reload, replaces the current show, destroys every lsgleam COMP in TD and rebuilds everything from the file in dependency order ("rebuild all" uses the same order). The .toe still carries the show, so export is for backups, sharing a rig, and moving between machines.
+
+### Libraries
+
+"library" in the header opens a page for sharing fixture profiles, tube designs, colour palettes and composites as plain JSON files, with no server: post the file anywhere (a GitHub repo, a gist) and others import it.
+
+- Format (`web/src/library.ts`): `{ "format": "lsgleam-library", "version": 1, "name", "author"?, "fixtures": FixtureProfile[], "designs": TubeDesign[], "palettes": [{ name, steps, rows: [{ name, colors: ["#rrggbb", …] }] }], "composites": [{ blocks, wires }] }`. Each composite is one `composite` block (no `scene`), every block inside it (`scene` pointing into the clip) and the wires between them. Anything else is rejected with a message naming the bad item; composites also go through the show migrations.
+- Import from a file or a URL (a raw link: `raw.githubusercontent.com/…` or a gist's raw URL). Imported libraries are kept in this browser (localStorage), so every show sees them; importing a library with the same name replaces it, "remove" forgets it.
+- "use" adds an item to the current show: a fixture profile goes into the show's profiles (replacing one with the same id) and shows up in the layout palette's Fixtures and the scene palette's outputs; a tube design is added under a new id to Saved tube designs; a palette becomes a Colours block and a composite is pasted with new ids (its inner wires remapped), both on the current tab (the show tab when on the layout), then built in TD.
+- Export picks this show's custom fixture profiles, tube designs, Colours blocks and composites (everything inside, with the wires between them; wires to the outside are dropped) and downloads `<name>.lsgleam.json`.
+- Fixture profiles: "+ new fixture profile" (layout palette or the library page) opens the profile editor: label, id (fixed once saved; built-in ids are taken), simulator type (PAR, or moving head with pan and tilt ranges) and the channels in DMX order, each with a TouchDesigner channel name (a capital letter, then letters and digits), label, default 0–1, optional option names for stepped channels, and whether it is an aim channel (the `position` list stored positions save). Dimmer, Red, Green and Blue drive the look and colour ports, and the simulator reads those plus Pan, Tilt and Colorwheel. Custom profiles are saved in the show as `profiles`; editing one keeps each fixture and output's values by channel name and rebuilds them.
 
 ### Undo and redo
 

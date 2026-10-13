@@ -1,7 +1,7 @@
-import { FIXTURES } from './fixtures'
+import type { FixtureProfile } from './fixtures'
 import { KIND_INFO, LAYOUT, TYPE_COLORS, type PaletteItem, type TubeDesign } from './show'
 
-type Props = { onAdd: (item: PaletteItem) => void; tab: string | null; composite: boolean; designs: TubeDesign[] }
+type Props = { onAdd: (item: PaletteItem) => void; tab: string | null; composite: boolean; designs: TubeDesign[]; profiles: FixtureProfile[]; onNewProfile: () => void }
 
 type Category = { title: string; items: { label: string; item: PaletteItem }[] }
 
@@ -13,7 +13,6 @@ const LAYOUT_PALETTE: Category[] = [
   { title: 'Audio', items: [{ label: 'Audio source (CDJ)', item: { kind: 'cdj' } }, { label: 'Audio input (interface)', item: { kind: 'audio' } }] },
   { title: 'Software', items: [{ label: 'Beat Link Trigger (OSC)', item: { kind: 'blt' } }, { label: 'AudioSlice (OSC)', item: { kind: 'audioslice' } }] },
   { title: 'Pixels', items: [{ label: 'LED tubes', item: { kind: 'tubeset' } }, { label: 'Pixel controller (Art-Net)', item: { kind: 'board' } }] },
-  { title: 'Fixtures', items: FIXTURES.map((f) => ({ label: f.label, item: { kind: 'fixture', profile: f.id } })) },
 ]
 
 const SHOW: Category[] = [
@@ -39,7 +38,7 @@ const COMPOSITE: Category[] = [
   TRANSFORMERS,
 ]
 
-const SCENE: Category[] = [
+const scene = (profiles: FixtureProfile[]): Category[] => [
   { title: 'Inputs (from the show)', items: [
     { label: 'Signal (0–1: energy, fader, on/off)', item: { kind: 'input', type: 'signal' } },
     { label: 'Index (whole number: beat, song, step)', item: { kind: 'input', type: 'index' } },
@@ -47,7 +46,7 @@ const SCENE: Category[] = [
     { label: 'Number (raw value: BPM, pitch)', item: { kind: 'input', type: 'number' } },
     { label: 'Colour (Red, Green, Blue)', item: { kind: 'input', type: 'color' } },
   ] },
-  { title: 'Outputs', items: [...FIXTURES.flatMap((f) => [{ label: `${f.label} out`, item: { kind: 'light', profile: f.id } as PaletteItem }, { label: `${f.label} group out`, item: { kind: 'group', profile: f.id } as PaletteItem }]), { label: 'Pixel out (LED tubes)', item: { kind: 'strip' } }] },
+  { title: 'Outputs', items: [...profiles.flatMap((f) => [{ label: `${f.label} out`, item: { kind: 'light', profile: f.id } as PaletteItem }, { label: `${f.label} group out`, item: { kind: 'group', profile: f.id } as PaletteItem }]), { label: 'Pixel out (LED tubes)', item: { kind: 'strip' } }] },
   TRANSFORMERS,
 ]
 
@@ -69,15 +68,17 @@ function Item({ item, label, onAdd }: { item: PaletteItem; label: string; onAdd:
   )
 }
 
-export function Palette({ onAdd, tab, composite, designs }: Props) {
+export function Palette({ onAdd, tab, composite, designs, profiles, onNewProfile }: Props) {
   const saved: Category = { title: 'Saved tube designs', items: designs.map((d) => ({ label: d.name, item: { kind: 'tubeset', design: d.id } })) }
-  const categories = tab === LAYOUT ? [...LAYOUT_PALETTE, ...(designs.length ? [saved] : [])] : tab === null ? SHOW : composite ? COMPOSITE : SCENE
+  const fixtures: Category = { title: 'Fixtures', items: profiles.map((f) => ({ label: f.label, item: { kind: 'fixture', profile: f.id } })) }
+  const categories = tab === LAYOUT ? [...LAYOUT_PALETTE, fixtures, ...(designs.length ? [saved] : [])] : tab === null ? SHOW : composite ? COMPOSITE : scene(profiles)
   return (
     <aside className="palette">
       {categories.map((c) => (
         <section key={c.title}>
           <h3>{c.title}</h3>
           {c.items.map((i) => <Item key={i.label} item={i.item} label={i.label} onAdd={onAdd} />)}
+          {c === fixtures && <button className="palette-new" onClick={onNewProfile}>+ new fixture profile</button>}
         </section>
       ))}
     </aside>

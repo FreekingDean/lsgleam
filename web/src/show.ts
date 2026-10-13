@@ -1,4 +1,4 @@
-import { FIXTURES, type FixtureProfile } from './fixtures'
+import { allProfiles, findProfile, type FixtureProfile } from './fixtures'
 
 export const NODE_W = 160
 export const NODE_H = 130
@@ -72,7 +72,7 @@ export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | Fade
 export type Kind = Block['kind']
 export type Wire = { from: string; fromPort: string; to: string; port: string; scene?: string }
 export type Cable = { from: string; fromPort: string; to: string; port: string }
-export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; responses?: Record<string, ColorResponse> }
+export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; profiles?: FixtureProfile[]; responses?: Record<string, ColorResponse> }
 export type ColorResponse = { multiplier: [number, number, number] }
 export const NO_RESPONSE: ColorResponse = { multiplier: [1, 1, 1] }
 
@@ -288,7 +288,7 @@ const AUDIOSLICE_FRAME_MS = 11.6099
 export const audioSliceAlpha = (ms: number) => (ms > 0 ? AUDIOSLICE_FRAME_MS / (ms + AUDIOSLICE_FRAME_MS) : 1)
 
 export function profileOf(b: FixtureBlock | LightBlock | GroupBlock) {
-  return FIXTURES.find((f) => f.id === b.profile) ?? FIXTURES[0]
+  return findProfile(b.profile)
 }
 
 const typed = (id: string, type: string, label = id): Port => ({ id, label, type })
@@ -691,7 +691,7 @@ const byLabel = (ports: Port[]) => [...ports].sort((a, b) => a.label.localeCompa
 export const inputRail = (show: Show): Rail[] => show.blocks.filter((b) => SOURCE_KINDS.includes(b.kind)).map((b) => ({ title: b.name, ports: byLabel(outputPorts(b, show).map((p) => ({ ...p, id: `${b.id}${RAIL_SEP}${p.id}` }))) }))
 
 export const outputRail = (show: Show): Rail[] => [
-  ...FIXTURES.map((f) => ({ title: f.label, ports: byLabel(show.blocks.filter((b) => b.kind === 'fixture' && b.profile === f.id).flatMap((b) => inputPorts(b, show).map((p) => ({ ...p, id: b.id })))) })),
+  ...allProfiles().map((f) => ({ title: f.label, ports: byLabel(show.blocks.filter((b) => b.kind === 'fixture' && b.profile === f.id).flatMap((b) => inputPorts(b, show).map((p) => ({ ...p, id: b.id })))) })),
   { title: 'LED tubes', ports: byLabel(show.blocks.filter((b) => b.kind === 'tube' && !b.set).flatMap((b) => inputPorts(b, show).map((p) => ({ ...p, id: b.id })))) },
   ...show.blocks.filter((b) => b.kind === 'tubeset').map((s) => ({ title: s.name, ports: byLabel(membersOf(show, s.id).map((t) => ({ ...typed(FIXTURE_PORT, 'pixels', t.name.slice(s.name.length + 1)), id: t.id }))) })),
 ].filter((r) => r.ports.length)
@@ -883,17 +883,17 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
       block = { ...base, id: `pat${n}`, name: `pat${n}`, kind: 'pattern', slots: 4, mode: 'alternate', advance: 'step', every: 1, floor: 0 }
       break
     case 'fixture': {
-      const profile = FIXTURES.find((f) => f.id === item.profile) ?? FIXTURES[0]
+      const profile = findProfile(item.profile)
       block = { ...base, id: `fix${n}`, name: `fix${n}`, kind: 'fixture', profile: profile.id, address: nextAddress(show), values: profile.channels.map((c) => c.default) }
       break
     }
     case 'light': {
-      const profile = FIXTURES.find((f) => f.id === item.profile) ?? FIXTURES[0]
+      const profile = findProfile(item.profile)
       block = { ...base, id: `lt${n}`, name: `${profile.label} out`, kind: 'light', profile: profile.id, values: profile.channels.map((c) => c.default), positions: [] }
       break
     }
     case 'group': {
-      const profile = FIXTURES.find((f) => f.id === item.profile) ?? FIXTURES[0]
+      const profile = findProfile(item.profile)
       block = { ...base, id: `grp${n}`, name: `${profile.label} group`, kind: 'group', profile: profile.id, size: 4, values: profile.channels.map((c) => c.default), aims: {}, positions: [], mode: 'alternate', advance: 'step', every: 1, floor: 0 }
       break
     }
