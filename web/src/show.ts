@@ -32,8 +32,8 @@ export type GroupPosition = { name: string; members: Aims }
 export type GroupBlock = Base & { kind: 'group'; profile: string; size: number; values: number[]; aims: Aims; positions: GroupPosition[]; mode: PatternMode; advance: PatternAdvance; every: number; floor: number }
 export type ArtnetBlock = Base & { kind: 'artnet'; protocol: 'artnet' | 'sacn'; ip: string; universes: number[]; inputs: number[]; active: boolean }
 export type SceneBlock = Base & { kind: 'scene'; fadeIn: number; fadeOut: number }
-export type InputType = 'signal' | 'index' | 'audio' | 'number' | 'color'
-export const INPUT_TYPES: InputType[] = ['signal', 'index', 'audio', 'number', 'color']
+export type InputType = 'signal' | 'index' | 'audio' | 'number' | 'color' | 'multi'
+export const INPUT_TYPES: InputType[] = ['signal', 'index', 'audio', 'number', 'color', 'multi']
 export type ColorRow = { name: string; colors: string[] }
 export type ColorsBlock = Base & { kind: 'colors'; steps: number; rows: ColorRow[] }
 export type ValueRow = { name: string; values: number[] }
@@ -49,6 +49,8 @@ export type NotBlock = Base & { kind: 'not' }
 export type MixBlock = Base & { kind: 'mix'; type: 'signal' | 'color' }
 export type FadeBlock = Base & { kind: 'fade'; rise: number; fall: number; curve: 'linear' | 'smooth' }
 export type CounterBlock = Base & { kind: 'counter'; max: number }
+export type CombineBlock = Base & { kind: 'combine'; channels: number; names: string[] }
+export type SplitBlock = Base & { kind: 'split'; channels: number }
 export type ConstantBlock = Base & { kind: 'constant'; type: 'signal' | 'index'; value: number; pulse: number }
 export type CdjBlock = Base & { kind: 'cdj'; player: number }
 export type BoxBlock = Base & { kind: 'box'; size: [number, number, number]; locked: boolean }
@@ -68,7 +70,7 @@ const STRIP_USES: Record<StripMode, string[]> = { solid: ['color', 'dimmer'], ba
 export const stripParams = (b: { stops: ColorStop[] }): Port[] => [color(), typed('dimmer', 'signal'), typed('position', 'signal'), typed('width', 'signal'), typed('speed', 'signal', 'speed (laps/s)'), typed('spread', 'signal', 'spread across tubes'), ...b.stops.flatMap((_, k) => [typed(`stop${k}`, 'color', `stop ${k + 1} colour`), typed(`at${k}`, 'signal', `stop ${k + 1} spot`)])]
 export type StripBlock = Base & { kind: 'strip'; mode: StripMode; color: string; stops: ColorStop[]; spread: number; along: StripAlong; dimmer: number; position: number; width: number; speed: number }
 
-export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | FadeBlock | NotBlock | GateBlock | AudioBlock | DmxInBlock | BltBlock | AudioSliceBlock | LevelBlock | StepsBlock | DropBlock | HoldBlock | RangeBlock | SequenceBlock | LooksBlock | PatternBlock | FixtureBlock | LightBlock | GroupBlock | ArtnetBlock | SceneBlock | InputBlock | ManualBlock | EqualsBlock | ConstantBlock | LatchBlock | AndBlock | CounterBlock | CdjBlock | BoxBlock | ColorsBlock | TubeBlock | TubeSetBlock | BoardBlock | StripBlock
+export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | FadeBlock | NotBlock | GateBlock | AudioBlock | DmxInBlock | BltBlock | AudioSliceBlock | LevelBlock | StepsBlock | DropBlock | HoldBlock | RangeBlock | SequenceBlock | LooksBlock | PatternBlock | FixtureBlock | LightBlock | GroupBlock | ArtnetBlock | SceneBlock | InputBlock | ManualBlock | EqualsBlock | ConstantBlock | LatchBlock | AndBlock | CounterBlock | CombineBlock | SplitBlock | CdjBlock | BoxBlock | ColorsBlock | TubeBlock | TubeSetBlock | BoardBlock | StripBlock
 export type Kind = Block['kind']
 export type Wire = { from: string; fromPort: string; to: string; port: string; scene?: string }
 export type Cable = { from: string; fromPort: string; to: string; port: string }
@@ -93,9 +95,9 @@ export const isLight = (b: Block): b is LightBlock | GroupBlock => b.kind === 'l
 export const hasProfile = (b: Block): b is FixtureBlock | LightBlock | GroupBlock => b.kind === 'fixture' || isLight(b)
 export const scenesOf = (show: Show) => show.blocks.filter((b): b is SceneBlock => b.kind === 'scene')
 
-export type Port = { id: string; label: string; type: string; hint?: string; chans?: string; strip?: string; profile?: string }
+export type Port = { id: string; label: string; type: string; hint?: string; chans?: string; strip?: string; profile?: string; multi?: boolean }
 
-export const TYPE_COLORS: Record<string, string> = { audio: '#e06c6c', signal: '#6cb86c', index: '#f39c12', number: '#9aa5b1', look: '#b07ddc', color: '#ff8fd0', fixture: '#4fb3bf', dmx: '#5c8ed6', pixel: '#ffd24a', pixels: '#ffd24a' }
+export const TYPE_COLORS: Record<string, string> = { audio: '#e06c6c', signal: '#6cb86c', index: '#f39c12', number: '#9aa5b1', look: '#b07ddc', color: '#ff8fd0', fixture: '#4fb3bf', dmx: '#5c8ed6', pixel: '#ffd24a', pixels: '#ffd24a', multi: '#7fd4ff' }
 
 export const KIND_INFO: Record<Kind, string> = {
   audio: 'Audio device input',
@@ -128,6 +130,8 @@ export const KIND_INFO: Record<Kind, string> = {
   mix: 'Crossfades two signals or colours: a × (1 − mix) + b × mix',
   fade: 'Ramps a signal linearly: up over the rise time, down over the fall time',
   counter: 'Counts triggers into an index, clamped at max',
+  combine: 'Bundles N signals into one multichannel wire, so one transform runs on all of them',
+  split: 'Unbundles a multichannel wire back into N signals',
   cdj: 'A player sending audio into an audio input',
   box: 'A room, stage or other space with width, depth and height',
   tube: 'An LED tube or strip: LED count, pixel protocol and a 3D shape',
@@ -148,6 +152,7 @@ export const TYPE_INFO: Record<string, string> = {
   pixels: 'colour for every LED of a tube',
   dmx: '512 DMX channels',
   fixture: 'every channel of a fixture',
+  multi: 'several signals on one wire',
 }
 
 const PORT_HINTS: Record<string, string> = {
@@ -186,11 +191,11 @@ const PORT_HINTS: Record<string, string> = {
 
 export function portHint(p: Port) {
   const key = p.id.replace(/^(d\d+|master)_/, '')
-  return `${p.label} · ${TYPE_INFO[p.type] ?? p.type}${PORT_HINTS[key] ? ` · ${PORT_HINTS[key]}` : ''}`
+  return `${p.label} · ${TYPE_INFO[p.type] ?? p.type}${p.multi && p.type !== 'multi' ? ' or multichannel' : ''}${PORT_HINTS[key] ? ` · ${PORT_HINTS[key]}` : ''}`
 }
 
 
-export type PaletteItem = { kind: 'light'; profile: string } | { kind: 'box' } | { kind: 'cdj' } | { kind: 'audio' } | { kind: 'dmxin' } | { kind: 'blt' } | { kind: 'audioslice' } | { kind: 'level' } | { kind: 'steps' } | { kind: 'gate' } | { kind: 'drop' } | { kind: 'hold' } | { kind: 'range' } | { kind: 'sequence' } | { kind: 'looks' } | { kind: 'pattern' } | { kind: 'fixture'; profile: string } | { kind: 'group'; profile: string } | { kind: 'artnet' } | { kind: 'scene' } | { kind: 'input'; type?: InputType } | { kind: 'output'; type?: InputType } | { kind: 'composite' } | { kind: 'manual' } | { kind: 'equals' } | { kind: 'constant' } | { kind: 'latch' } | { kind: 'and' } | { kind: 'not' } | { kind: 'mix' } | { kind: 'fade' } | { kind: 'counter' } | { kind: 'colors' } | { kind: 'values' } | { kind: 'tubeset'; design?: string } | { kind: 'board' } | { kind: 'strip' }
+export type PaletteItem = { kind: 'light'; profile: string } | { kind: 'box' } | { kind: 'cdj' } | { kind: 'audio' } | { kind: 'dmxin' } | { kind: 'blt' } | { kind: 'audioslice' } | { kind: 'level' } | { kind: 'steps' } | { kind: 'gate' } | { kind: 'drop' } | { kind: 'hold' } | { kind: 'range' } | { kind: 'sequence' } | { kind: 'looks' } | { kind: 'pattern' } | { kind: 'fixture'; profile: string } | { kind: 'group'; profile: string } | { kind: 'artnet' } | { kind: 'scene' } | { kind: 'input'; type?: InputType } | { kind: 'output'; type?: InputType } | { kind: 'composite' } | { kind: 'manual' } | { kind: 'equals' } | { kind: 'constant' } | { kind: 'latch' } | { kind: 'and' } | { kind: 'not' } | { kind: 'mix' } | { kind: 'fade' } | { kind: 'counter' } | { kind: 'combine' } | { kind: 'split' } | { kind: 'colors' } | { kind: 'values' } | { kind: 'tubeset'; design?: string } | { kind: 'board' } | { kind: 'strip' }
 
 
 export const POSITION_PORT = 'position'
@@ -298,6 +303,44 @@ export function profileOf(b: FixtureBlock | LightBlock | GroupBlock) {
 
 const typed = (id: string, type: string, label = id): Port => ({ id, label, type })
 
+const MULTI_INPUTS: Partial<Record<Kind, string[]>> = { gate: ['signal'], not: ['signal'], fade: ['signal'], range: ['signal'], mix: ['a', 'b'], and: ['a', 'b'] }
+
+export function multiFeeds(show: Show | undefined, b: Block, seen = new Set<string>()): Wire[] {
+  if (!show || seen.has(b.id) || (b.kind === 'mix' && b.type === 'color')) return []
+  const path = new Set(seen).add(b.id)
+  return (MULTI_INPUTS[b.kind] ?? []).flatMap((port) => {
+    const here = show.wires.filter((w) => w.to === b.id && w.port === port)
+    const from = here.length === 1 ? show.blocks.find((x) => x.id === here[0].from) : undefined
+    return from && outputPorts(from, show, path).find((p) => p.id === here[0].fromPort)?.type === 'multi' ? here : []
+  })
+}
+
+const multiPort = (show: Show | undefined, b: Block, id: string): Port => ({ ...typed(id, multiFeeds(show, b).some((w) => w.port === id) ? 'multi' : 'signal'), multi: true })
+
+export const combineNames = (b: CombineBlock) => Array.from({ length: b.channels }, (_, i) => b.names[i]?.trim() || `m${i + 1}`)
+
+export function combineOf(show: Show, id: string, seen = new Set<string>()): CombineBlock | undefined {
+  const b = show.blocks.find((x) => x.id === id)
+  if (!b || seen.has(id)) return undefined
+  if (b.kind === 'combine') return b
+  const feed = b.kind === 'split' ? show.wires.find((w) => w.to === id) : multiFeeds(show, b)[0]
+  return feed ? combineOf(show, feed.from, seen.add(id)) : undefined
+}
+
+function wireOk(show: Show, w: Wire) {
+  const a = show.blocks.find((b) => b.id === w.from)
+  const b = show.blocks.find((b) => b.id === w.to)
+  const source = a && outputPorts(a, show).find((p) => p.id === w.fromPort)
+  const target = b && allInputPorts(b, show).find((p) => p.id === w.port)
+  if (!source || !target || (source.type !== 'multi' && target.type !== 'multi')) return true
+  return source.type === target.type || (!!target.multi && show.wires.filter((x) => x.to === w.to && x.port === w.port && (x.scene ?? null) === (w.scene ?? null)).length === 1)
+}
+
+export function pruneWires(show: Show): Show {
+  const wires = show.wires.filter((w) => wireOk(show, w))
+  return wires.length === show.wires.length ? show : pruneWires({ ...show, wires })
+}
+
 export function inputPorts(b: Block, show?: Show, tab?: string | null): Port[] {
   const hidden = new Set(b.hidden ?? [])
   if (show && tab !== undefined) {
@@ -337,18 +380,20 @@ function allInputPorts(b: Block, show?: Show): Port[] {
     case 'output': return [typed('value', b.type)]
     case 'equals': return [typed('index', 'index')]
     case 'latch': return [typed('set', 'signal'), typed('reset', 'signal')]
-    case 'and': return [typed('a', 'signal'), typed('b', 'signal')]
-    case 'not': return [typed('signal', 'signal')]
-    case 'mix': return [typed('a', b.type), typed('b', b.type), typed('mix', 'signal', 'mix (0 = a, 1 = b)')]
-    case 'fade': return [typed('signal', 'signal')]
+    case 'and': return [multiPort(show, b, 'a'), multiPort(show, b, 'b')]
+    case 'not': return [multiPort(show, b, 'signal')]
+    case 'mix': return [...(b.type === 'color' ? [typed('a', 'color'), typed('b', 'color')] : [multiPort(show, b, 'a'), multiPort(show, b, 'b')]), typed('mix', 'signal', 'mix (0 = a, 1 = b)')]
+    case 'fade': return [multiPort(show, b, 'signal')]
+    case 'combine': return combineNames(b).map((name, i) => typed(`s${i + 1}`, 'signal', name))
+    case 'split': return [typed('in', 'multi', 'multichannel')]
     case 'counter': return [typed('trigger', 'signal', 'count'), typed('reset', 'signal')]
     case 'level': return [typed('audio', 'audio')]
     case 'steps': return [typed('signal', 'signal')]
-    case 'gate': return [typed('signal', 'signal')]
+    case 'gate': return [multiPort(show, b, 'signal')]
     case 'pattern': return [typed('signal', 'signal'), b.advance === 'step' ? typed('step', 'index', 'step index') : typed('trigger', 'signal', 'next step'), typed('floor', 'signal', 'minimum')]
     case 'drop': return [typed('signal', 'signal', 'kick'), typed('beat', 'signal')]
     case 'hold': return [typed('trigger', 'signal', 'start'), typed('beat', 'signal')]
-    case 'range': return [typed('signal', 'signal'), typed('amount', 'signal'), typed('tameMin', 'signal', 'tame min'), typed('tameMax', 'signal', 'tame max'), typed('wildMin', 'signal', 'wild min'), typed('wildMax', 'signal', 'wild max')]
+    case 'range': return [multiPort(show, b, 'signal'), typed('amount', 'signal'), typed('tameMin', 'signal', 'tame min'), typed('tameMax', 'signal', 'tame max'), typed('wildMin', 'signal', 'wild min'), typed('wildMax', 'signal', 'wild max')]
     case 'sequence': return [typed('trigger', 'signal', 'next value'), typed('reset', 'signal')]
     case 'looks': return [b.advance === 'step' ? typed('scene', 'index', 'look index') : typed('next', 'signal', 'next look'), typed('offset', 'index', 'look offset'), typed('dimmer', 'signal'), typed('wild', 'signal'), color()]
     case 'colors': return [typed('index', 'index')]
@@ -371,7 +416,8 @@ function allInputPorts(b: Block, show?: Show): Port[] {
   }
 }
 
-export function outputPorts(b: Block, show?: Show): Port[] {
+export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Port[] {
+  const flow = multiFeeds(show, b, seen).length ? 'multi' : 'signal'
   switch (b.kind) {
     case 'audio': return audioInputs(b).map((p) => {
       const cdj = show?.cables.find((c) => c.to === b.id && c.port === p.id)
@@ -386,11 +432,11 @@ export function outputPorts(b: Block, show?: Show): Port[] {
     case 'audioslice': return b.signals.map((s) => typed(s.replace('/', '_'), 'signal', s))
     case 'level': return [typed('out', 'signal', 'level')]
     case 'steps': return [typed('out', 'index', 'index')]
-    case 'gate': return [typed('out', 'signal', 'gated')]
+    case 'gate': return [typed('out', flow, 'gated')]
     case 'pattern': return Array.from({ length: b.slots }, (_, i) => typed(`slot${i + 1}`, 'signal', `slot ${i + 1}`))
     case 'drop': return [typed('drop', 'signal'), typed('armed', 'signal'), typed('drops', 'index', 'drops (count)')]
     case 'hold': return [typed('hold', 'signal')]
-    case 'range': return [typed('out', 'signal', 'signal')]
+    case 'range': return [typed('out', flow, 'signal')]
     case 'sequence': return [typed('out', 'signal', 'value')]
     case 'looks': return [look(), typed('scene', 'index')]
     case 'fixture':
@@ -417,10 +463,16 @@ export function outputPorts(b: Block, show?: Show): Port[] {
     case 'equals': return [typed('out', 'signal', 'equal')]
     case 'constant': return [typed('out', b.type, b.pulse > 0 ? `pulse ${b.pulse} Hz` : `${b.value}`)]
     case 'latch': return [typed('out', 'signal', 'latched')]
-    case 'and': return [typed('out', 'signal', 'both')]
-    case 'not': return [typed('out', 'signal', 'not')]
-    case 'mix': return [typed('out', b.type, 'mixed')]
-    case 'fade': return [typed('out', 'signal', 'faded')]
+    case 'and': return [typed('out', flow, 'both')]
+    case 'not': return [typed('out', flow, 'not')]
+    case 'mix': return [typed('out', b.type === 'color' ? 'color' : flow, 'mixed')]
+    case 'fade': return [typed('out', flow, 'faded')]
+    case 'combine': return [typed('out', 'multi', `${b.channels} signals`)]
+    case 'split': {
+      const from = show && combineOf(show, b.id)
+      const names = from ? combineNames(from) : []
+      return Array.from({ length: b.channels }, (_, i) => typed(`s${i + 1}`, 'signal', names[i] ?? `signal ${i + 1}`))
+    }
     case 'counter': return [typed('out', 'index', 'count')]
     case 'values': return b.rows.map((r, i) => ({ ...typed(`v${i}`, 'signal', r.name), chans: `v${i}` }))
     case 'colors': return b.rows.map((r, i) => ({ ...typed(`c${i}`, 'color', r.name), chans: RGB.map((ch) => `c${i}_${ch}`).join(' '), strip: `c${i}_` }))
@@ -478,7 +530,7 @@ export function sourcesOf(show: Show, id: string): Source[] {
     })
     return feeds.length ? [...feeds, { from: SELECTOR_ID, chan: null, port: SCENE_PORT, scene: scenes.length }] : []
   }
-  return show.wires.filter((w) => w.to === id).map((w) => ({ ...via(show, w), port: w.port, scene: null, ...(portOf(show, w)?.type === 'color' ? { keep: true } : {}) }))
+  return show.wires.filter((w) => w.to === id).map((w) => ({ ...via(show, w), port: w.port, scene: null, ...(['color', 'multi'].includes(portOf(show, w)?.type ?? '') ? { keep: true } : {}) }))
 }
 
 export const memberPort = (id: string, i: number) => `${id}:${i}`
@@ -758,7 +810,7 @@ export function pasteBlocks(show: Show, clip: Clip, tab: string | null): [Show, 
     const scene = w.scene ? (ids.has(w.scene) ? ids.get(w.scene) : tab ?? undefined) : undefined
     return { from: remap(w.from), fromPort: remapPort(w.fromPort), to: remap(w.to), port: remapPort(w.port), ...(scene ? { scene } : {}) }
   })
-  return [syncSets({ ...show, nextId: n, blocks: [...show.blocks, ...blocks], wires: [...show.wires, ...wires] }), blocks.map((b) => b.id)]
+  return [syncSets(pruneWires({ ...show, nextId: n, blocks: [...show.blocks, ...blocks], wires: [...show.wires, ...wires] })), blocks.map((b) => b.id)]
 }
 
 const placementless = (b: Block) => {
@@ -818,18 +870,19 @@ export function canWire(show: Show, from: string, fromPort: string, to: string, 
   if (tab === null ? a.scene || b.scene : a.scene !== tab || b.scene !== tab) return false
   const source = outputPorts(a, show).find((p) => p.id === fromPort)
   const target = inputPorts(b, show, tab).find((p) => p.id === port)
-  if (!source || !target || source.type !== target.type || source.profile !== target.profile) return false
+  if (!source || !target || !(source.type === target.type || (target.multi && source.type === 'multi')) || source.profile !== target.profile) return false
   const here = show.wires.filter((w) => (w.scene ?? null) === tab)
   if (here.some((w) => w.from === from && w.fromPort === fromPort && w.to === to && w.port === port)) return false
   const output = target.type === 'fixture' || target.type === 'pixels'
   if (output && here.some((w) => w.to === to && w.from === from)) return false
-  if (target.type !== 'signal' && !output && here.some((w) => w.to === to && w.port === port)) return false
+  if ((target.type !== 'signal' || source.type === 'multi') && !output && here.some((w) => w.to === to && w.port === port)) return false
   const driven = drivenPorts(show, to, tab)
   for (const [master, channels] of exclusions(b)) {
     if (port === master && channels.some((ch) => driven.has(ch))) return false
     if (channels.includes(port) && driven.has(master)) return false
   }
-  return true
+  const next = addWire(show, { from, fromPort, to, port, ...(tab ? { scene: tab } : {}) })
+  return pruneWires(next) === next
 }
 
 export function blockHeight(b: Block, show?: Show) {
@@ -935,6 +988,12 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
     case 'counter':
       block = { ...base, id: `count${n}`, name: `count${n}`, kind: 'counter', max: 3 }
       break
+    case 'combine':
+      block = { ...base, id: `comb${n}`, name: `combine${n}`, kind: 'combine', channels: 3, names: [] }
+      break
+    case 'split':
+      block = { ...base, id: `split${n}`, name: `split${n}`, kind: 'split', channels: 3 }
+      break
     case 'strip':
       block = { ...base, id: `px${n}`, name: `Pixels ${n}`, kind: 'strip', mode: 'band', color: '#ffffff', stops: [{ at: 0, color: '#ff2060' }, { at: 1, color: '#2060ff' }], spread: 0, along: 'tube', dimmer: 1, position: 0.5, width: 0.2, speed: 0.5 }
       break
@@ -1024,18 +1083,18 @@ export function patchBlock(show: Show, id: string, patch: Partial<Block>): Show 
   const sceneOuts = scene ? outputPorts(scene, next) : []
   const stale = (w: Wire) => scene !== undefined && w.from === scene.id && w.fromPort.split(':')[0] === id && !sceneOuts.some((p) => p.id === w.fromPort)
   const sized = scene ? next.blocks.map((b) => (b === scene ? { ...b, h: blockHeight(b, next) } : b)) : next.blocks
-  return pruneCables({ ...next, blocks: sized, wires: show.wires.filter((w) => (w.from !== id || outs.some((p) => p.id === w.fromPort)) && (w.to !== id || hasInput(block, w.port, next)) && !stale(w)) })
+  return pruneCables(pruneWires({ ...next, blocks: sized, wires: show.wires.filter((w) => (w.from !== id || outs.some((p) => p.id === w.fromPort)) && (w.to !== id || hasInput(block, w.port, next)) && !stale(w)) }))
 }
 
 export function removeBlocks(show: Show, ids: string[]): Show {
   const gone = withInner(show, ids)
   const blocks = show.blocks.filter((b) => !gone.has(b.id))
   const scene = (id: string) => show.blocks.some((b) => b.id === id && (b.kind === 'scene' || b.kind === 'composite'))
-  return pruneCables({
+  return pruneCables(pruneWires({
     ...show,
     blocks,
     wires: show.wires.filter((w) => !gone.has(w.from) && !gone.has(w.to) && !(w.scene && gone.has(w.scene)) && !(scene(w.to) && gone.has(w.port)) && !(scene(w.from) && gone.has(w.fromPort.split(':')[0]))),
-  })
+  }))
 }
 
 export function addWire(show: Show, wire: Wire): Show {
@@ -1045,7 +1104,7 @@ export function addWire(show: Show, wire: Wire): Show {
 const sameWire = (a: Wire, b: Wire) => a.from === b.from && a.fromPort === b.fromPort && a.to === b.to && a.port === b.port && (a.scene ?? null) === (b.scene ?? null)
 
 export function removeWires(show: Show, wires: Wire[]): Show {
-  return { ...show, wires: show.wires.filter((w) => !wires.some((r) => sameWire(r, w))) }
+  return pruneWires({ ...show, wires: show.wires.filter((w) => !wires.some((r) => sameWire(r, w))) })
 }
 
 export const membersOf = (show: Show, set: string) => show.blocks.filter((b): b is TubeBlock => b.kind === 'tube' && b.set === set)

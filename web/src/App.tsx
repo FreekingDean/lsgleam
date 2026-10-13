@@ -516,7 +516,7 @@ function Editor() {
     const wires = deleted.map((e) => toWire(e))
     const prev = showRef.current
     const next = removeWires(prev, wires)
-    commit(next, () => rebuild(next, wireTargets(prev, wires)))
+    commit(next, () => rebuild(next, wireTargets(prev, prev.wires.filter((w) => !next.wires.includes(w)))))
   }, [commit, rebuild])
 
   const canConnect = useCallback((source: string, sourceHandle: string, target: string, targetHandle: string) => {

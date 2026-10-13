@@ -44,6 +44,8 @@ function subtitle(b: Block, patch: Patch | null, targets: string[]) {
     case 'mix': return `${b.type}: a → b`
     case 'fade': return `↑ ${b.rise}s · ↓ ${b.fall}s · ${b.curve}`
     case 'counter': return `0…${b.max}`
+    case 'combine': return `${b.channels} → multichannel`
+    case 'split': return `multichannel → ${b.channels}`
     case 'cdj': return `player ${b.player}`
     case 'box': return b.size.map((v) => v.toFixed(1)).join(' × ') + ' m'
     case 'constant': return b.pulse > 0 ? `pulse ${b.pulse} Hz × ${b.value}` : `${b.type} ${b.value}`

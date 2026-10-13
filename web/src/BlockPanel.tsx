@@ -3,7 +3,7 @@ import { Field, LengthField, NumberBox, NumField } from './fields'
 import { PlacementEditor } from './Placement'
 import { bltConfig, bltExpressions, download } from './blt'
 import { TubeDesigner } from './TubeDesigner'
-import { STRIP_ALONG, type StripAlong, membersOf, type TubeDesign, type TubeSetBlock, STRIP_MODES, type StripBlock, type StripMode, PIXEL_PROTOCOLS, formatLength, outputUniverses, pixelChain, tubePatch, universesPerOutput, type BoardBlock, ceilingAt, onWall, chainOf, controllerPatch, fixturesOf, memberPort, type LightBlock, type BoxBlock, type CdjBlock, type Placement, AUDIOSLICE_SOURCES, BLT_SIGNALS, PATTERN_LABELS, PATTERN_MODES, POSITION_PORT, inputPorts, profileOf, scenesOf, type AudioBlock, type AudioSliceBlock, type Block, type BltBlock, type DmxInBlock, type DropBlock, type FixtureBlock, type HoldBlock, type RangeBlock, type GroupBlock, type GroupPosition, type LevelBlock, type Scene, type LooksBlock, type SequenceBlock, type ConstantBlock, type CounterBlock, type ArtnetBlock, type SceneBlock, type InputBlock, type InputType, INPUT_TYPES, type ColorsBlock, type ValuesBlock, type ManualBlock, type EqualsBlock, type Show, type PatternAdvance, type PatternBlock, type PatternMode, type Position, type StepsBlock, type GateBlock, type FadeBlock } from './show'
+import { STRIP_ALONG, type StripAlong, membersOf, type TubeDesign, type TubeSetBlock, STRIP_MODES, type StripBlock, type StripMode, PIXEL_PROTOCOLS, formatLength, outputUniverses, pixelChain, tubePatch, universesPerOutput, type BoardBlock, ceilingAt, onWall, chainOf, controllerPatch, fixturesOf, memberPort, type LightBlock, type BoxBlock, type CdjBlock, type Placement, AUDIOSLICE_SOURCES, BLT_SIGNALS, PATTERN_LABELS, PATTERN_MODES, POSITION_PORT, inputPorts, profileOf, scenesOf, type AudioBlock, type AudioSliceBlock, type Block, type BltBlock, type DmxInBlock, type DropBlock, type FixtureBlock, type HoldBlock, type RangeBlock, type GroupBlock, type GroupPosition, type LevelBlock, type Scene, type LooksBlock, type SequenceBlock, type ConstantBlock, type CounterBlock, type CombineBlock, type SplitBlock, combineNames, combineOf, type ArtnetBlock, type SceneBlock, type InputBlock, type InputType, INPUT_TYPES, type ColorsBlock, type ValuesBlock, type ManualBlock, type EqualsBlock, type Show, type PatternAdvance, type PatternBlock, type PatternMode, type Position, type StepsBlock, type GateBlock, type FadeBlock } from './show'
 
 export type Layout = { placement: Placement; flip: boolean; onPlace: (p: Placement, flip?: boolean) => void }
 
@@ -413,6 +413,27 @@ function CounterPanel({ block, onPatch }: Props & { block: CounterBlock }) {
     <>
       <NumField label="Max" value={block.max} onCommit={(max) => onPatch({ max: Math.max(0, Math.round(max)) })} step={1} />
       <div className="help">Each rising edge on count adds one, clamped at max; reset (while high) zeroes it. Wire the output into Scene select's index to step through scenes.</div>
+    </>
+  )
+}
+
+function CombinePanel({ block, onPatch }: Props & { block: CombineBlock }) {
+  const names = combineNames(block)
+  return (
+    <>
+      <NumField label="Channels" value={block.channels} onCommit={(v) => onPatch({ channels: Math.max(2, Math.min(32, Math.round(v))) })} step={1} />
+      {names.map((_, i) => <Field key={i} label={`Channel ${i + 1}`} value={block.names[i] ?? ''} onCommit={(v) => onPatch({ names: names.map((_, k) => (k === i ? v : block.names[k] ?? '')) })} />)}
+      <div className="help">Bundles its signals into one multichannel wire. Gate, Not, Fade, Range, Mix and And take it on their signal input and run on every channel; Split unbundles it. Blank names default to m1…mN; these label Split's outputs.</div>
+    </>
+  )
+}
+
+function SplitPanel({ show, block, onPatch }: Props & { block: SplitBlock }) {
+  const from = combineOf(show, block.id)
+  return (
+    <>
+      <NumField label="Channels" value={block.channels} onCommit={(v) => onPatch({ channels: Math.max(2, Math.min(32, Math.round(v))) })} step={1} />
+      <div className="help">One signal output per channel of the multichannel wire, in order{from ? `, named after ${from.name}` : ''}.</div>
     </>
   )
 }
@@ -959,6 +980,8 @@ function body(props: Props) {
     case 'equals': return <EqualsPanel {...props} block={block} />
     case 'constant': return <ConstantPanel {...props} block={block} />
     case 'counter': return <CounterPanel {...props} block={block} />
+    case 'combine': return <CombinePanel {...props} block={block} />
+    case 'split': return <SplitPanel {...props} block={block} />
     case 'colors': return <ColorsPanel {...props} block={block} />
     case 'values': return <ValuesPanel {...props} block={block} />
     case 'latch': return <div className="help">1 from a rising edge on set until reset goes high. Song match sets it, the drop resets it: that's "primed".</div>

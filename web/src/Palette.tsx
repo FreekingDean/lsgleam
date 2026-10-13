@@ -7,7 +7,7 @@ type Props = { onAdd: (item: PaletteItem) => void; tab: string | null; composite
 type Category = { title: string; items: { label: string; item: PaletteItem }[] }
 type Tab = { title: string; sections: Category[] }
 
-const TRANSFORMERS: Category = { title: 'Transformers', items: [{ label: 'Constant (test value / pulse)', item: { kind: 'constant' } }, { label: 'Level (RMS)', item: { kind: 'level' } }, { label: 'Gate (zero below X%)', item: { kind: 'gate' } }, { label: 'Steps (signal → index)', item: { kind: 'steps' } }, { label: 'Equals (index == N)', item: { kind: 'equals' } }, { label: 'Latch (set / reset)', item: { kind: 'latch' } }, { label: 'And (both signals)', item: { kind: 'and' } }, { label: 'Not (1 − signal)', item: { kind: 'not' } }, { label: 'Mix (crossfade a → b)', item: { kind: 'mix' } }, { label: 'Fade (rise / fall time)', item: { kind: 'fade' } }, { label: 'Counter (triggers → index)', item: { kind: 'counter' } }, { label: 'Pattern (fan-out)', item: { kind: 'pattern' } }, { label: 'Drop (kick + beat → drop)', item: { kind: 'drop' } }, { label: 'Hold (trigger → N beats)', item: { kind: 'hold' } }, { label: 'Range (signal × amount → window)', item: { kind: 'range' } }, { label: 'Sequence (trigger → values)', item: { kind: 'sequence' } }, { label: 'Looks (colour + window)', item: { kind: 'looks' } }, { label: 'Colours (index → named colours)', item: { kind: 'colors' } }, { label: 'Values (index → named numbers)', item: { kind: 'values' } }, { label: 'Composite (your own block)', item: { kind: 'composite' } }] }
+const TRANSFORMERS: Category = { title: 'Transformers', items: [{ label: 'Constant (test value / pulse)', item: { kind: 'constant' } }, { label: 'Level (RMS)', item: { kind: 'level' } }, { label: 'Gate (zero below X%)', item: { kind: 'gate' } }, { label: 'Steps (signal → index)', item: { kind: 'steps' } }, { label: 'Equals (index == N)', item: { kind: 'equals' } }, { label: 'Latch (set / reset)', item: { kind: 'latch' } }, { label: 'And (both signals)', item: { kind: 'and' } }, { label: 'Not (1 − signal)', item: { kind: 'not' } }, { label: 'Mix (crossfade a → b)', item: { kind: 'mix' } }, { label: 'Fade (rise / fall time)', item: { kind: 'fade' } }, { label: 'Counter (triggers → index)', item: { kind: 'counter' } }, { label: 'Combine (signals → multichannel)', item: { kind: 'combine' } }, { label: 'Split (multichannel → signals)', item: { kind: 'split' } }, { label: 'Pattern (fan-out)', item: { kind: 'pattern' } }, { label: 'Drop (kick + beat → drop)', item: { kind: 'drop' } }, { label: 'Hold (trigger → N beats)', item: { kind: 'hold' } }, { label: 'Range (signal × amount → window)', item: { kind: 'range' } }, { label: 'Sequence (trigger → values)', item: { kind: 'sequence' } }, { label: 'Looks (colour + window)', item: { kind: 'looks' } }, { label: 'Colours (index → named colours)', item: { kind: 'colors' } }, { label: 'Values (index → named numbers)', item: { kind: 'values' } }, { label: 'Composite (your own block)', item: { kind: 'composite' } }] }
 
 const OPERATORS: Record<string, string> = {
   equals: 'Logic', latch: 'Logic', and: 'Logic', not: 'Logic', counter: 'Logic', gate: 'Logic',
@@ -36,6 +36,7 @@ const INPUTS: Category = { title: 'Inputs (from outside)', items: [
   { label: 'Index (whole number: beat, song, step)', item: { kind: 'input', type: 'index' } },
   { label: 'Number (raw value: BPM, pitch)', item: { kind: 'input', type: 'number' } },
   { label: 'Colour (Red, Green, Blue)', item: { kind: 'input', type: 'color' } },
+  { label: 'Multichannel (several signals on one wire)', item: { kind: 'input', type: 'multi' } },
 ] }
 
 const COMPOSITE: Tab[] = [
@@ -45,6 +46,7 @@ const COMPOSITE: Tab[] = [
     { label: 'Index out', item: { kind: 'output', type: 'index' } },
     { label: 'Number out', item: { kind: 'output', type: 'number' } },
     { label: 'Colour out', item: { kind: 'output', type: 'color' } },
+    { label: 'Multichannel out', item: { kind: 'output', type: 'multi' } },
   ] }] },
   ...OPERATOR_TABS,
 ]
@@ -56,6 +58,7 @@ const scene = (profiles: FixtureProfile[]): Tab[] => [
     { label: 'Audio (raw sound, for Level)', item: { kind: 'input', type: 'audio' } },
     { label: 'Number (raw value: BPM, pitch)', item: { kind: 'input', type: 'number' } },
     { label: 'Colour (Red, Green, Blue)', item: { kind: 'input', type: 'color' } },
+    { label: 'Multichannel (several signals on one wire)', item: { kind: 'input', type: 'multi' } },
   ] }] },
   { title: 'Outputs', sections: [{ title: 'Outputs', items: [...profiles.flatMap((f) => [{ label: `${f.label} out`, item: { kind: 'light', profile: f.id } as PaletteItem }, { label: `${f.label} group out`, item: { kind: 'group', profile: f.id } as PaletteItem }]), { label: 'Pixel out (LED tubes)', item: { kind: 'strip' } }] }] },
   ...OPERATOR_TABS,
