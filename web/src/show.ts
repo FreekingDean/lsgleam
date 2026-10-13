@@ -49,6 +49,7 @@ export type NotBlock = Base & { kind: 'not' }
 export type MixBlock = Base & { kind: 'mix'; type: 'signal' | 'color' }
 export type FadeBlock = Base & { kind: 'fade'; rise: number; fall: number; curve: 'linear' | 'smooth' }
 export type CounterBlock = Base & { kind: 'counter'; max: number }
+export type TimerBlock = Base & { kind: 'timer'; seconds: number; countTo: number; end: 'hold' | 'loop' }
 export type CombineBlock = Base & { kind: 'combine'; names: Record<string, string> }
 export type SplitBlock = Base & { kind: 'split' }
 export type ConstantBlock = Base & { kind: 'constant'; type: 'signal' | 'index'; value: number; pulse: number }
@@ -70,7 +71,7 @@ const STRIP_USES: Record<StripMode, string[]> = { solid: ['color', 'dimmer'], ba
 export const stripParams = (b: { stops: ColorStop[] }): Port[] => [color(), typed('dimmer', 'signal'), typed('position', 'signal'), typed('width', 'signal'), typed('speed', 'signal', 'speed (laps/s)'), typed('spread', 'signal', 'spread across tubes'), ...b.stops.flatMap((_, k) => [typed(`stop${k}`, 'color', `stop ${k + 1} colour`), typed(`at${k}`, 'signal', `stop ${k + 1} spot`)])]
 export type StripBlock = Base & { kind: 'strip'; mode: StripMode; color: string; stops: ColorStop[]; spread: number; along: StripAlong; dimmer: number; position: number; width: number; speed: number }
 
-export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | FadeBlock | NotBlock | GateBlock | AudioBlock | DmxInBlock | BltBlock | AudioSliceBlock | LevelBlock | StepsBlock | DropBlock | HoldBlock | RangeBlock | SequenceBlock | LooksBlock | PatternBlock | FixtureBlock | LightBlock | GroupBlock | ArtnetBlock | SceneBlock | InputBlock | ManualBlock | EqualsBlock | ConstantBlock | LatchBlock | AndBlock | CounterBlock | CombineBlock | SplitBlock | CdjBlock | BoxBlock | ColorsBlock | TubeBlock | TubeSetBlock | BoardBlock | StripBlock
+export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | FadeBlock | NotBlock | GateBlock | AudioBlock | DmxInBlock | BltBlock | AudioSliceBlock | LevelBlock | StepsBlock | DropBlock | HoldBlock | RangeBlock | SequenceBlock | LooksBlock | PatternBlock | FixtureBlock | LightBlock | GroupBlock | ArtnetBlock | SceneBlock | InputBlock | ManualBlock | EqualsBlock | ConstantBlock | LatchBlock | AndBlock | CounterBlock | TimerBlock | CombineBlock | SplitBlock | CdjBlock | BoxBlock | ColorsBlock | TubeBlock | TubeSetBlock | BoardBlock | StripBlock
 export type Kind = Block['kind']
 export type Wire = { from: string; fromPort: string; to: string; port: string; scene?: string }
 export type Cable = { from: string; fromPort: string; to: string; port: string }
@@ -130,6 +131,7 @@ export const KIND_INFO: Record<Kind, string> = {
   mix: 'Crossfades two signals or colours: a × (1 − mix) + b × mix',
   fade: 'Ramps a signal linearly: up over the rise time, down over the fall time',
   counter: 'Counts triggers into an index, clamped at max',
+  timer: 'Counts from 0 to N over a set time: whole steps, the smooth value and progress 0–1',
   combine: 'Bundles values of one type into one multichannel wire: wire into the open slot to add one',
   split: 'Unbundles a multichannel wire back into the values its Combine bundled',
   cdj: 'A player sending audio into an audio input',
@@ -183,7 +185,8 @@ const PORT_HINTS: Record<string, string> = {
   beat: 'beat within bar, 0–3',
   bpm: 'effective tempo',
   pitch: 'pitch multiplier, 1 = original',
-  progress: 'position in the track',
+  progress: 'how far through, 0–1',
+  run: 'counts only while above 0.5; unwired = always running',
   song: 'index of the playing title in the song list',
   playing: '1 while playing',
   onair: '1 while on air at the mixer',
@@ -196,7 +199,7 @@ export function portHint(p: Port) {
 }
 
 
-export type PaletteItem = { kind: 'light'; profile: string } | { kind: 'box' } | { kind: 'cdj' } | { kind: 'audio' } | { kind: 'dmxin' } | { kind: 'blt' } | { kind: 'audioslice' } | { kind: 'level' } | { kind: 'steps' } | { kind: 'gate' } | { kind: 'drop' } | { kind: 'hold' } | { kind: 'range' } | { kind: 'sequence' } | { kind: 'looks' } | { kind: 'pattern' } | { kind: 'fixture'; profile: string } | { kind: 'group'; profile: string } | { kind: 'artnet' } | { kind: 'scene' } | { kind: 'input'; type?: InputType } | { kind: 'output'; type?: InputType } | { kind: 'composite' } | { kind: 'manual' } | { kind: 'equals' } | { kind: 'constant' } | { kind: 'latch' } | { kind: 'and' } | { kind: 'not' } | { kind: 'mix' } | { kind: 'fade' } | { kind: 'counter' } | { kind: 'combine' } | { kind: 'split' } | { kind: 'colors' } | { kind: 'values' } | { kind: 'tubeset'; design?: string } | { kind: 'board' } | { kind: 'strip' }
+export type PaletteItem = { kind: 'light'; profile: string } | { kind: 'box' } | { kind: 'cdj' } | { kind: 'audio' } | { kind: 'dmxin' } | { kind: 'blt' } | { kind: 'audioslice' } | { kind: 'level' } | { kind: 'steps' } | { kind: 'gate' } | { kind: 'drop' } | { kind: 'hold' } | { kind: 'range' } | { kind: 'sequence' } | { kind: 'looks' } | { kind: 'pattern' } | { kind: 'fixture'; profile: string } | { kind: 'group'; profile: string } | { kind: 'artnet' } | { kind: 'scene' } | { kind: 'input'; type?: InputType } | { kind: 'output'; type?: InputType } | { kind: 'composite' } | { kind: 'manual' } | { kind: 'equals' } | { kind: 'constant' } | { kind: 'latch' } | { kind: 'and' } | { kind: 'not' } | { kind: 'mix' } | { kind: 'fade' } | { kind: 'counter' } | { kind: 'timer' } | { kind: 'combine' } | { kind: 'split' } | { kind: 'colors' } | { kind: 'values' } | { kind: 'tubeset'; design?: string } | { kind: 'board' } | { kind: 'strip' }
 
 
 export const POSITION_PORT = 'position'
@@ -216,6 +219,12 @@ export function parseLength(text: string) {
   const m = text.trim().toLowerCase().match(/^(-?[\d.]+)\s*(ft|feet|foot|'|m)?$/)
   if (!m || Number.isNaN(Number(m[1]))) return null
   return m[2] && m[2] !== 'm' ? Number(m[1]) * FOOT : Number(m[1])
+}
+export const formatDuration = (seconds: number) => {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Number((seconds % 60).toFixed(2))
+  return [h && `${h}h`, m && `${m}m`, (s || !(h || m)) && `${s}s`].filter(Boolean).join(' ')
 }
 export const formatLength = (m: number) => `${Number(m.toFixed(2))} m (${Number((m / FOOT).toFixed(1))} ft)`
 
@@ -433,6 +442,7 @@ function allInputPorts(b: Block, show?: Show): Port[] {
     case 'combine': return combineInputs(show, b)
     case 'split': return [typed('in', 'multi', 'multichannel')]
     case 'counter': return [typed('trigger', 'signal', 'count'), typed('reset', 'signal')]
+    case 'timer': return [typed('reset', 'signal'), typed('run', 'signal')]
     case 'level': return [typed('audio', 'audio')]
     case 'steps': return [typed('signal', 'signal')]
     case 'gate': return [multiPort(show, b, 'signal')]
@@ -522,6 +532,7 @@ export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Po
       return !from ? [] : combineSlots(show, from, new Set(seen).add(b.id)).map((p) => (WIDE_TYPES.includes(p.type) ? { ...p, chans: `${p.id}_*`, strip: `${p.id}_` } : { ...p, chans: p.id }))
     }
     case 'counter': return [typed('out', 'index', 'count')]
+    case 'timer': return [typed('count', 'index'), typed('value', 'number'), typed('progress', 'signal')]
     case 'values': return b.rows.map((r, i) => ({ ...typed(`v${i}`, 'signal', r.name), chans: `v${i}` }))
     case 'colors': return b.rows.map((r, i) => ({ ...typed(`c${i}`, 'color', r.name), chans: RGB.map((ch) => `c${i}_${ch}`).join(' '), strip: `c${i}_` }))
   }
@@ -1035,6 +1046,9 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
       break
     case 'counter':
       block = { ...base, id: `count${n}`, name: `count${n}`, kind: 'counter', max: 3 }
+      break
+    case 'timer':
+      block = { ...base, id: `timer${n}`, name: `timer${n}`, kind: 'timer', seconds: 4 * 3600, countTo: 4, end: 'hold' }
       break
     case 'combine':
       block = { ...base, id: `comb${n}`, name: `combine${n}`, kind: 'combine', names: {} }

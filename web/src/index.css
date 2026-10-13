@@ -41,7 +41,7 @@ header .url { width: 180px; }
 }
 .palette-item:active { cursor: grabbing; }
 .palette-item.audio, .palette-item.dmxin, .palette-item.blt, .palette-item.audioslice { border-left-color: #e06c6c; }
-.palette-item.level, .palette-item.gate, .palette-item.fade, .palette-item.steps, .palette-item.pattern, .palette-item.drop, .palette-item.hold, .palette-item.range, .palette-item.sequence, .palette-item.scenes { border-left-color: #6cb86c; }
+.palette-item.level, .palette-item.gate, .palette-item.fade, .palette-item.timer, .palette-item.steps, .palette-item.pattern, .palette-item.drop, .palette-item.hold, .palette-item.range, .palette-item.sequence, .palette-item.scenes { border-left-color: #6cb86c; }
 .palette-item.fixture, .palette-item.light, .palette-item.group, .palette-item.strip, .palette-item.tube, .palette-item.tubeset, .palette-item.board { border-left-color: #f2b544; }
 .palette-item.artnet { border-left-color: #5c8ed6; }
 .palette-item.scene, .palette-item.manual, .palette-item.input { border-left-color: #b07ddc; }
@@ -63,7 +63,7 @@ main .react-flow { flex: 1; }
 .td-node-name, .td-node-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .td-node-kind { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .td-node.audio, .td-node.dmxin, .td-node.blt, .td-node.audioslice { border-color: #e06c6c; }
-.td-node.level, .td-node.gate, .td-node.fade, .td-node.steps, .td-node.pattern, .td-node.drop, .td-node.hold, .td-node.range, .td-node.sequence, .td-node.scenes { border-color: #6cb86c; }
+.td-node.level, .td-node.gate, .td-node.fade, .td-node.timer, .td-node.steps, .td-node.pattern, .td-node.drop, .td-node.hold, .td-node.range, .td-node.sequence, .td-node.scenes { border-color: #6cb86c; }
 .td-node.fixture, .td-node.light, .td-node.group, .td-node.strip { border-color: #f2b544; }
 .td-node.artnet { border-color: #5c8ed6; }
 .td-node.cdj { border-color: #e06c6c; }
@@ -71,7 +71,7 @@ main .react-flow { flex: 1; }
 .td-node.scene, .td-node.manual, .td-node.input { border-color: #b07ddc; }
 .td-node.colors, .td-node.values, .td-node.equals, .td-node.constant, .td-node.latch, .td-node.and, .td-node.not, .td-node.mix, .td-node.counter { border-color: #6cb86c; }
 .td-node.audio .td-node-type, .td-node.dmxin .td-node-type, .td-node.blt .td-node-type, .td-node.audioslice .td-node-type { color: #e06c6c; }
-.td-node.level .td-node-type, .td-node.steps .td-node-type, .td-node.pattern .td-node-type, .td-node.drop .td-node-type, .td-node.hold .td-node-type, .td-node.range .td-node-type, .td-node.sequence .td-node-type, .td-node.scenes .td-node-type { color: #6cb86c; }
+.td-node.level .td-node-type, .td-node.steps .td-node-type, .td-node.pattern .td-node-type, .td-node.drop .td-node-type, .td-node.hold .td-node-type, .td-node.timer .td-node-type, .td-node.range .td-node-type, .td-node.sequence .td-node-type, .td-node.scenes .td-node-type { color: #6cb86c; }
 .td-node.fixture .td-node-type, .td-node.light .td-node-type, .td-node.group .td-node-type { color: #f2b544; }
 .td-node.artnet .td-node-type { color: #5c8ed6; }
 .td-node.scene .td-node-type, .td-node.manual .td-node-type, .td-node.input .td-node-type { color: #b07ddc; }

@@ -2,7 +2,7 @@ import { Position, type NodeProps, type Node } from '@xyflow/react'
 import { useContext } from 'react'
 import { PickTitle, PortHandle, PortRow } from './PortHandle'
 import { FocusContext } from './connect'
-import { KIND_INFO, TYPE_COLORS, portHint, profileOf, type Block, type Patch, type Port, type Rail } from './show'
+import { KIND_INFO, TYPE_COLORS, formatDuration, portHint, profileOf, type Block, type Patch, type Port, type Rail } from './show'
 import { LiveValue, useLive } from './live'
 
 export type FlowNode = Node<{ block: Block; inputs: Port[]; outputs: Port[]; patch: Patch | null; keys: Record<string, string | null>; targets: string[] }, 'block'>
@@ -44,6 +44,7 @@ function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Por
     case 'mix': return `${b.type}: a → b`
     case 'fade': return `↑ ${b.rise}s · ↓ ${b.fall}s · ${b.curve}`
     case 'counter': return `0…${b.max}`
+    case 'timer': return `0→${b.countTo} over ${formatDuration(b.seconds)}${b.end === 'loop' ? ' · loop' : ''}`
     case 'combine': return '→ multichannel'
     case 'split': return outputs.length ? `multichannel → ${outputs.length}` : 'no Combine upstream'
     case 'cdj': return `player ${b.player}`
