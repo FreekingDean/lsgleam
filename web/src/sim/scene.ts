@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
-import { isRgb, perceive, type Placement, type SimDevice, type SimFixture, type SimTube } from '../show'
+import { type Placement, type SimDevice, type SimFixture, type SimTube } from '../show'
 import type { DmxValues } from '../td'
 import { Par, placementOf, type Light } from './par'
 import { Head } from './head'
@@ -122,7 +122,6 @@ export class SimScene {
       const universe = fixture.universe === null ? undefined : dmx[`${fixture.node}:${fixture.universe}`]
       const v: Record<string, number> = {}
       fixture.profile.channels.forEach((ch, i) => { v[ch.name] = (universe?.[fixture.address - 1 + i] ?? 0) / 255 })
-      if (isRgb(fixture.profile)) [v.Red, v.Green, v.Blue] = perceive([v.Red, v.Green, v.Blue], fixture.strength)
       light.update(v)
     }
   }

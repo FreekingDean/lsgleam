@@ -73,8 +73,8 @@ export type Kind = Block['kind']
 export type Wire = { from: string; fromPort: string; to: string; port: string; scene?: string }
 export type Cable = { from: string; fromPort: string; to: string; port: string }
 export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; responses?: Record<string, ColorResponse> }
-export type ColorResponse = { strength: [number, number, number]; compensate: boolean }
-export const NO_RESPONSE: ColorResponse = { strength: [1, 1, 1], compensate: false }
+export type ColorResponse = { multiplier: [number, number, number] }
+export const NO_RESPONSE: ColorResponse = { multiplier: [1, 1, 1] }
 
 export const EMPTY_SHOW: Show = { nextId: 1, blocks: [], wires: [], cables: [] }
 export const SELECTOR_ID = 'lsgleam_scene'
@@ -220,12 +220,7 @@ export function hexToRgb(hex: string): [number, number, number] {
 export const rgbToHex = (rgb: number[]) => `#${rgb.map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0')).join('')}`
 export const isRgb = (p: FixtureProfile) => RGB.every((n) => p.channels.some((ch) => ch.name === n))
 export const responseOf = (show: Show, profile: string) => show.responses?.[profile] ?? NO_RESPONSE
-export const outputGains = (r: ColorResponse) => r.strength.map((s) => (r.compensate ? Math.min(...r.strength) / s : 1)) as [number, number, number]
-export function perceive(rgb: number[], strength: number[]): [number, number, number] {
-  const seen = rgb.map((v, c) => v * strength[c])
-  const top = Math.max(1, ...seen)
-  return seen.map((v) => v / top) as [number, number, number]
-}
+export const sentColor = (rgb: number[], r: ColorResponse) => rgb.map((v, c) => Math.min(v * r.multiplier[c], 1)) as [number, number, number]
 export const sequenceValues = (b: SequenceBlock) => (b.values.length ? b.values : [0]).map((v) => b.center + v * b.unit)
 
 export const PATTERN_MODES: PatternMode[] = ['all', 'alternate', 'alternate2', 'chase', 'outsidein', 'fillin', 'fillout']
@@ -967,12 +962,12 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
   return [syncSets({ ...next, blocks: next.blocks.map((b) => (b.id === block.scene ? { ...b, h: blockHeight(b, next) } : b)) }), block]
 }
 
-export type SimFixture = { key: string; name: string; profile: FixtureProfile; strength: [number, number, number]; placement: Placement; address: number; node: string | null; universe: number | null }
+export type SimFixture = { key: string; name: string; profile: FixtureProfile; placement: Placement; address: number; node: string | null; universe: number | null }
 export type SimTube = { key: string; name: string; placement: Placement; path: Point[]; leds: number; addresses: [string, number][] | null; label: string }
 export type SimDevice = { key: string; name: string; kind: Kind; placement: Placement; size?: [number, number, number] }
 
 export function simFixtures(show: Show): SimFixture[] {
-  return unitsOf(show).flatMap((u) => u.block.kind === 'fixture' ? [{ key: u.key, name: u.name, profile: profileOf(u.block), strength: responseOf(show, profileOf(u.block).id).strength, placement: u.placement, address: u.block.address, node: unitPatch(show, u.key)?.node ?? null, universe: unitPatch(show, u.key)?.universe ?? null }] : [])
+  return unitsOf(show).flatMap((u) => u.block.kind === 'fixture' ? [{ key: u.key, name: u.name, profile: profileOf(u.block), placement: u.placement, address: u.block.address, node: unitPatch(show, u.key)?.node ?? null, universe: unitPatch(show, u.key)?.universe ?? null }] : [])
 }
 
 export function simTubes(show: Show): SimTube[] {

@@ -1,4 +1,4 @@
-import { syncSets, type Point, type TubeBlock, type TubeDesign, EMPTY_SHOW, FIXTURE_PORT, memberPort, NODE_H, NODE_W, blockHeight, hasInput, inputPorts, outputPorts, pathLength, profileOf, pruneCables, scenesOf, type Aims, type Block, type Cable, type FixtureBlock, type GroupBlock, type Kind, type Patch, type Placement, type Position, type Scene, type Show, type Wire } from './show'
+import { syncSets, type Point, type TubeBlock, type TubeDesign, EMPTY_SHOW, FIXTURE_PORT, memberPort, NODE_H, NODE_W, blockHeight, hasInput, inputPorts, outputPorts, pathLength, profileOf, pruneCables, scenesOf, type Aims, type Block, type Cable, type ColorResponse, type FixtureBlock, type GroupBlock, type Kind, type Patch, type Placement, type Position, type Scene, type Show, type Wire } from './show'
 
 const LEGACY_KINDS: Record<string, Kind> = { scenes: 'looks' }
 const LIGHT_KINDS = ['fixture', 'group']
@@ -165,6 +165,13 @@ function setsFromTubes(show: Show): Show {
   return syncSets({ ...show, designs, blocks, cables: show.cables.map((c) => ({ ...c, from: remap(c.from), to: remap(c.to) })), wires: show.wires.map((w) => ({ ...w, to: remap(w.to) })) })
 }
 
+type OldResponse = Partial<ColorResponse> & { strength?: [number, number, number]; compensate?: boolean }
+
+function multiplierOf({ multiplier, strength, compensate }: OldResponse): ColorResponse {
+  if (multiplier) return { multiplier }
+  return { multiplier: compensate && strength ? strength.map((s) => Math.min(...strength) / s) as ColorResponse['multiplier'] : [1, 1, 1] }
+}
+
 export function normalize(raw: Partial<Show>): Show {
   const migrated = explode(lift(controllers(migrate({ ...EMPTY_SHOW, ...raw } as Legacy))))
   const blocks = migrated.blocks.map((b) => {
@@ -188,7 +195,7 @@ export function normalize(raw: Partial<Show>): Show {
     if (sized.kind === 'audioslice') Object.assign(sized, { apiPort: sized.apiPort ?? 8722, token: sized.token ?? '', smoothing: sized.smoothing ?? 0 })
     return sized
   })
-  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(raw.responses ? { responses: raw.responses } : {}), designs: raw.designs ?? [] })
+  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(raw.responses ? { responses: Object.fromEntries(Object.entries(raw.responses).map(([id, r]) => [id, multiplierOf(r)])) } : {}), designs: raw.designs ?? [] })
   const used = new Map<string, number>()
   const cables = draft.cables.map((c) => {
     if (c.port !== 'in' || draft.blocks.find((b) => b.id === c.to)?.kind !== 'audio') return c

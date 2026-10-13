@@ -1,33 +1,31 @@
 import { useEffect, useState } from 'react'
 import { FIXTURES, type FixtureProfile } from './fixtures'
 import { NumberBox } from './fields'
-import { hexToRgb, isRgb, outputGains, perceive, profileOf, responseOf, rgbToHex, type ColorResponse, type ColorsBlock, type Show } from './show'
+import { hexToRgb, isRgb, profileOf, responseOf, rgbToHex, sentColor, type ColorResponse, type ColorsBlock, type Show } from './show'
 
 type Props = { show: Show; block: ColorsBlock; onPatch: (patch: Partial<ColorsBlock>) => void; onResponse: (profile: string, response: ColorResponse) => void; onClose: () => void }
 
 const CHANNELS = ['Red', 'Green', 'Blue']
-const MIN_STRENGTH = 0.1
-const MAX_STRENGTH = 8
+const MAX_MULTIPLIER = 4
 
 function onFixture(hex: string, response: ColorResponse) {
-  const gains = outputGains(response)
-  const dmx = hexToRgb(hex).map((v, c) => Math.round(v * gains[c] * 255))
-  return { dmx, looks: rgbToHex(perceive(dmx.map((v) => v / 255), response.strength)) }
+  const sent = sentColor(hexToRgb(hex), response)
+  return { dmx: sent.map((v) => Math.round(v * 255)), sent: rgbToHex(sent) }
 }
 
 function Looks({ block, profile, response, used }: { block: ColorsBlock; profile: FixtureProfile; response: ColorResponse; used: boolean }) {
   const steps = Array.from({ length: block.steps }, (_, k) => k)
   return (
     <div className="palette-fixture">
-      <h4>Looks like on {profile.label}{used ? '' : ' · not in this show'}</h4>
+      <h4>Sent to {profile.label}{used ? '' : ' · not in this show'}</h4>
       {block.rows.map((r, i) => (
         <div key={i} className="palette-row">
           <span className="palette-name">{r.name}</span>
           {steps.map((k) => {
-            const { dmx, looks } = onFixture(r.colors[k] ?? '#000000', response)
+            const { dmx, sent } = onFixture(r.colors[k] ?? '#000000', response)
             return (
               <div key={k} className="palette-cell" title={`sends DMX R ${dmx[0]} · G ${dmx[1]} · B ${dmx[2]}`}>
-                <div className="palette-swatch" style={{ background: looks }} />
+                <div className="palette-swatch" style={{ background: sent }} />
                 <span>{dmx.join(' ')}</span>
               </div>
             )
@@ -39,23 +37,19 @@ function Looks({ block, profile, response, used }: { block: ColorsBlock; profile
 }
 
 function ResponseEditor({ profile, response, onChange, onCommit }: { profile: FixtureProfile; response: ColorResponse; onChange: (r: ColorResponse) => void; onCommit: (r: ColorResponse) => void }) {
-  const withStrength = (c: number, v: number) => ({ ...response, strength: response.strength.map((s, n) => (n === c ? Math.max(MIN_STRENGTH, Math.min(MAX_STRENGTH, v)) : s)) as ColorResponse['strength'] })
+  const withMultiplier = (c: number, v: number) => ({ multiplier: response.multiplier.map((m, n) => (n === c ? Math.max(0, Math.min(MAX_MULTIPLIER, v)) : m)) as ColorResponse['multiplier'] })
   return (
     <>
       <h4>{profile.label}</h4>
       {CHANNELS.map((name, c) => (
         <div key={name} className="par">
-          <label>{name} strength</label>
+          <label>{name} ×</label>
           <div className="slider">
-            <input type="range" min={MIN_STRENGTH} max={MAX_STRENGTH} step={0.1} value={response.strength[c]} onChange={(e) => onChange(withStrength(c, Number(e.target.value)))} onPointerUp={() => onCommit(response)} onKeyUp={() => onCommit(response)} />
-            <NumberBox value={response.strength[c]} max={MAX_STRENGTH} onCommit={(v) => onCommit(withStrength(c, v))} />
+            <input type="range" min={0} max={MAX_MULTIPLIER} step={0.01} value={response.multiplier[c]} onChange={(e) => onChange(withMultiplier(c, Number(e.target.value)))} onPointerUp={() => onCommit(response)} onKeyUp={() => onCommit(response)} />
+            <NumberBox value={response.multiplier[c]} max={MAX_MULTIPLIER} onCommit={(v) => onCommit(withMultiplier(c, v))} />
           </div>
         </div>
       ))}
-      <div className="par">
-        <label>Compensate</label>
-        <input type="checkbox" checked={response.compensate} onChange={(e) => onCommit({ ...response, compensate: e.target.checked })} />
-      </div>
     </>
   )
 }
@@ -107,9 +101,9 @@ export function PaletteView({ show, block, onPatch, onResponse, onClose }: Props
         </div>
         <aside className="designer-side pars">
           <h2>{block.name}</h2>
-          <div className="help">Raise a channel's strength until the "looks like" white matches what you see on the real fixture. Compensate output scales the stronger channels down so the fixture shows the colour you picked; it never goes above 255.</div>
+          <div className="help">Each channel sent to the fixture is the colour × its multiplier, capped at 255: e.g. blue 0.25 if your fixture's blue overpowers red and green.</div>
           {profiles.map((p) => <ResponseEditor key={p.id} profile={p} response={responseFor(p.id)} onChange={(response) => setDragging({ profile: p.id, response })} onCommit={(r) => commitResponse(p.id, r)} />)}
-          <div className="help">Strength is saved per fixture type in the show and also drives the simulator. Each swatch's small numbers are the DMX red, green and blue it sends.</div>
+          <div className="help">Multipliers are saved per fixture type in the show. Each swatch's small numbers are the DMX red, green and blue it sends.</div>
           <div className="designer-actions">
             <button onClick={onClose}>close</button>
           </div>

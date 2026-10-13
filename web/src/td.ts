@@ -1,6 +1,6 @@
 import type { Bridge } from './bridge'
 import type { PortValues } from './live'
-import { SOURCE_KINDS, type Kind, AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, BLT_SIGNALS, audioSliceAlpha, audioSlicePath, boardPlan, controllerPatch, hexToRgb, membersOf, outputGains, responseOf, ownersOf, tubeGeometry, patternMasks, profileOf, scenesOf, selectorSources, sequenceValues, sourcesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type FixtureBlock, type Show, type StripBlock, type ValuesBlock } from './show'
+import { SOURCE_KINDS, type Kind, AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, BLT_SIGNALS, audioSliceAlpha, audioSlicePath, boardPlan, controllerPatch, hexToRgb, membersOf, responseOf, ownersOf, tubeGeometry, patternMasks, profileOf, scenesOf, selectorSources, sequenceValues, sourcesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type FixtureBlock, type Show, type StripBlock, type ValuesBlock } from './show'
 
 export type DmxValues = Record<string, number[]>
 
@@ -973,14 +973,20 @@ def build_fixture(b, profile, sources, gains=None):
     blend = ports(c, sources, {'channels': home}).get('channels') or home
     if gains:
         table = constant(c, 'gains', [(n, gains.get(n, 1)) for n, v in pairs])
-        comp = c.create(mathCHOP, 'compensate')
+        comp = c.create(mathCHOP, 'multiply')
         comp.par.chopop = 'mul'
         comp.par.match = 'name'
-        table.nodeX, table.nodeY = -400, -150
-        comp.nodeX, comp.nodeY = -200, 0
+        cap = c.create(limitCHOP, 'cap')
+        cap.par.type = 'clamp'
+        cap.par.min = 0
+        cap.par.max = 1
+        table.nodeX, table.nodeY = -600, -150
+        comp.nodeX, comp.nodeY = -400, 0
+        cap.nodeX, cap.nodeY = -200, 0
         blend.outputConnectors[0].connect(comp.inputConnectors[0])
         table.outputConnectors[0].connect(comp.inputConnectors[1])
-        blend = comp
+        comp.outputConnectors[0].connect(cap.inputConnectors[0])
+        blend = cap
     scale = c.create(mathCHOP, 'scale')
     scale.par.torange2 = 255
     scale.par.integer = 'round'
@@ -1464,7 +1470,7 @@ def build_artnet(b, sources):
 
 export const colorTable = (b: ColorsBlock): [string, number][][] => Array.from({ length: b.steps }, (_, k) => b.rows.flatMap((r, i) => hexToRgb(r.colors[k] ?? '#000000').map((v, ch): [string, number] => [`c${i}_${['Red', 'Green', 'Blue'][ch]}`, v])))
 export function fixtureGains(show: Show, b: FixtureBlock) {
-  const gains = outputGains(responseOf(show, profileOf(b).id))
+  const gains = responseOf(show, profileOf(b).id).multiplier
   return gains.some((g) => g !== 1) ? { Red: gains[0], Green: gains[1], Blue: gains[2] } : null
 }
 export const valueTable = (b: ValuesBlock): [string, number][][] => Array.from({ length: b.steps }, (_, k) => b.rows.map((r, i): [string, number] => [`v${i}`, r.values[k] ?? 0]))
