@@ -29,6 +29,11 @@ header .url { width: 180px; }
   width: 220px; overflow-y: auto; padding: 12px;
   background: var(--panel); border-right: 1px solid var(--border);
 }
+.palette-search { width: 100%; margin-bottom: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font: inherit; }
+.palette-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.palette-tabs button { background: var(--bg); color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font: inherit; font-size: 11px; cursor: pointer; }
+.palette-tabs button.on { color: var(--text); border-color: var(--accent); }
+.palette-empty { color: var(--muted); font-size: 11px; }
 .palette h3 { margin: 8px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .palette-item {
   padding: 8px 10px; margin-bottom: 6px; border: 1px solid var(--border); border-left-width: 4px; border-radius: 4px;
