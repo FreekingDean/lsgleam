@@ -251,3 +251,34 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .profile-buttons { display: flex; gap: 2px; }
 .profile-buttons button { padding: 2px 6px; }
 .palette-new { width: 100%; margin-bottom: 6px; color: var(--muted); }
+
+.schedule { flex: 1; overflow: auto; padding: 16px 20px; }
+.schedule h2 { margin: 0 0 12px; font-size: 16px; }
+.schedule h3 { margin: 0; font-size: 14px; }
+.schedule h3 span, .schedule h4 { color: var(--muted); font-weight: normal; }
+.schedule h4 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+.schedule input, .schedule select, .schedule button { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font: inherit; }
+.schedule button { cursor: pointer; }
+.schedule-tools { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; color: var(--muted); }
+.schedule-tools input { width: 240px; }
+.schedule-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 24px; margin-bottom: 20px; font-variant-numeric: tabular-nums; }
+.schedule-warnings div:not(:first-child) { color: var(--accent); }
+.schedule-universes { grid-column: span 2; }
+.schedule-universes > div { columns: 2; }
+.schedule-title { display: flex; align-items: center; gap: 12px; margin: 16px 0 8px; }
+.schedule table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.schedule th { text-align: left; color: var(--muted); font-weight: normal; cursor: pointer; user-select: none; white-space: nowrap; }
+.schedule th, .schedule td { padding: 4px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.schedule tbody tr { cursor: pointer; }
+.schedule tbody tr:hover { background: var(--panel); }
+.schedule tr.warn td { color: var(--accent); }
+.schedule .schedule-group td { padding-top: 12px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+@media print {
+  @page { size: landscape; margin: 10mm; }
+  :root { color-scheme: light; --bg: #fff; --panel: #fff; --border: #ccc; --text: #000; --muted: #555; --accent: #b4500a; font-size: 10px; }
+  html, body, #root, .app { height: auto; }
+  header, .schedule-tools, .schedule-title button { display: none; }
+  .schedule { overflow: visible; padding: 0; }
+  .schedule tr { break-inside: avoid; }
+}

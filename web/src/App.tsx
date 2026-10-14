@@ -20,6 +20,7 @@ import { MultiPanel } from './MultiPanel'
 import { Palette } from './Palette'
 import { PaletteView } from './PaletteView'
 import { Simulator } from './Simulator'
+import { Schedule } from './Schedule'
 import { download } from './blt'
 import { ConnectContext, FocusContext, PickContext, portKey, type PortKey } from './connect'
 import { LiveContext, liveKey, outputValue, record, type PortValues } from './live'
@@ -190,7 +191,7 @@ function Editor() {
   const td = useRef<Td>(null)
   const showRef = useRef(show)
   const [debug, setDebug] = useState(false)
-  const [page, setPage] = useState<'build' | 'simulate'>('build')
+  const [page, setPage] = useState<'build' | 'simulate' | 'schedule'>('build')
   const [tab, setTab] = useState<string | null>(null)
   const [paletteId, setPaletteId] = useState<string | null>(null)
   const [library, setLibrary] = useState(false)
@@ -662,6 +663,15 @@ function Editor() {
     commit(next)
   }, [commit])
 
+  const jump = useCallback((id: string) => {
+    setPage('build')
+    setTab(LAYOUT)
+    setTimeout(() => {
+      selectOnly([id])
+      fitView({ nodes: [{ id }], maxZoom: 1.5, duration: 300 })
+    }, 120)
+  }, [selectOnly, fitView])
+
   const listAudioDevices = useCallback(() => td.current!.audioDevices(), [])
 
   const readValues = useCallback((names: string[], member?: string) => td.current!.readValues(sel!, names, member === undefined ? '' : `m${Number(member) + 1}_`), [sel])
@@ -701,6 +711,7 @@ function Editor() {
         <nav className="tabs">
           <button className={page === 'build' ? 'on' : ''} onClick={() => setPage('build')}>build</button>
           <button className={page === 'simulate' ? 'on' : ''} onClick={() => setPage('simulate')}>simulate</button>
+          <button className={page === 'schedule' ? 'on' : ''} onClick={() => setPage('schedule')}>schedule</button>
         </nav>
         <input className="url" value={url} onChange={(e) => setUrl(e.target.value)} />
         <button onClick={undo} disabled={!past.current.length} title="undo (⌘Z)">undo</button>
@@ -779,6 +790,9 @@ function Editor() {
       </main>
       <main hidden={page !== 'simulate'}>
         <Simulator show={show} td={td.current} connected={connected} active={page === 'simulate'} onPlace={placeSim} />
+      </main>
+      <main hidden={page !== 'schedule'}>
+        {page === 'schedule' && <Schedule show={show} onJump={jump} />}
       </main>
     </div>
   )

@@ -764,7 +764,7 @@ export function chainOf(show: Show, node: string, universe: number) {
   return keys
 }
 
-const roomAt = (show: Show, x: number, z: number) => show.blocks.find((b): b is BoxBlock => b.kind === 'box' && Math.abs(x - (b.sim?.position[0] ?? 0)) <= b.size[0] / 2 && Math.abs(z - (b.sim?.position[2] ?? 0)) <= b.size[1] / 2)
+export const roomAt = (show: Show, x: number, z: number) => show.blocks.find((b): b is BoxBlock => b.kind === 'box' && Math.abs(x - (b.sim?.position[0] ?? 0)) <= b.size[0] / 2 && Math.abs(z - (b.sim?.position[2] ?? 0)) <= b.size[1] / 2)
 
 export function ceilingAt(show: Show, x: number, z: number) {
   const room = roomAt(show, x, z)
