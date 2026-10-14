@@ -36,7 +36,7 @@ The build page has a **layout** tab, a **show** tab and one tab per scene.
 
 The **layout** tab sets the hardware, and its placements also drive the simulator. The **show** tab collects the show from scenes. Each **scene** decides what happens to the data.
 
-The layout is the physical room, top-down, one grid square per metre. It holds only hardware and sources: Art-Net nodes, DMX controllers, fixtures, audio sources (CDJs), audio inputs (the interface), BLT and AudioSlice, and boxes. A node's position is its floor position. Its panel sets:
+The layout is the physical room, top-down: bright grid lines every metre, faint ones every 25 cm, and a fixture node is about 33 cm across. Dragging snaps to 5 cm. It holds only hardware and sources: Art-Net nodes, DMX controllers, fixtures, audio sources (CDJs), audio inputs (the interface), BLT and AudioSlice, and boxes. A node's position is its floor position. Its panel sets:
 - name, height, X and Z (metres, or type `100ft` / `30'`);
 - turn, tilt and roll, with ↺/↻ 90°, flip H to turn around and flip V to hang upside down (the arrow on the node shows its turn);
 - "flip ports", which swaps the in and out sides.

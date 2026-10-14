@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import {
-  ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, ReactFlowProvider,
+  ReactFlow, Background, BackgroundVariant, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, ReactFlowProvider,
   type Edge, type Connection, type OnSelectionChangeParams,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { Bridge } from './bridge'
 import { Td, colorTable, valueTable } from './td'
-import { RAIL_W, SCALE, flipY, railHeight, railSpots, unitSize } from './spots'
+import { RAIL_W, SCALE, STEP, flipY, metres, railHeight, railSpots, unitSize } from './spots'
 import { ceilingAt, ownersOf, membersOf, setDesign, type Cable, type TubeDesign, boardUniverses, tubePatch, EMPTY_SHOW, INPUTS_ID, LAYOUT, LAYOUT_KINDS, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, TYPE_COLORS, FIXTURE_PORT, addCable, addWire, canCable, canWire, fixturesOf, inputRail, outputRail, placeUnit, removeCables, unitsOf, unitPatch, type Rail, type Unit, copyBlocks, diffShows, downstream, hasProfile, pasteBlocks, drivenPorts, inputPorts, moveScene, newBlock, outputPorts, patchBlock, patchOf, portOf, profileOf, removeBlocks, repatch, removeWires, scenesOf, visibleBlocks, visibleWires, type Block, type Clip, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './show'
 import { normalize } from './migrate'
 import { FIXTURES, setCustomProfiles, type FixtureProfile } from './fixtures'
@@ -379,7 +379,7 @@ function Editor() {
     if (tab === LAYOUT) {
       const [made, block] = newBlock(showRef.current, item, -600, -showRef.current.nextId * 40, null)
       const hung = block.kind === 'fixture' || block.kind === 'tube' || block.kind === 'tubeset'
-      const next = patchBlock(made, block.id, { sim: { position: [x / SCALE, hung ? ceilingAt(made, x / SCALE, y / SCALE) ?? 3 : block.kind === 'box' ? 0 : 1, y / SCALE], rotation: [0, 0, 0] } })
+      const next = patchBlock(made, block.id, { sim: { position: [metres(x), hung ? ceilingAt(made, metres(x), metres(y)) ?? 3 : block.kind === 'box' ? 0 : 1, metres(y)], rotation: [0, 0, 0] } })
       commit(next, () => rebuild(next, [block.id]))
       return
     }
@@ -527,7 +527,7 @@ function Editor() {
         const u = (n as UnitFlowNode).data.unit
         const [w, h] = unitSize(u)
         const p = u.placement
-        next = placeUnit(next, n.id, { ...p, position: [(n.position.x + w / 2) / SCALE, p.position[1], (n.position.y + h / 2) / SCALE] })
+        next = placeUnit(next, n.id, { ...p, position: [metres(n.position.x + w / 2), p.position[1], metres(n.position.y + h / 2)] })
         placed.push(n.id)
         continue
       }
@@ -744,12 +744,15 @@ function Editor() {
           snapToGrid
           elevateNodesOnSelect={false}
           elevateEdgesOnSelect={false}
-          snapGrid={[GRID, GRID]}
-          minZoom={0.1}
+          snapGrid={tab === LAYOUT ? [SCALE / STEP, SCALE / STEP] : [GRID, GRID]}
+          minZoom={tab === LAYOUT ? 0.02 : 0.1}
           fitView
           colorMode="dark"
         >
-          <Background gap={tab === LAYOUT ? SCALE : GRID} />
+          {tab === LAYOUT ? <>
+            <Background id="minor" variant={BackgroundVariant.Lines} gap={SCALE / 4} color="#25252d" />
+            <Background id="major" variant={BackgroundVariant.Lines} gap={SCALE} color="#3a3a46" bgColor="transparent" />
+          </> : <Background gap={GRID} />}
           <Controls />
           <MiniMap pannable zoomable />
         </ReactFlow>
@@ -763,7 +766,7 @@ function Editor() {
             <div className="pars">
               <MultiPanel show={show} ids={multi} layout={tab === LAYOUT} onPatch={patchMany} onPlace={placeMany} onValue={(ids, i, v) => ids.forEach((id) => setValueOf(id, i, v))} />
               <div className="help">{multi.map((id) => (tab === LAYOUT ? unitsOf(show).find((u) => u.key === id)?.name : show.blocks.find((b) => b.id === id)?.name) ?? id).join(", ")}</div>
-              {tab === LAYOUT && <div className="help">Drag to place them on the floor (1 grid square = 1 m).</div>}
+              {tab === LAYOUT && <div className="help">Drag to place them on the floor (bright lines every 1 m, faint every 25 cm).</div>}
               <div className="help">⌘-click adds to the selection; shift-drag draws a box. Dragging moves every selected node. Backspace deletes the selection.</div>
             </div>
           </aside>
