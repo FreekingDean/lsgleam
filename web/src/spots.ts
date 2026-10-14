@@ -1,6 +1,8 @@
 import { INPUTS_ID, OUTPUTS_ID, inputRail, outputRail, visibleBlocks, type Rail, type Show, type Unit } from './show'
 
-export const SCALE = 100
+export const SCALE = 300
+export const STEP = 20
+export const metres = (px: number) => Math.round(px / SCALE * STEP) / STEP
 export const RAIL_W = 240
 
 export const flipY = (y: number, h: number) => -y - h
