@@ -7,7 +7,7 @@ import '@xyflow/react/dist/style.css'
 import { Bridge } from './bridge'
 import { Td, colorTable, valueTable } from './td'
 import { RAIL_W, SCALE, STEP, flipY, metres, railHeight, railSpots, unitSize } from './spots'
-import { ceilingAt, ownersOf, membersOf, setDesign, type Cable, type TubeDesign, boardUniverses, tubePatch, EMPTY_SHOW, INPUTS_ID, LAYOUT, LAYOUT_KINDS, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, TYPE_COLORS, FIXTURE_PORT, addCable, addWire, canCable, canWire, fixturesOf, inputRail, outputRail, placeUnit, removeCables, unitsOf, unitPatch, type Rail, type Unit, copyBlocks, diffShows, downstream, hasProfile, pasteBlocks, drivenPorts, inputPorts, moveScene, newBlock, outputPorts, patchBlock, patchOf, portOf, profileOf, removeBlocks, repatch, removeWires, scenesOf, visibleBlocks, visibleWires, type Block, type Clip, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './show'
+import { isLight, ceilingAt, ownersOf, membersOf, setDesign, type Cable, type TubeDesign, boardUniverses, tubePatch, EMPTY_SHOW, INPUTS_ID, LAYOUT, LAYOUT_KINDS, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, TYPE_COLORS, FIXTURE_PORT, addCable, addWire, canCable, canWire, fixturesOf, inputRail, outputRail, placeUnit, removeCables, unitsOf, unitPatch, type Rail, type Unit, copyBlocks, diffShows, downstream, hasProfile, pasteBlocks, drivenPorts, inputPorts, moveScene, newBlock, outputPorts, patchBlock, patchOf, portOf, profileOf, removeBlocks, repatch, removeWires, scenesOf, visibleBlocks, visibleWires, type Block, type Clip, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './show'
 import { normalize } from './migrate'
 import { FIXTURES, setCustomProfiles, type FixtureProfile } from './fixtures'
 import { addComposite, addDesign, addPalette, setProfile, type ColorPalette } from './library'
@@ -65,6 +65,30 @@ function load(raw: Partial<Show>) {
   setCustomProfiles(raw.profiles ?? [])
   return withRails(normalize(raw))
 }
+
+const DRAFT_KEY = 'lsgleamShow'
+const OFFLINE_KEY = 'lsgleamOffline'
+
+function readDraft() {
+  try {
+    const text = localStorage.getItem(DRAFT_KEY)
+    return text ? load(JSON.parse(text)) : EMPTY_SHOW
+  } catch {
+    return EMPTY_SHOW
+  }
+}
+
+function remember(key: string, value: string | null) {
+  try {
+    if (value === null) localStorage.removeItem(key)
+    else localStorage.setItem(key, value)
+    return true
+  } catch {
+    return false
+  }
+}
+
+const offlineEdits = () => { try { return localStorage.getItem(OFFLINE_KEY) === '1' } catch { return false } }
 
 function toNodes(show: Show, prev: AnyNode[], tab: string | null): AnyNode[] {
   const selected = new Set(prev.filter((n) => n.selected).map((n) => n.id))
@@ -180,8 +204,11 @@ function wireTargets(show: Show, wires: Wire[]) {
 function Editor() {
   const [url, setUrl] = useState(() => localStorage.getItem('bridgeUrl') ?? 'ws://localhost:9980')
   const [connected, setConnected] = useState(false)
+  const connectedRef = useRef(false)
   const [error, setError] = useState('')
-  const [show, setShow] = useState<Show>(EMPTY_SHOW)
+  const [show, setShow] = useState<Show>(readDraft)
+  const baseline = useRef(show)
+  const [conflict, setConflict] = useState<Show | null>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState<AnyNode>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -244,11 +271,12 @@ function Editor() {
   }, [tab, setNodes, setEdges, fitView])
 
   const tdDo = useCallback(async (work: () => Promise<unknown>) => {
+    if (!connectedRef.current) return
     try {
       setError('')
       await work()
     } catch (e) {
-      setError((e as Error).message)
+      if (connectedRef.current) setError((e as Error).message)
     }
   }, [])
 
@@ -266,17 +294,45 @@ function Editor() {
 
   const rebuild = useCallback((next: Show, ids: string[]) => td.current!.buildAll(next, downstream(next, ids)), [])
 
-  const sync = useCallback(async () => {
+  const adopt = useCallback(async (loaded: Show) => {
     const t = td.current!
-    const loaded = load(await t.loadShow() ?? {})
+    remember(OFFLINE_KEY, null)
+    baseline.current = loaded
     apply(loaded)
-    await t.legacy()
     const present = new Set(await t.existing())
     const wanted = new Set([...loaded.blocks.filter((b) => b.kind !== 'scene' && b.kind !== 'composite' && b.kind !== 'cdj' && b.kind !== 'box' && b.kind !== 'tubeset').map((b) => b.id), SELECTOR_ID])
     await rebuild(loaded, [...wanted].filter((id) => !present.has(id)))
     const extra = [...present].filter((id) => !wanted.has(id))
     if (extra.length) await t.destroy(extra)
   }, [apply, rebuild])
+
+  const replaceTd = useCallback(async (next: Show) => {
+    const t = td.current!
+    const present = await t.existing()
+    if (present.length) await t.destroy(present)
+    await rebuild(next, [SELECTOR_ID, ...next.blocks.map((b) => b.id)])
+  }, [rebuild])
+
+  const sendMine = useCallback(async () => {
+    const mine = showRef.current
+    remember(OFFLINE_KEY, null)
+    baseline.current = mine
+    await replaceTd(mine)
+    await td.current!.saveShow(mine)
+  }, [replaceTd])
+
+  const sync = useCallback(async () => {
+    const t = td.current!
+    const raw = await t.loadShow()
+    await t.legacy()
+    const mine = showRef.current
+    if (!raw?.blocks?.length && mine.blocks.length) return sendMine()
+    const theirs = load(raw ?? {})
+    if (!mine.blocks.length) return adopt(theirs)
+    setCustomProfiles(mine.profiles ?? [])
+    if (offlineEdits() && JSON.stringify(theirs) !== JSON.stringify(mine)) return setConflict(theirs)
+    await adopt(theirs)
+  }, [adopt, sendMine])
 
   const repatchAll = useCallback(() => {
     const next = repatch(showRef.current)
@@ -321,14 +377,9 @@ function Editor() {
   const importShow = useCallback((file: File) => {
     file.text().then((text) => {
       const loaded = load(JSON.parse(text))
-      commit(loaded, async () => {
-        const t = td.current!
-        const present = await t.existing()
-        if (present.length) await t.destroy(present)
-        await rebuild(loaded, [SELECTOR_ID, ...loaded.blocks.map((b) => b.id)])
-      })
+      commit(loaded, () => replaceTd(loaded))
     }).catch((e: Error) => setError(e.message))
-  }, [commit, rebuild])
+  }, [commit, replaceTd])
 
   const sceneListChanged = useCallback((next: Show) => [SELECTOR_ID, ...next.blocks.filter((b) => b.kind === 'manual').map((b) => b.id)], [])
 
@@ -337,12 +388,23 @@ function Editor() {
     const b = new Bridge(url)
     td.current = new Td(b)
     b.onStatus = (ok) => {
+      connectedRef.current = ok
       setConnected(ok)
       if (ok) tdDo(sync)
+      else {
+        setError('')
+        setConflict(null)
+      }
     }
     b.connect()
     return () => b.close()
   }, [url, sync, tdDo])
+
+  useEffect(() => {
+    const t = setTimeout(() => remember(DRAFT_KEY, JSON.stringify(show)), 300)
+    if (show !== baseline.current && !connectedRef.current) remember(OFFLINE_KEY, '1')
+    return () => clearTimeout(t)
+  }, [show])
 
   useEffect(() => {
     if (!debug || !connected) return
@@ -641,12 +703,12 @@ function Editor() {
     const ch = profileOf(block).channels[index].name
     if (block.kind === 'group' && member !== undefined) {
       apply(patchBlock(show, selectedId, { aims: { ...block.aims, [member]: { ...block.aims[member], [ch]: value } } }))
-      td.current!.setValue(selectedId, index, value, [`m${Number(member) + 1}_`], ch).catch((e) => setError(e.message))
+      if (connectedRef.current) td.current!.setValue(selectedId, index, value, [`m${Number(member) + 1}_`], ch).catch((e) => setError(e.message))
       return
     }
     apply(patchBlock(show, selectedId, { values: block.values.map((v, i) => (i === index ? value : v)) }))
     const prefixes = block.kind === 'group' ? Array.from({ length: block.size }, (_, i) => `m${i + 1}_`) : ['']
-    td.current!.setValue(selectedId, index, value, prefixes, ch).catch((e) => setError(e.message))
+    if (connectedRef.current) td.current!.setValue(selectedId, index, value, prefixes, ch).catch((e) => setError(e.message))
   }, [apply])
 
   const setValue = useCallback((index: number, value: number, member?: string) => { if (sel) setValueOf(sel, index, value, member) }, [sel, setValueOf])
@@ -674,7 +736,14 @@ function Editor() {
 
   const listAudioDevices = useCallback(() => td.current!.audioDevices(), [])
 
-  const readValues = useCallback((names: string[], member?: string) => td.current!.readValues(sel!, names, member === undefined ? '' : `m${Number(member) + 1}_`), [sel])
+  const readValues = useCallback(async (names: string[], member?: string) => {
+    if (connectedRef.current) return td.current!.readValues(sel!, names, member === undefined ? '' : `m${Number(member) + 1}_`)
+    const block = showRef.current.blocks.find((b) => b.id === sel)
+    if (!block || !isLight(block)) return {}
+    const channels = profileOf(block).channels.map((ch) => ch.name)
+    const aims = block.kind === 'group' && member !== undefined ? block.aims[member] ?? {} : {}
+    return Object.fromEntries(names.map((n) => [n, aims[n] ?? block.values[channels.indexOf(n)] ?? 0]))
+  }, [sel])
 
   const placeSim = useCallback((key: string, p: Placement) => commit(placeUnit(showRef.current, key, p)), [commit])
 
@@ -717,13 +786,26 @@ function Editor() {
         <button onClick={undo} disabled={!past.current.length} title="undo (⌘Z)">undo</button>
         <button onClick={redo} disabled={!future.current.length} title="redo (⇧⌘Z)">redo</button>
         <button onClick={rebuildAll} disabled={!connected}>rebuild all</button>
-        <button onClick={exportShow} title="download the show as JSON">export</button>
-        <label className="toggle" title="load a show JSON, replacing the current one"><input type="file" accept="application/json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) importShow(f); e.target.value = '' }} />import</label>
+        <button onClick={exportShow} title="download the show as a JSON file to keep or hand off">save file</button>
+        <label className="toggle" title="open a show JSON file, replacing the current one"><input type="file" accept="application/json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) importShow(f); e.target.value = '' }} />open file</label>
         <button onClick={() => setLibrary(true)} title="import, use and export shared fixture profiles, tube designs, palettes and composites">library</button>
-        <button onClick={repatchAll} disabled={!connected} title="number DMX addresses along each cable chain">repatch</button>
+        <button onClick={repatchAll} title="number DMX addresses along each cable chain">repatch</button>
         <label className="toggle"><input type="checkbox" checked={debug} onChange={(e) => setDebug(e.target.checked)} /> debug</label>
-        <span className="error">{error}</span>
+        {connected ? <span className="error">{error}</span> : <span className="design-mode" title="the show autosaves in this browser; TouchDesigner gets it when it connects">design mode · not connected to TouchDesigner</span>}
       </header>
+      {conflict && (
+        <div className="modal">
+          <div className="dialog conflict">
+            <h2>TouchDesigner has a show and you have offline changes</h2>
+            <div className="help">Using TouchDesigner's replaces your offline changes; sending yours rebuilds everything in TouchDesigner. Save a file first to keep both.</div>
+            <div className="conflict-actions">
+              <button onClick={exportShow}>save file</button>
+              <button onClick={() => { const theirs = conflict; setConflict(null); tdDo(() => adopt(theirs)) }}>use TouchDesigner's</button>
+              <button onClick={() => { setConflict(null); tdDo(sendMine) }}>send mine to TouchDesigner</button>
+            </div>
+          </div>
+        </div>
+      )}
       <nav className="scene-tabs" hidden={page !== 'build'}>
         <button className={tab === LAYOUT ? 'on' : ''} onClick={() => setTab(LAYOUT)}>layout</button>
         <button className={tab === null ? 'on' : ''} onClick={() => setTab(null)}>show</button>

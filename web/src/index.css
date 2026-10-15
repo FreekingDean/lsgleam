@@ -143,7 +143,7 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .td-ports-out .td-live { left: calc(100% + 18px); }
 .td-spark polyline { stroke: var(--muted); stroke-width: 1; }
 .tabs { display: flex; gap: 2px; }
-.tabs button, .sim-modes button { background: var(--bg); color: var(--muted); border: 1px solid var(--border); padding: 3px 10px; cursor: pointer; }
+.tabs button, .sim-modes button, .sim-modes select { background: var(--bg); color: var(--muted); border: 1px solid var(--border); padding: 3px 10px; cursor: pointer; }
 .tabs button.on, .sim-modes button.on, .tube-tabs button.on, .designer-actions button.on { color: var(--fg); border-color: var(--accent); }
 .sim { position: relative; flex: 1; min-width: 0; }
 .sim-view { position: absolute; inset: 0; }
@@ -282,3 +282,6 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
   .schedule { overflow: visible; padding: 0; }
   .schedule tr { break-inside: avoid; }
 }
+.design-mode { margin-left: auto; color: var(--muted); font-size: 12px; border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; }
+.conflict { width: min(480px, 94vw); }
+.conflict-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }

@@ -37,6 +37,7 @@ export class Bridge {
 
   close() {
     this.closed = true
+    this.onStatus = undefined
     this.ws?.close()
   }
 

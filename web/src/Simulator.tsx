@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { simDevices, simFixtures, simTubes, type Placement, type Show } from './show'
+import { scenesOf, simDevices, simFixtures, simTubes, type Placement, type Show } from './show'
+import { LAYOUT_DEFAULTS, previewDmx } from './preview'
 import type { Td } from './td'
 import { SimScene } from './sim/scene'
 import { PlacementEditor } from './Placement'
+
+const LIVE = 'live'
 
 type Props = { show: Show; td: Td | null; connected: boolean; active: boolean; onPlace: (key: string, p: Placement) => void }
 
@@ -16,7 +19,10 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
   const [glError, setGlError] = useState('')
   const [lost, setLost] = useState(false)
   const [timing, setTiming] = useState('')
+  const [source, setSource] = useState(LIVE)
   const fixtures = simFixtures(show)
+  const scenes = scenesOf(show)
+  const preview = connected && source === LIVE ? null : scenes.some((s) => s.id === source) ? source : LAYOUT_DEFAULTS
 
   useEffect(() => {
     let s: SimScene
@@ -39,6 +45,7 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
   }, [])
 
   useEffect(() => { scene.current?.sync(simFixtures(show), simDevices(show), simTubes(show)) }, [show])
+  useEffect(() => { if (preview !== null) scene.current?.apply(previewDmx(show, preview)) }, [show, preview])
   useEffect(() => { scene.current?.setMode(mode) }, [mode])
   useEffect(() => { if (active) scene.current?.resize() }, [active])
 
@@ -55,7 +62,7 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
   }, [active])
 
   useEffect(() => {
-    if (!active || !connected || !td) return
+    if (!active || !connected || !td || preview !== null) return
     let busy = false
     let polls = 0
     let worst = 0
@@ -84,8 +91,8 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
       worst = 0
       since = performance.now()
     }, 1000)
-    return () => { clearInterval(id); clearInterval(report) }
-  }, [active, connected, td])
+    return () => { clearInterval(id); clearInterval(report); setTiming('') }
+  }, [active, connected, td, preview])
 
   const devices = simDevices(show)
   const tubes = simTubes(show)
@@ -99,7 +106,14 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
       <div className="sim-hud">
         {glError && <div className="error">The 3D view failed to start: {glError}</div>}
         {lost && <div className="error">3D view lost the GPU, restoring…</div>}
-        <div>{fixtures.length} fixtures · {tubes.length} tubes · {devices.length} devices · {connected ? 'live' : 'offline'}</div>
+        <div>{fixtures.length} fixtures · {tubes.length} tubes · {devices.length} devices · {preview === null ? 'live' : 'preview'}</div>
+        <div className="sim-modes">
+          <select value={preview ?? LIVE} onChange={(e) => setSource(e.target.value)} title="what the simulator shows: live DMX from TouchDesigner, or a preview computed from the show">
+            {connected && <option value={LIVE}>live from TouchDesigner</option>}
+            <option value={LAYOUT_DEFAULTS}>preview: layout defaults</option>
+            {scenes.map((s) => <option key={s.id} value={s.id}>preview: {s.name}</option>)}
+          </select>
+        </div>
         {timing && <div className="hint">{timing}</div>}
         <div>{current ? `${current.name} · ${current.universe === null ? 'no DMX cable' : `U${current.universe} @${current.address}`}` : device ? device.name : tube ? `${tube.name} · ${tube.label}` : 'click a fixture to move it'}</div>
         {picked && <div className="sim-place pars"><PlacementEditor placement={picked.placement} onPlace={(p) => onPlace(picked.key, p)} floor={device?.kind === 'box'} /></div>}
