@@ -213,8 +213,8 @@ export class SimScene {
   }
 
   private aim() {
-    const spots = [...this.lights.values()].flatMap(({ light: { spot } }) => (spot && spot.intensity > 0 ? [spot] : []))
-    const power = (s: Spot) => s.intensity * (s.color.r + s.color.g + s.color.b)
+    const power = (s: Spot) => s.intensity * (0.2126 * s.color.r + 0.7152 * s.color.g + 0.0722 * s.color.b)
+    const spots = [...this.lights.values()].flatMap(({ light: { spot } }) => (spot && power(spot) > 0.05 ? [spot] : []))
     spots.sort((a, b) => power(b) - power(a))
     this.pool.forEach((light, i) => {
       const s = spots[i]
