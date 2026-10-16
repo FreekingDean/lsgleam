@@ -1,6 +1,6 @@
 import { type Patch, type TubeBlock, type BoardBlock, type StripMode, type StripAlong, type Wire, type Show, SELECTOR_ID, SCENE_PORT, ON_PORT, FIXTURE_PORT, CHANNELS_PORT, isLight, scenesOf, profileOf } from './show'
 import { outputPorts, portOf } from './ports'
-import { blockDef } from '../blocks'
+import { blockDef, chainOf } from '../blocks'
 
 export function nextAddress(show: Show) {
   return show.blocks.reduce((max, b) => {
@@ -76,11 +76,6 @@ export function unitPatch(show: Show, key: string, seen = new Set<string>()): Pa
   return unitPatch(show, c.from, seen)
 }
 
-export function controllerPatch(show: Show, id: string): Patch | null {
-  const c = show.cables.find((x) => x.from === id && x.fromPort === 'out' && x.port.startsWith('i'))
-  return c ? { node: c.to, universe: Number(c.port.slice(1)) } : null
-}
-
 export type PixelPatch = { board: string; output: number; offset: number }
 
 export function tubePatch(show: Show, id: string): PixelPatch | null {
@@ -141,12 +136,6 @@ export function boardPlan(show: Show, board: BoardBlock) {
 
 export function patchOf(show: Show, id: string): Patch | null {
   return show.blocks.find((x) => x.id === id)?.kind === 'fixture' ? unitPatch(show, id) : null
-}
-
-export function chainOf(show: Show, node: string, universe: number) {
-  const keys: string[] = []
-  for (let c = show.cables.find((x) => x.from === node && x.fromPort === `u${universe}`); c && !keys.includes(c.to); c = show.cables.find((x) => x.from === c!.to && x.fromPort === 'out')) keys.push(c.to)
-  return keys
 }
 
 export function selectorSources(show: Show) {

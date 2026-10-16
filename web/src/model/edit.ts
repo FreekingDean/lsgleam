@@ -1,6 +1,5 @@
 import { findProfile } from './fixtures'
 import { NODE_W, NODE_H, type Placement, type TubeBlock, type TubeDesign, type Block, type Wire, type Show, LAYOUT_KINDS, SHOW_KINDS, isLight, scenesOf, type PaletteItem } from './show'
-import { BLT_DEFAULTS, AUDIOSLICE_DEFAULTS } from './catalog'
 import { pruneWires, outputPorts, hasInput, blockHeight } from './ports'
 import { nextAddress } from './patch'
 import { defOf, hasDef } from '../blocks'
@@ -86,24 +85,6 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
   let block: Block
   if (hasDef(item)) block = defOf(item).create(base, n)
   else switch (item.kind) {
-    case 'box':
-      block = { ...base, id: `box${n}`, name: `Room ${n}`, kind: 'box', size: [30.48, 9.144, 4], locked: false }
-      break
-    case 'cdj':
-      block = { ...base, id: `cdj${n}`, name: `CDJ ${n}`, kind: 'cdj', player: 1 }
-      break
-    case 'audio':
-      block = { ...base, id: `audio${n}`, name: `audio${n}`, kind: 'audio', device: '', channels: 2, stereo: true }
-      break
-    case 'dmxin':
-      block = { ...base, id: `dmxin${n}`, name: `DMX controller ${n}`, kind: 'dmxin', channels: 8 }
-      break
-    case 'blt':
-      block = { ...base, id: `blt${n}`, name: 'Beat Link Trigger', kind: 'blt', port: 9001, decks: 2, master: true, signals: BLT_DEFAULTS, songs: [] }
-      break
-    case 'audioslice':
-      block = { ...base, id: `as${n}`, name: `as${n}`, kind: 'audioslice', port: 9002, signals: AUDIOSLICE_DEFAULTS, apiPort: 8722, token: '', smoothing: 0 }
-      break
     case 'fixture': {
       const profile = findProfile(item.profile)
       block = { ...base, id: `fix${n}`, name: `fix${n}`, kind: 'fixture', profile: profile.id, address: nextAddress(show), values: profile.channels.map((c) => c.default) }
@@ -119,9 +100,6 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
       block = { ...base, id: `grp${n}`, name: `${profile.label} group`, kind: 'group', profile: profile.id, size: 4, values: profile.channels.map((c) => c.default), aims: {}, positions: [], mode: 'alternate', advance: 'step', every: 1, floor: 0 }
       break
     }
-    case 'artnet':
-      block = { ...base, id: `net${n}`, name: `net${n}`, kind: 'artnet', protocol: 'artnet', ip: '255.255.255.255', universes: [0], inputs: [], active: true }
-      break
     case 'scene':
       block = { ...base, id: `scene${n}`, name: `Scene ${n}`, kind: 'scene', fadeIn: 0.5, fadeOut: 0.5, w: 260 }
       break

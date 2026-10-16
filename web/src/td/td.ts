@@ -1,13 +1,13 @@
 import type { Bridge } from './bridge'
 import type { PortValues } from '../editor/live'
-import { INPUTS_ID, OUTPUTS_ID, membersOf, profileOf, scenesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type Show, type StripBlock } from '../model/show'
-import { AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, audioSliceAlpha, audioSlicePath, patternMasks } from '../model/catalog'
-import { boardPlan, controllerPatch, selectorSources, sourcesOf } from '../model/patch'
+import { INPUTS_ID, OUTPUTS_ID, membersOf, profileOf, scenesOf, SELECTOR_ID, type AudioSliceBlock, type Block, type Show, type StripBlock } from '../model/show'
+import { patternMasks } from '../model/catalog'
+import { boardPlan, selectorSources, sourcesOf } from '../model/patch'
 import { PORTS } from '../model/ports'
 import { hexToRgb } from '../model/format'
 import { tubeGeometry } from '../model/geometry'
 import { j, PRELUDE } from './prelude'
-import { defOf, hasDef } from '../blocks'
+import { AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, audioSliceAlpha, audioSlicePath, defOf, hasDef } from '../blocks'
 import { TINTS, showDir, inputsDir, outputsDir, spotOf, placed, railCode } from './tree'
 
 export type DmxValues = Record<string, number[]>
@@ -75,11 +75,6 @@ probe.destroy()
     if (block.kind === 'strip') return (`build_strip(${j(b)}, ${sources}, ${j(stripConfig(block))})`)
     if (block.kind === 'fixture') return (`build_fixture(${j(b)}, ${j(profileOf(block))}, ${sources})`)
     if (block.kind === 'light') return (`build_light(${j(b)}, ${j(profileOf(block))}, ${sources})`)
-    if (block.kind === 'dmxin') {
-      const patch = controllerPatch(show, block.id)
-      const node = show.blocks.find((b): b is ArtnetBlock => b.kind === 'artnet' && b.id === patch?.node)
-      return (`build_dmxin(${j(b)}, ${sources}, ${j(node?.protocol ?? 'artnet')}, ${j(node ? patch!.universe : null)})`)
-    }
     if (block.kind === 'manual') return (`build_manual(${j(b)}, ${j(scenesOf(show).map((s) => s.id))}, ${sources})`)
     if (block.kind === 'group') {
       const members = Array.from({ length: block.size }, (_, i) => ({ id: String(i), aim: block.aims[i] ?? {} }))

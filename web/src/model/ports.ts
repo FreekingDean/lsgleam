@@ -1,6 +1,5 @@
 import { allProfiles } from './fixtures'
-import { NODE_H, type AudioBlock, type LightBlock, type GroupBlock, type InputBlock, type OutputBlock, type CombineBlock, type StripMode, type ColorStop, type Block, type Kind, type Wire, type Show, EMPTY_SHOW, ON_PORT, FIXTURE_PORT, SOURCE_KINDS, isLight, scenesOf, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, LOOK_CHANS, COLOR_PORT, RGB, LOOK_CHANNELS, NUDGE_PORT, profileOf, memberPort, type Rail, RAIL_SEP, membersOf, typed } from './show'
-import { BLT_SIGNALS, bltDecks } from './catalog'
+import { NODE_H, type LightBlock, type GroupBlock, type InputBlock, type OutputBlock, type CombineBlock, type StripMode, type ColorStop, type Block, type Kind, type Wire, type Show, EMPTY_SHOW, ON_PORT, FIXTURE_PORT, SOURCE_KINDS, isLight, scenesOf, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, LOOK_CHANS, COLOR_PORT, RGB, LOOK_CHANNELS, NUDGE_PORT, profileOf, memberPort, type Rail, RAIL_SEP, membersOf, typed } from './show'
 import { type Ports, blockDef, defOf, elementOf, hasDef } from '../blocks'
 
 const STRIP_USES: Record<StripMode, string[]> = { solid: ['color', 'dimmer'], band: ['color', 'dimmer', 'position', 'width', 'spread'], fill: ['color', 'dimmer', 'position', 'width', 'spread'], chase: ['color', 'dimmer', 'position', 'width', 'speed', 'spread'], ramp: ['dimmer', 'position', 'speed', 'spread', 'stop', 'at'] }
@@ -81,15 +80,8 @@ function alternatives(b: Block): [string[], string[]][] {
 function allInputPorts(b: Block, show?: Show): Port[] {
   if (hasDef(b)) return defOf(b).inputs(b, show, PORTS)
   switch (b.kind) {
-    case 'audio':
-    case 'cdj':
-    case 'box':
     case 'tubeset':
     case 'board':
-    case 'artnet':
-    case 'dmxin':
-    case 'blt':
-    case 'audioslice':
     case 'input':
       return []
     case 'manual': return [typed('index', 'index', 'scene index')]
@@ -117,23 +109,9 @@ function allInputPorts(b: Block, show?: Show): Port[] {
 export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Port[] {
   if (hasDef(b)) return defOf(b).outputs(b, show, seen, PORTS)
   switch (b.kind) {
-    case 'audio': return audioInputs(b).map((p) => {
-      const cdj = show?.cables.find((c) => c.to === b.id && c.port === p.id)
-      const first = Number(p.id.slice(2))
-      const name = cdj && show?.blocks.find((x) => x.id === cdj.from)?.name
-      return { ...p, label: name ? `${name} (${p.label})` : p.label, chans: b.stereo && first < b.channels ? `chan${first} chan${first + 1}` : `chan${first}` }
-    })
-    case 'dmxin': return Array.from({ length: b.channels }, (_, i) => typed(`ch${i + 1}`, 'signal'))
-    case 'blt':
-      return bltDecks(b).flatMap((deck) =>
-        BLT_SIGNALS.filter((sig) => b.signals.includes(sig.id)).map((sig) => typed(`${deck}_${sig.id}`, sig.type, `${deck.replace('d', 'deck ')} ${sig.id}`)))
-    case 'audioslice': return b.signals.map((s) => typed(s.replace('/', '_'), 'signal', s))
     case 'fixture':
     case 'light':
     case 'group':
-    case 'artnet':
-    case 'cdj':
-    case 'box':
     case 'tube':
     case 'tubeset':
     case 'board':
@@ -161,14 +139,6 @@ export function hasInput(b: Block, port: string, show: Show) {
 export function portOf(show: Show, w: Wire) {
   const b = show.blocks.find((x) => x.id === w.to)
   return b ? inputPorts(b, show).find((p) => p.id === w.port) : undefined
-}
-
-export function audioInputs(b: AudioBlock): Port[] {
-  const step = b.stereo ? 2 : 1
-  return Array.from({ length: Math.ceil(b.channels / step) }, (_, i) => {
-    const first = i * step + 1
-    return typed(`in${first}`, 'audio', b.stereo && first < b.channels ? `${first}-${first + 1}` : `in ${first}`)
-  })
 }
 
 const byLabel = (ports: Port[]) => [...ports].sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }))

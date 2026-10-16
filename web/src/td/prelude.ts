@@ -1,12 +1,9 @@
 import STRIP_CODE from './strip.py?raw'
 import TUBE_CODE from './tube.py?raw'
 import BOARD_CODE from './board.py?raw'
-import { BLT_SIGNALS } from '../model/catalog'
 import { BLOCKS } from '../blocks'
 
 export const j = (v: unknown) => `json.loads(${JSON.stringify(JSON.stringify(v))})`
-
-const BLT_INDEXED = BLT_SIGNALS.filter((s) => s.type === 'index').map((s) => s.id)
 
 export const PRELUDE = `
 import json
@@ -337,75 +334,16 @@ def constant(c, name, pairs):
         const.par['const%dvalue' % i] = v
     return const
 
-def build_audio(b, sources):
-    c = new_block(b)
-    audio = c.create(audiodeviceinCHOP, 'audio')
-    if b['device']:
-        audio.par.device = b['device']
-    audio.par.active = True
-    chain(audio, c.create(outCHOP, 'out1'))
-
-def build_dmxin(b, sources, protocol, universe):
-    c = new_block(b)
-    dmx = c.create(dmxinCHOP, 'dmxin1')
-    dmx.par.interface = protocol
-    dmx.par.format = 'packetpersample'
-    dmx.par.universe = universe or 0
-    dmx.par.active = universe is not None
-    names = c.create(renameCHOP, 'names')
-    names.par.renamefrom = '*'
-    names.par.renameto = 'ch[1-512]'
-    faders = c.create(selectCHOP, 'faders')
-    faders.par.channames = 'ch[1-%d]' % b['channels']
-    norm = c.create(mathCHOP, 'norm')
-    norm.par.fromrange2 = 255
-    chain(dmx, names, faders, norm, c.create(outCHOP, 'out1'))
-
+${BLOCKS.audio.python}
+${BLOCKS.dmxin.python}
 def osc_in(c, port):
     osc = c.create(oscinCHOP, 'osc1')
     osc.par.port = port
     osc.par.active = True
     return osc
 
-def build_blt(b, sources):
-    c = new_block(b)
-    osc = osc_in(c, b['port'])
-    decks = (['master'] if b['master'] else []) + ['%d' % d for d in range(1, b['decks'] + 1)]
-    names = c.create(renameCHOP, 'names')
-    names.par.renamefrom = ' '.join('*?%s?%s' % (d, s) for d in decks for s in b['signals'])
-    names.par.renameto = ' '.join('%s_%s' % (d if d == 'master' else 'd' + d, s) for d in decks for s in b['signals'])
-    chain(osc, names)
-    branches = []
-    for k, sig in enumerate(${j(BLT_INDEXED)}):
-        sel = c.create(selectCHOP, sig)
-        sel.par.channames = '*_%s' % sig
-        math = c.create(mathCHOP, sig + '_zero')
-        math.par.preoff = -1
-        sel.nodeX, math.nodeX = 400, 600
-        sel.nodeY = math.nodeY = -k * 150
-        names.outputConnectors[0].connect(sel.inputConnectors[0])
-        sel.outputConnectors[0].connect(math.inputConnectors[0])
-        branches.append(math)
-    rest = c.create(selectCHOP, 'rest')
-    rest.par.channames = ' '.join('*_%s' % s for s in b['signals'] if s not in ${j(BLT_INDEXED)})
-    rest.nodeX, rest.nodeY = 400, -len(branches) * 150
-    names.outputConnectors[0].connect(rest.inputConnectors[0])
-    merge = merge_into(c, branches + [rest])
-    merge.nodeX, merge.nodeY = 800, 0
-    out = c.create(outCHOP, 'out1')
-    out.nodeX = 1000
-    merge.outputConnectors[0].connect(out.inputConnectors[0])
-
-def build_audioslice(b, sources):
-    c = new_block(b)
-    osc = osc_in(c, b['port'])
-    names = c.create(renameCHOP, 'names')
-    names.par.renamefrom = ' '.join('*' + s.replace('/', '?') for s in b['signals'])
-    names.par.renameto = ' '.join(s.replace('/', '_') for s in b['signals'])
-    sel = c.create(selectCHOP, 'signals')
-    sel.par.channames = names.par.renameto
-    chain(osc, names, sel, c.create(outCHOP, 'out1'))
-
+${BLOCKS.blt.python}
+${BLOCKS.audioslice.python}
 ${BLOCKS.level.python}
 ${BLOCKS.gate.python}
 ${BLOCKS.steps.python}
@@ -886,27 +824,4 @@ def build_board(b, sources, plan):
         dmx.nodeX, dmx.nodeY = 200, -k * 200
         patch.outputConnectors[0].connect(dmx.inputConnectors[0])
 
-def build_artnet(b, sources):
-    c = new_block(b)
-    ends = inputs(c, sources)
-    by_universe = {}
-    for src, end in zip(sources, ends):
-        by_universe.setdefault(src['port'], []).append(end)
-    for k, u in enumerate(b['universes']):
-        y = -k * 300
-        base = c.create(constantCHOP, 'base_u%d' % u)
-        base.par.const0name = 'c[1-512]'
-        base.par.const0value = 0
-        patch = c.create(replaceCHOP, 'patch_u%d' % u)
-        dmx = c.create(dmxoutCHOP, 'dmxout_u%d' % u)
-        dmx.par.interface = b['protocol']
-        dmx.par.format = 'packetpersample'
-        dmx.par.universe = u
-        dmx.par.netaddress = b['ip']
-        dmx.par.active = b['active']
-        dmx.par.rate = 40
-        chain(base, patch, dmx, y=y)
-        merge = merge_into(c, by_universe.get('u%d' % u, []), 'merge_u%d' % u, y - 150)
-        if merge:
-            merge.outputConnectors[0].connect(patch.inputConnectors[1])
-`
+${BLOCKS.artnet.python}`

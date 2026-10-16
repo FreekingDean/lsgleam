@@ -5,7 +5,6 @@ import { fixturesOf } from '../model/patch'
 import { ceilingAt, onWall } from '../model/units'
 import { inputPorts, PORTS } from '../model/ports'
 import type { Layout, Props } from './shared'
-import { AudioPanel, DmxInPanel, ArtnetPanel, CdjPanel, BoxPanel, BltPanel, AudioSlicePanel } from './hardware'
 import { TubeSetPanel, BoardPanel, StripPanel } from './pixels'
 import { ScenePanel, InputPanel, ManualPanel } from './scene'
 import { GroupPanel, FixturePanel, LightPanel } from './lights'
@@ -70,16 +69,9 @@ function body(props: Props) {
     return <Panel {...props} ports={PORTS} />
   }
   switch (block.kind) {
-    case 'audio': return <AudioPanel {...props} block={block} />
-    case 'dmxin': return <DmxInPanel {...props} block={block} />
-    case 'blt': return <BltPanel {...props} block={block} />
-    case 'audioslice': return <AudioSlicePanel {...props} block={block} />
     case 'fixture': return <FixturePanel {...props} block={block} />
     case 'light': return <LightPanel {...props} block={block} />
     case 'group': return <GroupPanel {...props} block={block} />
-    case 'artnet': return <ArtnetPanel {...props} block={block} />
-    case 'cdj': return <CdjPanel {...props} block={block} />
-    case 'box': return <BoxPanel {...props} block={block} />
     case 'tubeset': return <TubeSetPanel {...props} block={block} />
     case 'strip': return <StripPanel {...props} block={block} />
     case 'board': return <BoardPanel {...props} block={block} />

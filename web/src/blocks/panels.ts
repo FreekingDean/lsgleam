@@ -23,6 +23,13 @@ import { ValuesPanel } from './ValuesPanel'
 import { ColorsPanel } from './ColorsPanel'
 import { PatternPanel } from './PatternPanel'
 import { LooksPanel } from './LooksPanel'
+import { AudioPanel } from './AudioPanel'
+import { DmxInPanel } from './DmxInPanel'
+import { BltPanel } from './BltPanel'
+import { AudioSlicePanel } from './AudioSlicePanel'
+import { CdjPanel } from './CdjPanel'
+import { BoxPanel } from './BoxPanel'
+import { ArtnetPanel } from './ArtnetPanel'
 
-export const PANELS: { [K in DefKind]: (props: Props & { block: Extract<Block, { kind: K }>; ports: Ports }) => ReactNode } = { timer: TimerPanel, combine: CombinePanel, constant: ConstantPanel, latch: LatchPanel, and: AndPanel, not: NotPanel, equals: EqualsPanel, counter: CounterPanel, steps: StepsPanel, level: LevelPanel, gate: GatePanel, fade: FadePanel, mix: MixPanel, hold: HoldPanel, drop: DropPanel, range: RangePanel, split: SplitPanel, sequence: SequencePanel, values: ValuesPanel, colors: ColorsPanel, pattern: PatternPanel, looks: LooksPanel }
+export const PANELS: { [K in DefKind]: (props: Props & { block: Extract<Block, { kind: K }>; ports: Ports }) => ReactNode } = { timer: TimerPanel, combine: CombinePanel, constant: ConstantPanel, latch: LatchPanel, and: AndPanel, not: NotPanel, equals: EqualsPanel, counter: CounterPanel, steps: StepsPanel, level: LevelPanel, gate: GatePanel, fade: FadePanel, mix: MixPanel, hold: HoldPanel, drop: DropPanel, range: RangePanel, split: SplitPanel, sequence: SequencePanel, values: ValuesPanel, colors: ColorsPanel, pattern: PatternPanel, looks: LooksPanel, audio: AudioPanel, dmxin: DmxInPanel, blt: BltPanel, audioslice: AudioSlicePanel, cdj: CdjPanel, box: BoxPanel, artnet: ArtnetPanel }
 export const panelOf = (kind: DefKind) => PANELS[kind] as (props: Props & { ports: Ports }) => ReactNode

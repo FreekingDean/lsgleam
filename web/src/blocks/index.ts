@@ -25,13 +25,25 @@ import { values } from './values'
 import { colors } from './colors'
 import { pattern } from './pattern'
 import { looks } from './looks'
+import { audio } from './audio'
+import { dmxin } from './dmxin'
+import { blt } from './blt'
+import { audioslice } from './audioslice'
+import { cdj } from './cdj'
+import { box } from './box'
+import { artnet } from './artnet'
 
 export { ELEMENT_TYPES, WIDE_TYPES, combineSlots, elementOf } from './combine'
 export { splitSource } from './split'
 export { colorTable } from './colors'
 export { valueTable } from './values'
+export { audioInputs } from './audio'
+export { controllerPatch } from './dmxin'
+export { BLT_SIGNALS, BLT_DEFAULTS, bltDecks } from './blt'
+export { AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, AUDIOSLICE_SOURCES, AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_DEFAULTS, audioSlicePath, audioSliceAlpha } from './audioslice'
+export { chainOf } from './artnet'
 
-export const BLOCKS = { timer, combine, constant, latch, and, not, equals, counter, steps, level, gate, fade, mix, hold, drop, range, split, sequence, values, colors, pattern, looks }
+export const BLOCKS = { timer, combine, constant, latch, and, not, equals, counter, steps, level, gate, fade, mix, hold, drop, range, split, sequence, values, colors, pattern, looks, audio, dmxin, blt, audioslice, cdj, box, artnet }
 export type DefKind = keyof typeof BLOCKS
 
 export const blockDef = (kind: Kind): BlockDef | undefined => (BLOCKS as Partial<Record<Kind, BlockDef>>)[kind]
