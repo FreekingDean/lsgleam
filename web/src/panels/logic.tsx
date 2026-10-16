@@ -1,56 +1,11 @@
 import { Field, NumberBox, NumField } from './fields'
-import type { DropBlock, HoldBlock, RangeBlock, LevelBlock, Scene, LooksBlock, SequenceBlock, ConstantBlock, CounterBlock, SplitBlock, ColorsBlock, ValuesBlock, EqualsBlock, PatternAdvance, PatternBlock, StepsBlock, GateBlock, FadeBlock } from '../model/show'
+import type { Scene, LooksBlock, SequenceBlock, SplitBlock, ColorsBlock, ValuesBlock, PatternAdvance, PatternBlock } from '../model/show'
 import { splitSource } from '../model/ports'
-import { type Props, Every, PatternFields, Wired } from './shared'
-
-export function ConstantPanel({ block, onPatch }: Props & { block: ConstantBlock }) {
-  return (
-    <>
-      <div className="par">
-        <label>Type</label>
-        <select value={block.type} onChange={(e) => onPatch({ type: e.target.value as 'signal' | 'index' })}>
-          <option value="signal">signal (0–1)</option>
-          <option value="index">index (integer)</option>
-        </select>
-      </div>
-      {block.type === 'signal' ? (
-        <div className="par">
-          <label>Value</label>
-          <div className="slider">
-            <input type="range" min={0} max={1} step={0.01} value={block.value} onChange={(e) => onPatch({ value: Number(e.target.value) })} />
-            <NumberBox value={block.value} onCommit={(value) => onPatch({ value })} />
-          </div>
-        </div>
-      ) : (
-        <NumField label="Value" value={block.value} onCommit={(value) => onPatch({ value: Math.round(value) })} step={1} />
-      )}
-      <NumField label="Pulse (Hz)" value={block.pulse} onCommit={(pulse) => onPatch({ pulse: Math.max(0, pulse) })} />
-      <div className="help">A test source. Pulse above 0 makes it a square wave between 0 and the value at that rate, handy for triggers and beats.</div>
-    </>
-  )
-}
-
-export function CounterPanel({ block, onPatch }: Props & { block: CounterBlock }) {
-  return (
-    <>
-      <NumField label="Max" value={block.max} onCommit={(max) => onPatch({ max: Math.max(0, Math.round(max)) })} step={1} />
-      <div className="help">Each rising edge on count adds one, clamped at max; reset (while high) zeroes it. Wire the output into Scene select's index to step through scenes.</div>
-    </>
-  )
-}
+import { type Props, Every, PatternFields } from './shared'
 
 export function SplitPanel({ show, block }: Props & { block: SplitBlock }) {
   const from = splitSource(show, block)
   return <div className="help">{from ? `One output per slot of ${from.name}, in order, with its names and type.` : 'No Combine upstream yet: wire a Combine into in, directly or through per-channel transforms and multichannel Inputs and Outputs.'}</div>
-}
-
-export function EqualsPanel({ block, onPatch }: Props & { block: EqualsBlock }) {
-  return (
-    <>
-      <NumField label="Value" value={block.value} onCommit={(value) => onPatch({ value: Math.round(value) })} step={1} />
-      <div className="help">1 while the index equals the value. Wire BLT's song index in and a scene's `on` out.</div>
-    </>
-  )
 }
 
 export function ValuesPanel({ block, onPatch }: Props & { block: ValuesBlock }) {
@@ -104,98 +59,6 @@ export function ColorsPanel({ block, onPatch, onOpenPalette }: Props & { block: 
         </div>
       ))}
       <div className="help">Each row is a colour output; the column follows the `index` input (wrapping), so wire the season count in and each row gives that season's colour. Feed them into scene Colour inputs, then into a fixture output's `color` or a Looks block's `color`.</div>
-    </>
-  )
-}
-
-export function LevelPanel({ block, onPatch }: Props & { block: LevelBlock }) {
-  return (
-    <>
-      <NumField label="Gain" value={block.gain} onCommit={(v) => onPatch({ gain: v })} step={0.1} />
-      <NumField label="Attack (s)" value={block.attack} onCommit={(v) => onPatch({ attack: v })} />
-      <NumField label="Release (s)" value={block.release} onCommit={(v) => onPatch({ release: v })} />
-    </>
-  )
-}
-
-export function GatePanel({ block, onPatch }: Props & { block: GateBlock }) {
-  return (
-    <>
-      <div className="par">
-        <label>Threshold</label>
-        <div className="slider">
-          <input type="range" min={0} max={0.99} step={0.01} defaultValue={block.threshold} onPointerUp={(e) => onPatch({ threshold: Number((e.target as HTMLInputElement).value) })} onKeyUp={(e) => onPatch({ threshold: Number((e.target as HTMLInputElement).value) })} />
-          <NumberBox value={block.threshold} max={0.99} onCommit={(threshold) => onPatch({ threshold })} />
-        </div>
-      </div>
-      <div className="par">
-        <label>Rescale</label>
-        <input type="checkbox" checked={block.rescale} onChange={(e) => onPatch({ rescale: e.target.checked })} />
-      </div>
-      <div className="help">Below the threshold the output is 0. Rescale on: the part above it is stretched back to 0–1, so lights fade up from nothing. Off: the signal passes through unchanged once it's over.</div>
-    </>
-  )
-}
-
-export function FadePanel({ block, onPatch }: Props & { block: FadeBlock }) {
-  return (
-    <>
-      <NumField label="Rise (s)" value={block.rise} onCommit={(v) => onPatch({ rise: Math.max(0, v) })} />
-      <NumField label="Fall (s)" value={block.fall} onCommit={(v) => onPatch({ fall: Math.max(0, v) })} />
-      <div className="par">
-        <label>Curve</label>
-        <select value={block.curve} onChange={(e) => onPatch({ curve: e.target.value as FadeBlock['curve'] })}>
-          <option value="linear">linear (straight ramp, exact time)</option>
-          <option value="smooth">smooth (fast start, eases in)</option>
-        </select>
-      </div>
-      <div className="help">The output follows the signal in straight ramps: a full 0→1 change takes the rise time, 1→0 the fall time (0 = instant). E.g. drop → Fade (rise 0, fall 4) holds a drop and lets it fade out; its Not fades the season back in over the same 4 s. Needs TD's timeline playing.</div>
-    </>
-  )
-}
-
-export function StepsPanel({ block, onPatch }: Props & { block: StepsBlock }) {
-  return <NumField label="Steps" value={block.steps} onCommit={(v) => onPatch({ steps: Math.max(1, Math.round(v)) })} step={1} />
-}
-
-export function DropPanel({ block, onPatch }: Props & { block: DropBlock }) {
-  return (
-    <>
-      <NumField label="Kick threshold" value={block.threshold} onCommit={(threshold) => onPatch({ threshold })} />
-      <NumField label="Quiet beats" value={block.beats} onCommit={(beats) => onPatch({ beats: Math.max(1, Math.round(beats)) })} step={1} />
-      <NumField label="Cooldown (s)" value={block.cooldown} onCommit={(cooldown) => onPatch({ cooldown })} step={1} />
-      <div className="help">Wire kick energy into kick and a beat pulse (AudioSlice beat/energy or a BLT beat) into beat. Beats are counted since the last kick; once that many pass the detector arms, and the first kick back is the drop: `armed` is 1 while waiting for it, `drop` pulses for a quarter second, `drops` counts them, at most once per cooldown.</div>
-    </>
-  )
-}
-
-export function HoldPanel({ block, onPatch }: Props & { block: HoldBlock }) {
-  return (
-    <>
-      <NumField label="Beats" value={block.beats} onCommit={(beats) => onPatch({ beats: Math.max(1, Math.round(beats)) })} step={1} />
-      <div className="help">Wire a trigger (a drop, a downbeat) and a beat pulse. `hold` is 1 from the trigger until that many beats have passed.</div>
-    </>
-  )
-}
-
-export function RangePanel({ block, driven, onPatch }: Props & { block: RangeBlock }) {
-  const set = (key: 'tame' | 'wild', i: 0 | 1, v: number) => {
-    const next: [number, number] = [...block[key]] as [number, number]
-    next[i] = Math.max(0, Math.min(1, v))
-    onPatch({ [key]: next })
-  }
-  const edge = (label: string, port: string, key: 'tame' | 'wild', i: 0 | 1) => (
-    <Wired label={label} wired={driven.has(port)}>
-      <NumField label={label} value={block[key][i]} onCommit={(v) => set(key, i, v)} />
-    </Wired>
-  )
-  return (
-    <>
-      {edge('Tame min', 'tameMin', 'tame', 0)}
-      {edge('Tame max', 'tameMax', 'tame', 1)}
-      {edge('Wild min', 'wildMin', 'wild', 0)}
-      {edge('Wild max', 'wildMax', 'wild', 1)}
-      <div className="help">Output = min + signal × (max − min), where min and max slide from the tame pair at amount 0 to the wild pair at amount 1. Feed amount from a Scenes level, a Hold after a drop, or several summed.</div>
     </>
   )
 }

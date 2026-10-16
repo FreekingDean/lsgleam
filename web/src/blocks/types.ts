@@ -1,6 +1,6 @@
 import type { Base, Block, Port, Show, Wire } from '../model/show'
 
-export type Ports = { outputPorts(b: Block, show?: Show, seen?: Set<string>): Port[]; sourcePort(show: Show, w: Wire, seen?: Set<string>): Port | undefined }
+export type Ports = { outputPorts(b: Block, show?: Show, seen?: Set<string>): Port[]; sourcePort(show: Show, w: Wire, seen?: Set<string>): Port | undefined; multiFeeds(show: Show | undefined, b: Block, seen?: Set<string>): Wire[] }
 
 export type BlockDef<B extends Block = Block> = {
   kind: B['kind']

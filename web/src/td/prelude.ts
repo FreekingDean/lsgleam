@@ -406,70 +406,9 @@ def build_audioslice(b, sources):
     sel.par.channames = names.par.renameto
     chain(osc, names, sel, c.create(outCHOP, 'out1'))
 
-def build_level(b, sources):
-    c = new_block(b)
-    merge = merge_into(c, inputs(c, sources)) or constant(c, 'silence', [('signal', 0)])
-    rms = c.create(analyzeCHOP, 'rms')
-    rms.par.function = 'rmspower'
-    mono = c.create(mathCHOP, 'mono')
-    mono.par.chanop = 'avg'
-    smooth = c.create(lagCHOP, 'smooth')
-    smooth.par.lag1 = b['attack']
-    smooth.par.lag2 = b['release']
-    gain = c.create(mathCHOP, 'gain')
-    gain.par.gain = b['gain']
-    clamp = c.create(limitCHOP, 'clamp')
-    clamp.par.type = 'clamp'
-    clamp.par.min = 0
-    clamp.par.max = 1
-    name = c.create(renameCHOP, 'name')
-    name.par.renamefrom = '*'
-    name.par.renameto = 'level'
-    chain(rms, mono, smooth, gain, clamp, name, c.create(outCHOP, 'out1'))
-    merge.outputConnectors[0].connect(rms.inputConnectors[0])
-
-def build_gate(b, sources):
-    c = new_block(b)
-    src = ports(c, sources).get('signal') or constant(c, 'silence', [('signal', 0)])
-    t = min(max(b['threshold'], 0), 0.99)
-    if b['rescale']:
-        lift = c.create(mathCHOP, 'rescale')
-        lift.par.preoff = -t
-        lift.par.gain = 1.0 / (1 - t)
-        clamp = c.create(limitCHOP, 'clamp')
-        clamp.par.type = 'clamp'
-        clamp.par.min = 0
-        clamp.par.max = 1
-        chain(lift, clamp)
-        src.outputConnectors[0].connect(lift.inputConnectors[0])
-        last = clamp
-    else:
-        g, lim = gate(c, 'open', t, 0, -150)
-        src.outputConnectors[0].connect(g.inputConnectors[0])
-        last = c.create(mathCHOP, 'gated')
-        last.par.chopop = 'mul'
-        last.nodeX = 400
-        src.outputConnectors[0].connect(last.inputConnectors[0])
-        lim.outputConnectors[0].connect(last.inputConnectors[1])
-    finish(c, named(c, sources, last, 'gated', 600), 800)
-
-def build_steps(b, sources):
-    c = new_block(b)
-    merge = merge_into(c, inputs(c, sources)) or constant(c, 'silence', [('signal', 0)])
-    scale = c.create(mathCHOP, 'scale')
-    scale.par.gain = b['steps']
-    quant = c.create(limitCHOP, 'quant')
-    quant.par.type = 'clamp'
-    quant.par.min = 0
-    quant.par.max = b['steps'] - 1
-    quant.par.quantvalue = 'floor'
-    quant.par.vstep = 1
-    name = c.create(renameCHOP, 'name')
-    name.par.renamefrom = '*'
-    name.par.renameto = 'index'
-    chain(scale, quant, name, c.create(outCHOP, 'out1'))
-    merge.outputConnectors[0].connect(scale.inputConnectors[0])
-
+${BLOCKS.level.python}
+${BLOCKS.gate.python}
+${BLOCKS.steps.python}
 def indexed_switch(c, name, step, trigger, count, y, every=1):
     index = step
     counter = None
@@ -657,131 +596,9 @@ def gate(c, name, threshold, x, y):
     g.outputConnectors[0].connect(lim.inputConnectors[0])
     return g, lim
 
-def build_drop(b, sources):
-    c = new_block(b)
-    by_port = ports(c, sources)
-    src = by_port.get('signal') or constant(c, 'silence', [('signal', 0)])
-    beat = by_port.get('beat') or constant(c, 'nobeat', [('beat', 0)])
-    kick_in, kick = gate(c, 'kick', b['threshold'], 0, 0)
-    src.outputConnectors[0].connect(kick_in.inputConnectors[0])
-    quiet = c.create(countCHOP, 'quiet')
-    quiet.par.threshold = False
-    quiet.par.threshup = 0.1
-    quiet.par.threshdown = 0.05
-    quiet.par.offtoon = 'inc'
-    quiet.par.output = 'off'
-    quiet.par.resetcondition = 'on'
-    quiet.nodeX, quiet.nodeY = 400, -150
-    beat.outputConnectors[0].connect(quiet.inputConnectors[0])
-    kick.outputConnectors[0].connect(quiet.inputConnectors[1])
-    armed_in, armed = gate(c, 'armed', b['beats'] - 0.5, 600, -150)
-    armed_out = c.create(renameCHOP, 'armed_name')
-    armed_out.par.renamefrom = '*'
-    armed_out.par.renameto = 'armed'
-    armed_out.nodeX, armed_out.nodeY = 800, -300
-    armed.outputConnectors[0].connect(armed_out.inputConnectors[0])
-    quiet.outputConnectors[0].connect(armed_in.inputConnectors[0])
-    hold = c.create(lagCHOP, 'hold')
-    hold.par.lagunit = 'seconds'
-    hold.par.lag1 = 0
-    hold.par.lag2 = 0.25
-    hold.nodeX, hold.nodeY = 1000, -150
-    armed.outputConnectors[0].connect(hold.inputConnectors[0])
-    hit = c.create(mathCHOP, 'hit')
-    hit.par.chopop = 'mul'
-    hit.nodeX, hit.nodeY = 1200, 0
-    kick.outputConnectors[0].connect(hit.inputConnectors[0])
-    hold.outputConnectors[0].connect(hit.inputConnectors[1])
-    drop_in, drop_lim = gate(c, 'drop_lim', 0.3, 1400, 0)
-    hit.outputConnectors[0].connect(drop_in.inputConnectors[0])
-    drop = c.create(renameCHOP, 'drop')
-    drop.par.renamefrom = '*'
-    drop.par.renameto = 'drop'
-    drop.nodeX = 1800
-    drop_lim.outputConnectors[0].connect(drop.inputConnectors[0])
-    count = c.create(countCHOP, 'count')
-    count.par.threshold = False
-    count.par.threshup = 0.5
-    count.par.threshdown = 0.25
-    count.par.offtoon = 'inc'
-    count.par.output = 'off'
-    count.par.retrigger = b['cooldown']
-    count.par.retriggerunit = 'seconds'
-    drops = c.create(renameCHOP, 'drops')
-    drops.par.renamefrom = '*'
-    drops.par.renameto = 'drops'
-    chain(count, drops, y=-150)
-    count.nodeX, drops.nodeX = 1800, 2000
-    drop.outputConnectors[0].connect(count.inputConnectors[0])
-    merge = merge_into(c, [drop, armed_out, drops], 'merge', 0)
-    merge.nodeX = 2200
-    out = c.create(outCHOP, 'out1')
-    out.nodeX = 2400
-    merge.outputConnectors[0].connect(out.inputConnectors[0])
-
-def build_hold(b, sources):
-    c = new_block(b)
-    by_port = ports(c, sources)
-    trigger = by_port.get('trigger') or constant(c, 'notrigger', [('trigger', 0)])
-    beat = by_port.get('beat') or constant(c, 'nobeat', [('beat', 0)])
-    since = c.create(countCHOP, 'since')
-    since.par.threshold = False
-    since.par.threshup = 0.1
-    since.par.threshdown = 0.05
-    since.par.offtoon = 'inc'
-    since.par.output = 'off'
-    since.par.resetcondition = 'on'
-    since.nodeX, since.nodeY = 0, 0
-    beat.outputConnectors[0].connect(since.inputConnectors[0])
-    trigger.outputConnectors[0].connect(since.inputConnectors[1])
-    inv = c.create(mathCHOP, 'remaining')
-    inv.par.gain = -1
-    inv.par.postoff = b['beats']
-    inv.nodeX = 200
-    since.outputConnectors[0].connect(inv.inputConnectors[0])
-    g, lim = gate(c, 'hold_lim', 0.5, 400, 0)
-    inv.outputConnectors[0].connect(g.inputConnectors[0])
-    fired = edge_counter(c, 'fired', trigger, None, 0, -150)
-    fg, flim = gate(c, 'fired_once', 0.5, 200, -150)
-    fired.outputConnectors[0].connect(fg.inputConnectors[0])
-    both = c.create(mathCHOP, 'both')
-    both.par.chopop = 'mul'
-    both.nodeX = 700
-    lim.outputConnectors[0].connect(both.inputConnectors[0])
-    flim.outputConnectors[0].connect(both.inputConnectors[1])
-    name = c.create(renameCHOP, 'hold')
-    name.par.renamefrom = '*'
-    name.par.renameto = 'hold'
-    name.nodeX = 800
-    both.outputConnectors[0].connect(name.inputConnectors[0])
-    out = c.create(outCHOP, 'out1')
-    out.nodeX = 1000
-    name.outputConnectors[0].connect(out.inputConnectors[0])
-
-def build_range(b, sources):
-    c = new_block(b)
-    by_port = ports(c, sources)
-    signal = by_port.get('signal') or constant(c, 'nosignal', [('signal', 0)])
-    def drive(par, port, v, fn='%s'):
-        if port in by_port:
-            par.expr = fn % ("op('%s')[0]" % by_port[port].name)
-        else:
-            par.val = v
-    sides = []
-    for k, side in enumerate(('tame', 'wild')):
-        m = c.create(mathCHOP, side)
-        m.nodeX, m.nodeY = 0, -k * 150
-        drive(m.par.torange1, side + 'Min', b[side][0])
-        drive(m.par.torange2, side + 'Max', b[side][1])
-        signal.outputConnectors[0].connect(m.inputConnectors[0])
-        sides.append(m)
-    cross = c.create(crossCHOP, 'cross')
-    cross.nodeX = 200
-    drive(cross.par.cross, 'amount', 0, 'tdu.clamp(%s, 0, 1)')
-    for m in sides:
-        m.outputConnectors[0].connect(cross)
-    finish(c, named(c, sources, cross, 'signal', 400), 600)
-
+${BLOCKS.drop.python}
+${BLOCKS.hold.python}
+${BLOCKS.range.python}
 def build_values(b, sources, table):
     c = new_block(b)
     by_port = ports(c, sources)
@@ -1122,24 +939,7 @@ def build_manual(b, scenes, sources):
     out.nodeX = 1200
     merge.outputConnectors[0].connect(out.inputConnectors[0])
 
-def build_constant(b, sources):
-    c = new_block(b)
-    out = c.create(outCHOP, 'out1')
-    out.nodeX = 400
-    if b['pulse'] > 0:
-        lfo = c.create(lfoCHOP, 'lfo')
-        lfo.par.wavetype = 'square'
-        lfo.par.frequency = b['pulse']
-        lfo.par.amp = b['value'] / 2.0
-        lfo.par.offset = b['value'] / 2.0
-        name = c.create(renameCHOP, 'name')
-        name.par.renamefrom = '*'
-        name.par.renameto = 'out'
-        chain(lfo, name, out)
-        return
-    const = constant(c, 'values', [('out', b['value'])])
-    const.outputConnectors[0].connect(out.inputConnectors[0])
-
+${BLOCKS.constant.python}
 def edge_counter(c, name, trigger, reset, x, y):
     cnt = c.create(countCHOP, name)
     cnt.par.threshold = False
@@ -1154,150 +954,20 @@ def edge_counter(c, name, trigger, reset, x, y):
         reset.outputConnectors[0].connect(cnt.inputConnectors[1])
     return cnt
 
-def build_latch(b, sources):
-    c = new_block(b)
-    by_port = ports(c, sources)
-    s = by_port.get('set') or constant(c, 'noset', [('set', 0)])
-    r = by_port.get('reset')
-    cnt = edge_counter(c, 'count', s, r, 0, 0)
-    g, lim = gate(c, 'latched', 0.5, 200, 0)
-    cnt.outputConnectors[0].connect(g.inputConnectors[0])
-    hold = c.create(lagCHOP, 'hold')
-    hold.par.lagunit = 'seconds'
-    hold.par.lag1 = 0
-    hold.par.lag2 = 0.25
-    hold.nodeX = 600
-    lim.outputConnectors[0].connect(hold.inputConnectors[0])
-    name = c.create(renameCHOP, 'name')
-    name.par.renamefrom = '*'
-    name.par.renameto = 'out'
-    name.nodeX = 800
-    hold.outputConnectors[0].connect(name.inputConnectors[0])
-    out = c.create(outCHOP, 'out1')
-    out.nodeX = 1000
-    name.outputConnectors[0].connect(out.inputConnectors[0])
-
-def build_and(b, sources):
-    c = new_block(b)
-    by_port = ports(c, sources)
-    a = by_port.get('a') or constant(c, 'noa', [('a', 0)])
-    bb = by_port.get('b') or constant(c, 'nob', [('b', 0)])
-    if kept(sources) == ['b']:
-        a, bb = bb, a
-    mul = c.create(mathCHOP, 'both')
-    mul.par.chopop = 'mul'
-    mul.nodeX = 0
-    a.outputConnectors[0].connect(mul.inputConnectors[0])
-    bb.outputConnectors[0].connect(mul.inputConnectors[1])
-    finish(c, named(c, sources, mul, 'out', 200), 400)
-
-def build_fade(b, sources):
-    c = new_block(b)
-    src = ports(c, sources).get('signal') or constant(c, 'nosignal', [('signal', 0)])
-    lag = c.create(lagCHOP, 'ramp')
-    lag.par.lagunit = 'seconds'
-    if b['curve'] == 'smooth':
-        lag.par.lag1 = b['rise'] / 3.0
-        lag.par.lag2 = b['fall'] / 3.0
-    else:
-        lag.par.lag1 = 0
-        lag.par.lag2 = 0
-        lag.par.clamp = True
-        lag.par.slope1 = 1.0 / b['rise'] if b['rise'] > 0 else 1e6
-        lag.par.slope2 = 1.0 / b['fall'] if b['fall'] > 0 else 1e6
-    src.outputConnectors[0].connect(lag.inputConnectors[0])
-    finish(c, named(c, sources, lag, 'out', 200), 400)
-
-def build_mix(b, sources):
-    c = new_block(b)
-    by_port = ports(c, sources)
-    blank = [('Red', 0), ('Green', 0), ('Blue', 0)] if b['type'] == 'color' else [('out', 0)]
-    a = by_port.get('a') or constant(c, 'noa', blank)
-    z = by_port.get('b') or constant(c, 'nob', blank)
-    m = by_port.get('mix') or constant(c, 'nomix', [('mix', 0)])
-    inv = c.create(mathCHOP, 'inverse')
-    inv.par.gain = -1
-    inv.par.postoff = 1
-    m.outputConnectors[0].connect(inv.inputConnectors[0])
-    pa = c.create(mathCHOP, 'a_part')
-    pa.par.chopop = 'mul'
-    a.outputConnectors[0].connect(pa.inputConnectors[0])
-    inv.outputConnectors[0].connect(pa.inputConnectors[1])
-    pb = c.create(mathCHOP, 'b_part')
-    pb.par.chopop = 'mul'
-    z.outputConnectors[0].connect(pb.inputConnectors[0])
-    m.outputConnectors[0].connect(pb.inputConnectors[1])
-    total = c.create(mathCHOP, 'total')
-    total.par.chopop = 'add'
-    first, second = (pb, pa) if kept(sources) == ['b'] else (pa, pb)
-    first.outputConnectors[0].connect(total.inputConnectors[0])
-    second.outputConnectors[0].connect(total.inputConnectors[1])
-    for k, o in enumerate((inv, pa, pb, total)):
-        o.nodeX, o.nodeY = k * 200, -100
-    finish(c, total if b['type'] == 'color' else named(c, sources, total, 'out', 800), 1000)
-
-def build_not(b, sources):
-    c = new_block(b)
-    src = ports(c, sources).get('signal') or constant(c, 'nosignal', [('signal', 0)])
-    inv = c.create(mathCHOP, 'invert')
-    inv.par.gain = -1
-    inv.par.postoff = 1
-    clamp = c.create(limitCHOP, 'clamp')
-    clamp.par.type = 'clamp'
-    clamp.par.min = 0
-    clamp.par.max = 1
-    chain(inv, clamp)
-    src.outputConnectors[0].connect(inv.inputConnectors[0])
-    finish(c, named(c, sources, clamp, 'out', 400), 600)
-
+${BLOCKS.latch.python}
+${BLOCKS.and.python}
+${BLOCKS.fade.python}
+${BLOCKS.mix.python}
+${BLOCKS.not.python}
 ${BLOCKS.combine.python}
 def build_split(b, sources):
     c = new_block(b)
     src = ports(c, sources).get('in') or constant(c, 'nothing', [('none', 0)])
     finish(c, src, 200)
 
-def build_counter(b, sources):
-    c = new_block(b)
-    by_port = ports(c, sources)
-    t = by_port.get('trigger') or constant(c, 'notrigger', [('trigger', 0)])
-    cnt = edge_counter(c, 'count', t, by_port.get('reset'), 0, 0)
-    lim = c.create(limitCHOP, 'clamp')
-    lim.par.type = 'clamp'
-    lim.par.min = 0
-    lim.par.max = b['max']
-    lim.nodeX = 200
-    cnt.outputConnectors[0].connect(lim.inputConnectors[0])
-    name = c.create(renameCHOP, 'name')
-    name.par.renamefrom = '*'
-    name.par.renameto = 'count'
-    name.nodeX = 400
-    lim.outputConnectors[0].connect(name.inputConnectors[0])
-    out = c.create(outCHOP, 'out1')
-    out.nodeX = 600
-    name.outputConnectors[0].connect(out.inputConnectors[0])
-
+${BLOCKS.counter.python}
 ${BLOCKS.timer.python}
-def build_equals(b, sources):
-    c = new_block(b)
-    by_port = ports(c, sources)
-    index = by_port.get('index') or constant(c, 'noindex', [('index', -1)])
-    diff = c.create(mathCHOP, 'diff')
-    diff.par.preoff = -b['value']
-    sq = c.create(mathCHOP, 'square')
-    sq.par.postop = 'square'
-    lim = c.create(limitCHOP, 'far')
-    lim.par.type = 'clamp'
-    lim.par.min = 0
-    lim.par.max = 1
-    inv = c.create(mathCHOP, 'equal')
-    inv.par.gain = -1
-    inv.par.postoff = 1
-    name = c.create(renameCHOP, 'name')
-    name.par.renamefrom = '*'
-    name.par.renameto = 'equal'
-    chain(diff, sq, lim, inv, name, c.create(outCHOP, 'out1'))
-    index.outputConnectors[0].connect(diff.inputConnectors[0])
-
+${BLOCKS.equals.python}
 def code(c, name, text):
     d = c.create(textDAT, name)
     d.text = text

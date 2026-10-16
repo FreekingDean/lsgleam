@@ -17,13 +17,7 @@ function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Por
     case 'dmxin': return `${b.channels} faders`
     case 'blt': return `OSC :${b.port} · ${b.decks} decks`
     case 'audioslice': return `OSC :${b.port} · ${b.signals.length} signals`
-    case 'level': return `RMS ×${b.gain}`
-    case 'steps': return `${b.steps} steps`
-    case 'gate': return `> ${Math.round(b.threshold * 100)}%${b.rescale ? ' · rescaled' : ''}`
     case 'pattern': return `${b.mode} · ${b.slots} slots`
-    case 'drop': return `${b.beats} quiet beats`
-    case 'hold': return `${b.beats} beats`
-    case 'range': return `${b.tame.join('–')} → ${b.wild.join('–')}`
     case 'sequence': return b.values.join(' ')
     case 'looks': return b.scenes.map((s) => s.name).join(' · ')
     case 'fixture': return `${profileOf(b).label} · ${patch ? `U${patch.universe}` : 'unpatched'} @${b.address}`
@@ -35,22 +29,14 @@ function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Por
     case 'output': return `${b.type} out`
     case 'composite': return 'double-click to edit'
     case 'manual': return 'buttons'
-    case 'equals': return `== ${b.value}`
     case 'tube': return `${b.leds} LEDs`
     case 'strip': return `${b.mode} → ${targets.join(', ') || 'nothing yet'}`
     case 'board': return b.ip
     case 'values': return `${b.rows.length} values × ${b.steps}`
     case 'colors': return `${b.rows.length} colours × ${b.steps}`
-    case 'latch': return 'set / reset'
-    case 'and': return 'a × b'
-    case 'not': return '1 − x'
-    case 'mix': return `${b.type}: a → b`
-    case 'fade': return `↑ ${b.rise}s · ↓ ${b.fall}s · ${b.curve}`
-    case 'counter': return `0…${b.max}`
     case 'split': return outputs.length ? `multichannel → ${outputs.length}` : 'no Combine upstream'
     case 'cdj': return `player ${b.player}`
     case 'box': return b.size.map((v) => v.toFixed(1)).join(' × ') + ' m'
-    case 'constant': return b.pulse > 0 ? `pulse ${b.pulse} Hz × ${b.value}` : `${b.type} ${b.value}`
   }
 }
 
