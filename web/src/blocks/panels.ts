@@ -17,6 +17,12 @@ import { HoldPanel } from './HoldPanel'
 import { DropPanel } from './DropPanel'
 import { RangePanel } from './RangePanel'
 import { LatchPanel, NotPanel, AndPanel } from './HelpPanels'
+import { SplitPanel } from './SplitPanel'
+import { SequencePanel } from './SequencePanel'
+import { ValuesPanel } from './ValuesPanel'
+import { ColorsPanel } from './ColorsPanel'
+import { PatternPanel } from './PatternPanel'
+import { LooksPanel } from './LooksPanel'
 
-export const PANELS: { [K in DefKind]: (props: Props & { block: Extract<Block, { kind: K }>; ports: Ports }) => ReactNode } = { timer: TimerPanel, combine: CombinePanel, constant: ConstantPanel, latch: LatchPanel, and: AndPanel, not: NotPanel, equals: EqualsPanel, counter: CounterPanel, steps: StepsPanel, level: LevelPanel, gate: GatePanel, fade: FadePanel, mix: MixPanel, hold: HoldPanel, drop: DropPanel, range: RangePanel }
+export const PANELS: { [K in DefKind]: (props: Props & { block: Extract<Block, { kind: K }>; ports: Ports }) => ReactNode } = { timer: TimerPanel, combine: CombinePanel, constant: ConstantPanel, latch: LatchPanel, and: AndPanel, not: NotPanel, equals: EqualsPanel, counter: CounterPanel, steps: StepsPanel, level: LevelPanel, gate: GatePanel, fade: FadePanel, mix: MixPanel, hold: HoldPanel, drop: DropPanel, range: RangePanel, split: SplitPanel, sequence: SequencePanel, values: ValuesPanel, colors: ColorsPanel, pattern: PatternPanel, looks: LooksPanel }
 export const panelOf = (kind: DefKind) => PANELS[kind] as (props: Props & { ports: Ports }) => ReactNode

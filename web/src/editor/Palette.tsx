@@ -11,11 +11,10 @@ type Tab = { title: string; sections: Category[] }
 
 const defined = (kind: DefKind) => ({ label: BLOCKS[kind].label, item: { kind } })
 
-const TRANSFORMERS: Category = { title: 'Transformers', items: [defined('constant'), defined('level'), defined('gate'), defined('steps'), defined('equals'), defined('latch'), defined('and'), defined('not'), defined('mix'), defined('fade'), defined('counter'), defined('timer'), defined('combine'), { label: 'Split (multichannel → values)', item: { kind: 'split' } }, { label: 'Pattern (fan-out)', item: { kind: 'pattern' } }, defined('drop'), defined('hold'), defined('range'), { label: 'Sequence (trigger → values)', item: { kind: 'sequence' } }, { label: 'Looks (colour + window)', item: { kind: 'looks' } }, { label: 'Colours (index → named colours)', item: { kind: 'colors' } }, { label: 'Values (index → named numbers)', item: { kind: 'values' } }, { label: 'Composite (your own block)', item: { kind: 'composite' } }] }
+const TRANSFORMERS: Category = { title: 'Transformers', items: [defined('constant'), defined('level'), defined('gate'), defined('steps'), defined('equals'), defined('latch'), defined('and'), defined('not'), defined('mix'), defined('fade'), defined('counter'), defined('timer'), defined('combine'), defined('split'), defined('pattern'), defined('drop'), defined('hold'), defined('range'), defined('sequence'), defined('looks'), defined('colors'), defined('values'), { label: 'Composite (your own block)', item: { kind: 'composite' } }] }
 
 const OPERATORS: Record<string, string> = {
-  values: 'Math', colors: 'Math', pattern: 'Math', composite: 'Math', split: 'Math',
-  sequence: 'Time', looks: 'Time',
+  composite: 'Math',
 }
 
 const OPERATOR_TABS: Tab[] = ['Logic', 'Math', 'Time'].map((title) => ({ title, sections: [{ title, items: TRANSFORMERS.items.filter((i) => (OPERATORS[i.item.kind] ?? blockDef(i.item.kind)?.tab) === title) }] }))

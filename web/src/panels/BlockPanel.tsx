@@ -8,7 +8,6 @@ import type { Layout, Props } from './shared'
 import { AudioPanel, DmxInPanel, ArtnetPanel, CdjPanel, BoxPanel, BltPanel, AudioSlicePanel } from './hardware'
 import { TubeSetPanel, BoardPanel, StripPanel } from './pixels'
 import { ScenePanel, InputPanel, ManualPanel } from './scene'
-import { SplitPanel, ValuesPanel, ColorsPanel, SequencePanel, LooksPanel, PatternPanel } from './logic'
 import { GroupPanel, FixturePanel, LightPanel } from './lights'
 import { blockDef, hasDef } from '../blocks'
 import { panelOf } from '../blocks/panels'
@@ -75,9 +74,6 @@ function body(props: Props) {
     case 'dmxin': return <DmxInPanel {...props} block={block} />
     case 'blt': return <BltPanel {...props} block={block} />
     case 'audioslice': return <AudioSlicePanel {...props} block={block} />
-    case 'pattern': return <PatternPanel {...props} block={block} />
-    case 'sequence': return <SequencePanel {...props} block={block} />
-    case 'looks': return <LooksPanel {...props} block={block} />
     case 'fixture': return <FixturePanel {...props} block={block} />
     case 'light': return <LightPanel {...props} block={block} />
     case 'group': return <GroupPanel {...props} block={block} />
@@ -107,9 +103,6 @@ function body(props: Props) {
       </>
     )
     case 'manual': return <ManualPanel {...props} block={block} />
-    case 'split': return <SplitPanel {...props} block={block} />
-    case 'colors': return <ColorsPanel {...props} block={block} />
-    case 'values': return <ValuesPanel {...props} block={block} />
   }
 }
 
