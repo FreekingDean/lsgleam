@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import {
   ReactFlow, Background, BackgroundVariant, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, ReactFlowProvider,
-  type Edge, type Connection, type OnSelectionChangeParams,
+  type Edge, type Connection, type OnSelectionChangeParams, type NodeChange,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { Bridge } from './td/bridge'
@@ -34,6 +34,7 @@ const NODE_TYPES = { block: BlockNode, unit: UnitNode, box: BoxNode, rail: RailN
 const GRID = 20
 
 const snap = (v: number) => Math.round(v / GRID) * GRID
+const centred = (v: number, size: number) => Math.round((v + size / 2) / (SCALE / STEP)) * (SCALE / STEP) - size / 2
 
 function Editor() {
   const [url, setUrl] = useState(() => localStorage.getItem('bridgeUrl') ?? 'ws://localhost:9980')
@@ -86,7 +87,12 @@ function Editor() {
   const [historyTick, setHistoryTick] = useState(0)
   const valuesRef = useRef<PortValues>({})
   const historyRef = useRef(new Map<string, number[]>())
-  const { screenToFlowPosition, fitView } = useReactFlow()
+  const { screenToFlowPosition, fitView, getNode } = useReactFlow()
+  const onLayoutNodesChange = useCallback((changes: NodeChange<AnyNode>[]) => onNodesChange(changes.map((c) => {
+    const n = c.type === 'position' && c.position && getNode(c.id)
+    if (!n || !n.style) return c
+    return { ...c, position: { x: centred(c.position!.x, Number(n.style.width)), y: centred(c.position!.y, Number(n.style.height)) } }
+  })), [onNodesChange, getNode])
 
   const apply = useCallback((next: Show) => {
     setCustomProfiles(next.profiles ?? [])
@@ -656,7 +662,7 @@ function Editor() {
           nodes={nodes}
           edges={shownEdges}
           nodeTypes={NODE_TYPES}
-          onNodesChange={onNodesChange}
+          onNodesChange={tab === LAYOUT ? onLayoutNodesChange : onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodesDelete={onNodesDelete}
           onConnect={onConnect}
@@ -668,10 +674,10 @@ function Editor() {
           onDrop={onDrop}
           onDragOver={onDragOver}
           deleteKeyCode={['Backspace', 'Delete']}
-          snapToGrid
+          snapToGrid={tab !== LAYOUT}
           elevateNodesOnSelect={false}
           elevateEdgesOnSelect={false}
-          snapGrid={tab === LAYOUT ? [SCALE / STEP, SCALE / STEP] : [GRID, GRID]}
+          snapGrid={[GRID, GRID]}
           minZoom={tab === LAYOUT ? 0.02 : 0.1}
           fitView
           colorMode="dark"
