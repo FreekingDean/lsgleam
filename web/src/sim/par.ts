@@ -32,6 +32,7 @@ export function beam(radius: number, height: number) {
   const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
   const mesh = new THREE.Mesh(new THREE.ConeGeometry(radius, height, 32, 1, true), mat)
   mesh.position.y = -height / 2
+  mesh.raycast = () => {}
   return { mesh, mat }
 }
 
