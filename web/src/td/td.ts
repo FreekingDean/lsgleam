@@ -3,6 +3,7 @@ import type { PortValues } from '../editor/live'
 import { INPUTS_ID, OUTPUTS_ID, membersOf, profileOf, scenesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type Show, type StripBlock, type ValuesBlock } from '../model/show'
 import { AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, audioSliceAlpha, audioSlicePath, patternMasks, sequenceValues } from '../model/catalog'
 import { boardPlan, controllerPatch, selectorSources, sourcesOf } from '../model/patch'
+import { PORTS } from '../model/ports'
 import { hexToRgb } from '../model/format'
 import { tubeGeometry } from '../model/geometry'
 import { j, PRELUDE } from './prelude'
@@ -69,7 +70,7 @@ probe.destroy()
     if (block.kind === 'scene' || block.kind === 'composite' || block.kind === 'cdj' || block.kind === 'box' || block.kind === 'tubeset') return null
     const sources = j(sourcesOf(show, block.id))
     const b = placed(show, block)
-    if (hasDef(block)) return `build_${block.kind}(${[j(b), sources, ...(defOf(block).args?.(block, show) ?? []).map(j)].join(', ')})`
+    if (hasDef(block)) return `build_${block.kind}(${[j(b), sources, ...(defOf(block).args?.(block, show, PORTS) ?? []).map(j)].join(', ')})`
     if (block.kind === 'board') return (`build_board(${j(b)}, ${sources}, ${j(boardPlan(show, block).plan)})`)
     if (block.kind === 'tube') return (`build_tube(${j(b)}, ${sources}, ${j(tubeGeometry(show, block))})`)
     if (block.kind === 'strip') return (`build_strip(${j(b)}, ${sources}, ${j(stripConfig(block))})`)

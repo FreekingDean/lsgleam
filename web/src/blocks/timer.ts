@@ -1,5 +1,4 @@
-import type { Base } from '../model/show'
-import { typed } from '../model/ports'
+import { type Base, typed } from '../model/show'
 import { formatDuration } from '../model/format'
 import type { BlockDef } from './types'
 import python from './timer.py?raw'

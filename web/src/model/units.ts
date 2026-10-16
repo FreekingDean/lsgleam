@@ -1,6 +1,7 @@
 import type { FixtureProfile } from './fixtures'
 import { type Placement, type BoxBlock, type Point, type TubeBlock, type BoardBlock, type Block, type Kind, type Cable, type Show, VIRTUAL_KINDS, type Port, profileOf, membersOf } from './show'
-import { typed, audioInputs } from './ports'
+import { audioInputs } from './ports'
+import { typed } from './show'
 import { unitPatch, tubePatch, pixelAddress } from './patch'
 
 export type Unit = { key: string; block: Block; name: string; placement: Placement; flip: boolean; inputs: Port[]; outputs: Port[] }

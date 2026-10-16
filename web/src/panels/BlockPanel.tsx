@@ -3,7 +3,7 @@ import { PlacementEditor } from './Placement'
 import { scenesOf, type InputType, INPUT_TYPES } from '../model/show'
 import { fixturesOf } from '../model/patch'
 import { ceilingAt, onWall } from '../model/units'
-import { inputPorts } from '../model/ports'
+import { inputPorts, PORTS } from '../model/ports'
 import type { Layout, Props } from './shared'
 import { AudioPanel, DmxInPanel, ArtnetPanel, CdjPanel, BoxPanel, BltPanel, AudioSlicePanel } from './hardware'
 import { TubeSetPanel, BoardPanel, StripPanel } from './pixels'
@@ -68,7 +68,7 @@ function body(props: Props) {
   const { block } = props
   if (hasDef(block)) {
     const Panel = panelOf(block.kind)
-    return <Panel {...props} />
+    return <Panel {...props} ports={PORTS} />
   }
   switch (block.kind) {
     case 'audio': return <AudioPanel {...props} block={block} />

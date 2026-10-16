@@ -97,6 +97,7 @@ export const hasProfile = (b: Block): b is FixtureBlock | LightBlock | GroupBloc
 export const scenesOf = (show: Show) => show.blocks.filter((b): b is SceneBlock => b.kind === 'scene')
 
 export type Port = { id: string; label: string; type: string; hint?: string; chans?: string; strip?: string; profile?: string; multi?: boolean }
+export const typed = (id: string, type: string, label = id): Port => ({ id, label, type })
 
 export type PaletteItem = { kind: 'light'; profile: string } | { kind: 'box' } | { kind: 'cdj' } | { kind: 'audio' } | { kind: 'dmxin' } | { kind: 'blt' } | { kind: 'audioslice' } | { kind: 'level' } | { kind: 'steps' } | { kind: 'gate' } | { kind: 'drop' } | { kind: 'hold' } | { kind: 'range' } | { kind: 'sequence' } | { kind: 'looks' } | { kind: 'pattern' } | { kind: 'fixture'; profile: string } | { kind: 'group'; profile: string } | { kind: 'artnet' } | { kind: 'scene' } | { kind: 'input'; type?: InputType } | { kind: 'output'; type?: InputType } | { kind: 'composite' } | { kind: 'manual' } | { kind: 'equals' } | { kind: 'constant' } | { kind: 'latch' } | { kind: 'and' } | { kind: 'not' } | { kind: 'mix' } | { kind: 'fade' } | { kind: 'counter' } | { kind: 'timer' } | { kind: 'combine' } | { kind: 'split' } | { kind: 'colors' } | { kind: 'values' } | { kind: 'tubeset'; design?: string } | { kind: 'board' } | { kind: 'strip' }
 

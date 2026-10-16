@@ -1,10 +1,10 @@
 import { Field } from '../panels/fields'
 import type { Props } from '../panels/shared'
-import { combineSlots } from '.'
-import type { CombineBlock } from './combine'
+import { combineSlots, type CombineBlock } from './combine'
+import type { Ports } from './types'
 
-export function CombinePanel({ show, block, onPatch }: Props & { block: CombineBlock }) {
-  const slots = combineSlots(show, block)
+export function CombinePanel({ show, block, ports, onPatch }: Props & { block: CombineBlock; ports: Ports }) {
+  const slots = combineSlots(show, block, ports)
   return (
     <>
       {slots.map((p, i) => <Field key={p.id} label={`Slot ${i + 1}`} value={block.names[p.id] ?? ''} placeholder={p.label} onCommit={(v) => onPatch({ names: { ...block.names, [p.id]: v } })} />)}

@@ -1,6 +1,8 @@
 import type { Kind } from '../model/show'
 import { KIND_INFO } from '../model/catalog'
 import type { BlockDef } from './types'
+
+export type { Ports } from './types'
 import { timer } from './timer'
 import { combine } from './combine'
 
