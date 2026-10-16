@@ -104,15 +104,6 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
     case 'audioslice':
       block = { ...base, id: `as${n}`, name: `as${n}`, kind: 'audioslice', port: 9002, signals: AUDIOSLICE_DEFAULTS, apiPort: 8722, token: '', smoothing: 0 }
       break
-    case 'sequence':
-      block = { ...base, id: `seq${n}`, name: `seq${n}`, kind: 'sequence', values: [1, -1, 2, -1, 1, -2], unit: 0.05, center: 0.5, every: 1 }
-      break
-    case 'looks':
-      block = { ...base, id: `look${n}`, name: `look${n}`, kind: 'looks', scenes: [{ name: 'Q1', color: '#ff4040', window: [0.1, 0.4] }, { name: 'Q2', color: '#4080ff', window: [0.2, 0.8] }], advance: 'trigger', every: 1 }
-      break
-    case 'pattern':
-      block = { ...base, id: `pat${n}`, name: `pat${n}`, kind: 'pattern', slots: 4, mode: 'alternate', advance: 'step', every: 1, floor: 0 }
-      break
     case 'fixture': {
       const profile = findProfile(item.profile)
       block = { ...base, id: `fix${n}`, name: `fix${n}`, kind: 'fixture', profile: profile.id, address: nextAddress(show), values: profile.channels.map((c) => c.default) }
@@ -140,9 +131,6 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
     case 'manual':
       block = { ...base, id: `manual${n}`, name: `manual${n}`, kind: 'manual', active: 0 }
       break
-    case 'split':
-      block = { ...base, id: `split${n}`, name: `split${n}`, kind: 'split' }
-      break
     case 'strip':
       block = { ...base, id: `px${n}`, name: `Pixels ${n}`, kind: 'strip', mode: 'band', color: '#ffffff', stops: [{ at: 0, color: '#ff2060' }, { at: 1, color: '#2060ff' }], spread: 0, along: 'tube', dimmer: 1, position: 0.5, width: 0.2, speed: 0.5 }
       break
@@ -154,12 +142,6 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
     }
     case 'board':
       block = { ...base, id: `board${n}`, name: `Pixel board ${n}`, kind: 'board', protocol: 'sk9822', ip: '192.168.1.50', active: true, outputs: 8, ledsPerOutput: 300, ledsPerUniverse: 150, startUniverse: 0 }
-      break
-    case 'values':
-      block = { ...base, id: `val${n}`, name: `values${n}`, kind: 'values', steps: 4, rows: [{ name: 'min', values: [0.2, 0.15, 0.1, 0] }, { name: 'max', values: [0.6, 0.75, 0.9, 1] }] }
-      break
-    case 'colors':
-      block = { ...base, id: `col${n}`, name: `colours${n}`, kind: 'colors', steps: 4, rows: [{ name: 'main', colors: ['#ff4d00', '#2050ff', '#a040ff', '#ffd000'] }] }
       break
     case 'composite':
       block = { ...base, id: `comp${n}`, name: `Composite ${n}`, kind: 'composite' }

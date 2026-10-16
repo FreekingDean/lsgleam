@@ -11,15 +11,12 @@ export type FlowNode = Node<{ block: Block; inputs: Port[]; outputs: Port[]; pat
 export type RailFlowNode = Node<{ title: string; rails: Rail[]; side: 'in' | 'out' }, 'rail'>
 
 function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Port[]) {
-  if (hasDef(b)) return defOf(b).subtitle(b)
+  if (hasDef(b)) return defOf(b).subtitle(b, outputs)
   switch (b.kind) {
     case 'audio': return b.device || 'default device'
     case 'dmxin': return `${b.channels} faders`
     case 'blt': return `OSC :${b.port} · ${b.decks} decks`
     case 'audioslice': return `OSC :${b.port} · ${b.signals.length} signals`
-    case 'pattern': return `${b.mode} · ${b.slots} slots`
-    case 'sequence': return b.values.join(' ')
-    case 'looks': return b.scenes.map((s) => s.name).join(' · ')
     case 'fixture': return `${profileOf(b).label} · ${patch ? `U${patch.universe}` : 'unpatched'} @${b.address}`
     case 'light': return `${profileOf(b).label} → ${targets.join(', ') || 'nothing yet'}`
     case 'group': return `${b.mode} → ${targets.length}× ${profileOf(b).label}`
@@ -32,9 +29,6 @@ function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Por
     case 'tube': return `${b.leds} LEDs`
     case 'strip': return `${b.mode} → ${targets.join(', ') || 'nothing yet'}`
     case 'board': return b.ip
-    case 'values': return `${b.rows.length} values × ${b.steps}`
-    case 'colors': return `${b.rows.length} colours × ${b.steps}`
-    case 'split': return outputs.length ? `multichannel → ${outputs.length}` : 'no Combine upstream'
     case 'cdj': return `player ${b.player}`
     case 'box': return b.size.map((v) => v.toFixed(1)).join(' × ') + ' m'
   }

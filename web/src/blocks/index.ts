@@ -19,10 +19,19 @@ import { mix } from './mix'
 import { hold } from './hold'
 import { drop } from './drop'
 import { range } from './range'
+import { split } from './split'
+import { sequence } from './sequence'
+import { values } from './values'
+import { colors } from './colors'
+import { pattern } from './pattern'
+import { looks } from './looks'
 
 export { ELEMENT_TYPES, WIDE_TYPES, combineSlots, elementOf } from './combine'
+export { splitSource } from './split'
+export { colorTable } from './colors'
+export { valueTable } from './values'
 
-export const BLOCKS = { timer, combine, constant, latch, and, not, equals, counter, steps, level, gate, fade, mix, hold, drop, range }
+export const BLOCKS = { timer, combine, constant, latch, and, not, equals, counter, steps, level, gate, fade, mix, hold, drop, range, split, sequence, values, colors, pattern, looks }
 export type DefKind = keyof typeof BLOCKS
 
 export const blockDef = (kind: Kind): BlockDef | undefined => (BLOCKS as Partial<Record<Kind, BlockDef>>)[kind]

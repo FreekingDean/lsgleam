@@ -7,9 +7,6 @@ export const KIND_INFO: Partial<Record<Kind, string>> = {
   dmxin: 'DMX controller: cable it into an Art-Net input universe; one signal per fader',
   blt: 'Pioneer decks via Beat Link Trigger (OSC)',
   audioslice: 'Stem energy, hits and beats from AudioSlice (OSC)',
-  sequence: 'Steps through a list of values on each trigger',
-  looks: 'Looks (colour + brightness window), switched by index or trigger',
-  pattern: 'Spreads one signal over N slots by a pattern',
   fixture: 'A light in the room, patched on a DMX chain',
   light: 'What this scene sends to every fixture wired to it on the show tab',
   group: 'Spreads a pattern and positions over the fixtures wired to it on the show tab',
@@ -19,15 +16,12 @@ export const KIND_INFO: Partial<Record<Kind, string>> = {
   output: 'A value this composite sends out: one output port on its node',
   composite: 'Your own block: double-click to build it from inputs, transformers and outputs inside',
   manual: 'Scene select: buttons, or an index that picks scene N',
-  split: 'Unbundles a multichannel wire back into the values its Combine bundled',
   cdj: 'A player sending audio into an audio input',
   box: 'A room, stage or other space with width, depth and height',
   tube: 'An LED tube or strip: LED count, pixel protocol and a 3D shape',
   tubeset: 'LED tubes: one or more tubes in a shape (tree, burst, fan or your own), placed as one; each tube cables separately',
   strip: 'Pixel output: an effect (solid, band, fill, chase, ramp) for every LED tube wired to it on the show tab',
   board: 'Art-Net pixel controller: outputs drive cabled tubes, mapped onto universes',
-  values: 'A table of named numbers, one column per index (e.g. per-season minimums)',
-  colors: 'A table of named colours, one column per index (e.g. per season)',
 }
 
 export const TYPE_INFO: Record<string, string> = {

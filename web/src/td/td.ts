@@ -1,7 +1,7 @@
 import type { Bridge } from './bridge'
 import type { PortValues } from '../editor/live'
-import { INPUTS_ID, OUTPUTS_ID, membersOf, profileOf, scenesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type Show, type StripBlock, type ValuesBlock } from '../model/show'
-import { AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, audioSliceAlpha, audioSlicePath, patternMasks, sequenceValues } from '../model/catalog'
+import { INPUTS_ID, OUTPUTS_ID, membersOf, profileOf, scenesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type Show, type StripBlock } from '../model/show'
+import { AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, audioSliceAlpha, audioSlicePath, patternMasks } from '../model/catalog'
 import { boardPlan, controllerPatch, selectorSources, sourcesOf } from '../model/patch'
 import { PORTS } from '../model/ports'
 import { hexToRgb } from '../model/format'
@@ -12,8 +12,7 @@ import { TINTS, showDir, inputsDir, outputsDir, spotOf, placed, railCode } from 
 
 export type DmxValues = Record<string, number[]>
 
-export const colorTable = (b: ColorsBlock): [string, number][][] => Array.from({ length: b.steps }, (_, k) => b.rows.flatMap((r, i) => hexToRgb(r.colors[k] ?? '#000000').map((v, ch): [string, number] => [`c${i}_${['Red', 'Green', 'Blue'][ch]}`, v])))
-export const valueTable = (b: ValuesBlock): [string, number][][] => Array.from({ length: b.steps }, (_, k) => b.rows.map((r, i): [string, number] => [`v${i}`, r.values[k] ?? 0]))
+export { colorTable, valueTable } from '../blocks'
 const stripConfig = (b: StripBlock) => ({ mode: b.mode, rgb: hexToRgb(b.color), dimmer: b.dimmer, position: b.position, width: b.width, speed: b.speed, spread: b.spread, stops: b.mode === 'ramp' ? b.stops.map((s) => [s.at, hexToRgb(s.color)]) : [] })
 
 export class Td {
@@ -70,7 +69,7 @@ probe.destroy()
     if (block.kind === 'scene' || block.kind === 'composite' || block.kind === 'cdj' || block.kind === 'box' || block.kind === 'tubeset') return null
     const sources = j(sourcesOf(show, block.id))
     const b = placed(show, block)
-    if (hasDef(block)) return `build_${block.kind}(${[j(b), sources, ...(defOf(block).args?.(block, show, PORTS) ?? []).map(j)].join(', ')})`
+    if (hasDef(block)) return `${defOf(block).builder ?? `build_${block.kind}`}(${[j(b), sources, ...(defOf(block).args?.(block, show, PORTS) ?? []).map(j)].join(', ')})`
     if (block.kind === 'board') return (`build_board(${j(b)}, ${sources}, ${j(boardPlan(show, block).plan)})`)
     if (block.kind === 'tube') return (`build_tube(${j(b)}, ${sources}, ${j(tubeGeometry(show, block))})`)
     if (block.kind === 'strip') return (`build_strip(${j(b)}, ${sources}, ${j(stripConfig(block))})`)
@@ -82,14 +81,6 @@ probe.destroy()
       return (`build_dmxin(${j(b)}, ${sources}, ${j(node?.protocol ?? 'artnet')}, ${j(node ? patch!.universe : null)})`)
     }
     if (block.kind === 'manual') return (`build_manual(${j(b)}, ${j(scenesOf(show).map((s) => s.id))}, ${sources})`)
-    if (block.kind === 'pattern') return (`build_pattern(${j(b)}, ${sources}, ${j(patternMasks(block.mode, block.slots))})`)
-    if (block.kind === 'looks') return (`build_scenes(${j(b)}, ${sources}, ${j(block.scenes.map((s) => [...hexToRgb(s.color), ...s.window]))})`)
-    if (block.kind === 'colors') {
-      const table = colorTable(block)
-      return (`build_colors(${j(b)}, ${sources}, ${j(table)})`)
-    }
-    if (block.kind === 'values') return (`build_values(${j(b)}, ${sources}, ${j(valueTable(block))})`)
-    if (block.kind === 'sequence') return (`build_sequence(${j(b)}, ${sources}, ${j(sequenceValues(block))})`)
     if (block.kind === 'group') {
       const members = Array.from({ length: block.size }, (_, i) => ({ id: String(i), aim: block.aims[i] ?? {} }))
       return (`build_group(${j(b)}, ${j(profileOf(block))}, ${sources}, ${j(patternMasks(block.mode, members.length))}, ${j(members)})`)

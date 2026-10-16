@@ -1,7 +1,7 @@
 import { allProfiles } from './fixtures'
-import { NODE_H, type AudioBlock, type LightBlock, type GroupBlock, type InputBlock, type OutputBlock, type CombineBlock, type SplitBlock, type StripMode, type ColorStop, type Block, type Kind, type Wire, type Show, EMPTY_SHOW, ON_PORT, FIXTURE_PORT, SOURCE_KINDS, isLight, scenesOf, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, LOOK_CHANS, COLOR_PORT, RGB, LOOK_CHANNELS, NUDGE_PORT, profileOf, memberPort, type Rail, RAIL_SEP, membersOf, typed } from './show'
+import { NODE_H, type AudioBlock, type LightBlock, type GroupBlock, type InputBlock, type OutputBlock, type CombineBlock, type StripMode, type ColorStop, type Block, type Kind, type Wire, type Show, EMPTY_SHOW, ON_PORT, FIXTURE_PORT, SOURCE_KINDS, isLight, scenesOf, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, LOOK_CHANS, COLOR_PORT, RGB, LOOK_CHANNELS, NUDGE_PORT, profileOf, memberPort, type Rail, RAIL_SEP, membersOf, typed } from './show'
 import { BLT_SIGNALS, bltDecks } from './catalog'
-import { type Ports, WIDE_TYPES, blockDef, combineSlots, defOf, elementOf, hasDef } from '../blocks'
+import { type Ports, blockDef, defOf, elementOf, hasDef } from '../blocks'
 
 const STRIP_USES: Record<StripMode, string[]> = { solid: ['color', 'dimmer'], band: ['color', 'dimmer', 'position', 'width', 'spread'], fill: ['color', 'dimmer', 'position', 'width', 'spread'], chase: ['color', 'dimmer', 'position', 'width', 'speed', 'spread'], ramp: ['dimmer', 'position', 'speed', 'spread', 'stop', 'at'] }
 export const stripParams = (b: { stops: ColorStop[] }): Port[] => [color(), typed('dimmer', 'signal'), typed('position', 'signal'), typed('width', 'signal'), typed('speed', 'signal', 'speed (laps/s)'), typed('spread', 'signal', 'spread across tubes'), ...b.stops.flatMap((_, k) => [typed(`stop${k}`, 'color', `stop ${k + 1} colour`), typed(`at${k}`, 'signal', `stop ${k + 1} spot`)])]
@@ -34,11 +34,6 @@ export function combineOf(show: Show, from: string, fromPort = 'out', seen = new
   if (b.kind === 'combine') return b
   const feed = b.kind === 'composite' ? show.wires.find((w) => w.to === fromPort) : b.kind === 'input' ? show.wires.find((w) => w.to === b.scene && w.port === b.id) : b.kind === 'output' ? show.wires.find((w) => w.to === b.id) : multiFeeds(show, b, seen)[0]
   return feed && combineOf(show, feed.from, feed.fromPort, path)
-}
-
-export const splitSource = (show: Show, b: SplitBlock, seen = new Set<string>()) => {
-  const feed = show.wires.find((w) => w.to === b.id)
-  return feed && combineOf(show, feed.from, feed.fromPort, new Set(seen).add(b.id))
 }
 
 function perChannel(show: Show, w: Wire) {
@@ -101,12 +96,6 @@ function allInputPorts(b: Block, show?: Show): Port[] {
     case 'scene': return [typed(ON_PORT, 'signal'), ...innerInputs(b, show)]
     case 'composite': return innerInputs(b, show)
     case 'output': return [typed('value', b.type)]
-    case 'split': return [typed('in', 'multi', 'multichannel')]
-    case 'pattern': return [typed('signal', 'signal'), b.advance === 'step' ? typed('step', 'index', 'step index') : typed('trigger', 'signal', 'next step'), typed('floor', 'signal', 'minimum')]
-    case 'sequence': return [typed('trigger', 'signal', 'next value'), typed('reset', 'signal')]
-    case 'looks': return [b.advance === 'step' ? typed('scene', 'index', 'look index') : typed('next', 'signal', 'next look'), typed('offset', 'index', 'look offset'), typed('dimmer', 'signal'), typed('wild', 'signal'), color()]
-    case 'colors': return [typed('index', 'index')]
-    case 'values': return [typed('index', 'index')]
     case 'strip': return stripParams(b).filter((p) => STRIP_USES[b.mode].some((u) => p.id.match(new RegExp(`^${u}\\d*$`))))
     case 'fixture': return [{ ...typed(FIXTURE_PORT, 'fixture', b.name), profile: b.profile }]
     case 'tube': return [typed(FIXTURE_PORT, 'pixels', b.name)]
@@ -139,9 +128,6 @@ export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Po
       return bltDecks(b).flatMap((deck) =>
         BLT_SIGNALS.filter((sig) => b.signals.includes(sig.id)).map((sig) => typed(`${deck}_${sig.id}`, sig.type, `${deck.replace('d', 'deck ')} ${sig.id}`)))
     case 'audioslice': return b.signals.map((s) => typed(s.replace('/', '_'), 'signal', s))
-    case 'pattern': return Array.from({ length: b.slots }, (_, i) => typed(`slot${i + 1}`, 'signal', `slot ${i + 1}`))
-    case 'sequence': return [typed('out', 'signal', 'value')]
-    case 'looks': return [look(), typed('scene', 'index')]
     case 'fixture':
     case 'light':
     case 'group':
@@ -163,16 +149,10 @@ export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Po
     case 'output': return [typed('out', b.type, b.name)]
     case 'composite': return (show?.blocks ?? []).filter((x): x is OutputBlock => x.kind === 'output' && x.scene === b.id).map((x) => typed(x.id, x.type, x.name))
     case 'manual': return scenesOf(show ?? EMPTY_SHOW).map((s) => typed(`s_${s.id}`, 'signal', s.name))
-    case 'split': {
-      const from = show && !seen.has(b.id) ? splitSource(show, b, seen) : undefined
-      return !from ? [] : combineSlots(show, from, PORTS, new Set(seen).add(b.id)).map((p) => (WIDE_TYPES.includes(p.type) ? { ...p, chans: `${p.id}_*`, strip: `${p.id}_` } : { ...p, chans: p.id }))
-    }
-    case 'values': return b.rows.map((r, i) => ({ ...typed(`v${i}`, 'signal', r.name), chans: `v${i}` }))
-    case 'colors': return b.rows.map((r, i) => ({ ...typed(`c${i}`, 'color', r.name), chans: RGB.map((ch) => `c${i}_${ch}`).join(' '), strip: `c${i}_` }))
   }
 }
 
-export const PORTS: Ports = { outputPorts, sourcePort, multiFeeds }
+export const PORTS: Ports = { outputPorts, sourcePort, multiFeeds, combineOf }
 
 export function hasInput(b: Block, port: string, show: Show) {
   return inputPorts(b, show).some((p) => p.id === port)

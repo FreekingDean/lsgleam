@@ -15,8 +15,14 @@ import type { MixBlock } from '../blocks/mix'
 import type { HoldBlock } from '../blocks/hold'
 import type { DropBlock } from '../blocks/drop'
 import type { RangeBlock } from '../blocks/range'
+import type { SplitBlock } from '../blocks/split'
+import type { SequenceBlock } from '../blocks/sequence'
+import type { ValuesBlock } from '../blocks/values'
+import type { ColorsBlock } from '../blocks/colors'
+import type { PatternBlock } from '../blocks/pattern'
+import type { LooksBlock } from '../blocks/looks'
 
-export type { TimerBlock, CombineBlock, ConstantBlock, LatchBlock, AndBlock, NotBlock, EqualsBlock, CounterBlock, StepsBlock, LevelBlock, GateBlock, FadeBlock, MixBlock, HoldBlock, DropBlock, RangeBlock }
+export type { TimerBlock, CombineBlock, ConstantBlock, LatchBlock, AndBlock, NotBlock, EqualsBlock, CounterBlock, StepsBlock, LevelBlock, GateBlock, FadeBlock, MixBlock, HoldBlock, DropBlock, RangeBlock, SplitBlock, SequenceBlock, ValuesBlock, ColorsBlock, PatternBlock, LooksBlock }
 
 export const NODE_W = 160
 export const NODE_H = 130
@@ -32,9 +38,6 @@ export type AudioSliceBlock = Base & { kind: 'audioslice'; port: number; signals
 export type PatternMode = 'all' | 'alternate' | 'alternate2' | 'chase' | 'outsidein' | 'fillin' | 'fillout'
 export type PatternAdvance = 'step' | 'trigger'
 export type Scene = { name: string; color: string; window: [number, number] }
-export type LooksBlock = Base & { kind: 'looks'; scenes: Scene[]; advance: PatternAdvance; every: number }
-export type SequenceBlock = Base & { kind: 'sequence'; values: number[]; unit: number; center: number; every: number }
-export type PatternBlock = Base & { kind: 'pattern'; slots: number; mode: PatternMode; advance: PatternAdvance; every: number; floor: number }
 export type Placement = { position: [number, number, number]; rotation: [number, number, number] }
 export type Patch = { node: string; universe: number }
 export type FixtureBlock = Base & { kind: 'fixture'; profile: string; address: number; values: number[] }
@@ -47,14 +50,11 @@ export type SceneBlock = Base & { kind: 'scene'; fadeIn: number; fadeOut: number
 export type InputType = 'signal' | 'index' | 'audio' | 'number' | 'color' | 'multi'
 export const INPUT_TYPES: InputType[] = ['signal', 'index', 'audio', 'number', 'color', 'multi']
 export type ColorRow = { name: string; colors: string[] }
-export type ColorsBlock = Base & { kind: 'colors'; steps: number; rows: ColorRow[] }
 export type ValueRow = { name: string; values: number[] }
-export type ValuesBlock = Base & { kind: 'values'; steps: number; rows: ValueRow[] }
 export type InputBlock = Base & { kind: 'input'; type: InputType }
 export type OutputBlock = Base & { kind: 'output'; type: InputType }
 export type CompositeBlock = Base & { kind: 'composite' }
 export type ManualBlock = Base & { kind: 'manual'; active: number }
-export type SplitBlock = Base & { kind: 'split' }
 export type CdjBlock = Base & { kind: 'cdj'; player: number }
 export type BoxBlock = Base & { kind: 'box'; size: [number, number, number]; locked: boolean }
 export type Point = [number, number, number]
