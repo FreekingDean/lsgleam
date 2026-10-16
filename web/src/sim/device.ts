@@ -12,9 +12,12 @@ export class Device implements Light {
     if (size) {
       const [w, d, h] = size
       const shape = new THREE.BoxGeometry(w, h, d)
-      const shell = new THREE.Mesh(shape, new THREE.MeshLambertMaterial({ color: 0x8a8a98, transparent: true, opacity: 0.12, side: THREE.BackSide, depthWrite: false }))
-      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(shape), new THREE.LineBasicMaterial({ color: 0x6a6a78 }))
-      shell.position.y = edges.position.y = h / 2
+      const wall = new THREE.MeshStandardMaterial({ color: 0x9a9aa4, roughness: 0.9, side: THREE.BackSide })
+      const floor = new THREE.MeshStandardMaterial({ color: 0x74747c, roughness: 0.9, side: THREE.BackSide })
+      const shell = new THREE.Mesh(shape, [wall, wall, wall, floor, wall, wall])
+      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(shape), new THREE.LineBasicMaterial({ color: 0x55555f }))
+      edges.raycast = () => {}
+      shell.position.y = edges.position.y = h / 2 + 0.003
       this.object.add(shell, edges)
       this.place(p)
       return

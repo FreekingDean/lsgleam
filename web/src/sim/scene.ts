@@ -157,9 +157,8 @@ export class SimScene {
     const pointer = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1)
     this.raycaster.setFromCamera(pointer, this.camera)
     const hits = this.raycaster.intersectObjects([...this.lights.values()].map((l) => l.light.object), true)
-    const hit = hits[0]?.object
-    const key = hit ? [...this.lights].find(([, l]) => this.owns(l.light.object, hit))?.[0] ?? null : null
-    this.select(key)
+    const owners = hits.flatMap((h) => [...this.lights].filter(([, l]) => this.owns(l.light.object, h.object)))
+    this.select((owners.find(([, l]) => !l.kind.startsWith('box:')) ?? owners[0])?.[0] ?? null)
   }
 
   private owns(root: THREE.Object3D, obj: THREE.Object3D) {
