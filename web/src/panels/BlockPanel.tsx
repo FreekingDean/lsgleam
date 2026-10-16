@@ -8,8 +8,10 @@ import type { Layout, Props } from './shared'
 import { AudioPanel, DmxInPanel, ArtnetPanel, CdjPanel, BoxPanel, BltPanel, AudioSlicePanel } from './hardware'
 import { TubeSetPanel, BoardPanel, StripPanel } from './pixels'
 import { ScenePanel, InputPanel, ManualPanel } from './scene'
-import { ConstantPanel, CounterPanel, TimerPanel, CombinePanel, SplitPanel, EqualsPanel, ValuesPanel, ColorsPanel, LevelPanel, GatePanel, FadePanel, StepsPanel, DropPanel, HoldPanel, RangePanel, SequencePanel, LooksPanel, PatternPanel } from './logic'
+import { ConstantPanel, CounterPanel, SplitPanel, EqualsPanel, ValuesPanel, ColorsPanel, LevelPanel, GatePanel, FadePanel, StepsPanel, DropPanel, HoldPanel, RangePanel, SequencePanel, LooksPanel, PatternPanel } from './logic'
 import { GroupPanel, FixturePanel, LightPanel } from './lights'
+import { blockDef, hasDef } from '../blocks'
+import { panelOf } from '../blocks/panels'
 
 function PlacementFields({ show, layout, block }: Props & { layout: Layout }) {
   const { placement, onPlace } = layout
@@ -39,7 +41,7 @@ function PlacementFields({ show, layout, block }: Props & { layout: Layout }) {
 function HiddenPorts({ show, block, onPatch }: Props) {
   const hidden = new Set(block.hidden ?? [])
   const all = inputPorts({ ...block, hidden: [] }, show)
-  if (all.length < 2 || block.kind === 'combine') return null
+  if (all.length < 2 || blockDef(block.kind)?.slotted) return null
   const toggle = (id: string, on: boolean) => {
     const next = new Set(hidden)
     if (on) next.delete(id)
@@ -64,6 +66,10 @@ function HiddenPorts({ show, block, onPatch }: Props) {
 
 function body(props: Props) {
   const { block } = props
+  if (hasDef(block)) {
+    const Panel = panelOf(block.kind)
+    return <Panel {...props} />
+  }
   switch (block.kind) {
     case 'audio': return <AudioPanel {...props} block={block} />
     case 'dmxin': return <DmxInPanel {...props} block={block} />
@@ -111,8 +117,6 @@ function body(props: Props) {
     case 'equals': return <EqualsPanel {...props} block={block} />
     case 'constant': return <ConstantPanel {...props} block={block} />
     case 'counter': return <CounterPanel {...props} block={block} />
-    case 'timer': return <TimerPanel {...props} block={block} />
-    case 'combine': return <CombinePanel {...props} block={block} />
     case 'split': return <SplitPanel {...props} block={block} />
     case 'colors': return <ColorsPanel {...props} block={block} />
     case 'values': return <ValuesPanel {...props} block={block} />

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FixtureProfile } from '../model/fixtures'
-import { KIND_INFO, TYPE_COLORS } from '../model/catalog'
+import { TYPE_COLORS } from '../model/catalog'
+import { BLOCKS, blockDef, kindInfo, type DefKind } from '../blocks'
 import { LAYOUT, type PaletteItem, type TubeDesign } from '../model/show'
 
 type Props = { onAdd: (item: PaletteItem) => void; tab: string | null; composite: boolean; designs: TubeDesign[]; profiles: FixtureProfile[]; onNewProfile: () => void }
@@ -8,15 +9,17 @@ type Props = { onAdd: (item: PaletteItem) => void; tab: string | null; composite
 type Category = { title: string; items: { label: string; item: PaletteItem }[] }
 type Tab = { title: string; sections: Category[] }
 
-const TRANSFORMERS: Category = { title: 'Transformers', items: [{ label: 'Constant (test value / pulse)', item: { kind: 'constant' } }, { label: 'Level (RMS)', item: { kind: 'level' } }, { label: 'Gate (zero below X%)', item: { kind: 'gate' } }, { label: 'Steps (signal → index)', item: { kind: 'steps' } }, { label: 'Equals (index == N)', item: { kind: 'equals' } }, { label: 'Latch (set / reset)', item: { kind: 'latch' } }, { label: 'And (both signals)', item: { kind: 'and' } }, { label: 'Not (1 − signal)', item: { kind: 'not' } }, { label: 'Mix (crossfade a → b)', item: { kind: 'mix' } }, { label: 'Fade (rise / fall time)', item: { kind: 'fade' } }, { label: 'Counter (triggers → index)', item: { kind: 'counter' } }, { label: 'Timer (0 → N over a time)', item: { kind: 'timer' } }, { label: 'Combine (values → multichannel)', item: { kind: 'combine' } }, { label: 'Split (multichannel → values)', item: { kind: 'split' } }, { label: 'Pattern (fan-out)', item: { kind: 'pattern' } }, { label: 'Drop (kick + beat → drop)', item: { kind: 'drop' } }, { label: 'Hold (trigger → N beats)', item: { kind: 'hold' } }, { label: 'Range (signal × amount → window)', item: { kind: 'range' } }, { label: 'Sequence (trigger → values)', item: { kind: 'sequence' } }, { label: 'Looks (colour + window)', item: { kind: 'looks' } }, { label: 'Colours (index → named colours)', item: { kind: 'colors' } }, { label: 'Values (index → named numbers)', item: { kind: 'values' } }, { label: 'Composite (your own block)', item: { kind: 'composite' } }] }
+const defined = (kind: DefKind) => ({ label: BLOCKS[kind].label, item: { kind } })
+
+const TRANSFORMERS: Category = { title: 'Transformers', items: [{ label: 'Constant (test value / pulse)', item: { kind: 'constant' } }, { label: 'Level (RMS)', item: { kind: 'level' } }, { label: 'Gate (zero below X%)', item: { kind: 'gate' } }, { label: 'Steps (signal → index)', item: { kind: 'steps' } }, { label: 'Equals (index == N)', item: { kind: 'equals' } }, { label: 'Latch (set / reset)', item: { kind: 'latch' } }, { label: 'And (both signals)', item: { kind: 'and' } }, { label: 'Not (1 − signal)', item: { kind: 'not' } }, { label: 'Mix (crossfade a → b)', item: { kind: 'mix' } }, { label: 'Fade (rise / fall time)', item: { kind: 'fade' } }, { label: 'Counter (triggers → index)', item: { kind: 'counter' } }, defined('timer'), defined('combine'), { label: 'Split (multichannel → values)', item: { kind: 'split' } }, { label: 'Pattern (fan-out)', item: { kind: 'pattern' } }, { label: 'Drop (kick + beat → drop)', item: { kind: 'drop' } }, { label: 'Hold (trigger → N beats)', item: { kind: 'hold' } }, { label: 'Range (signal × amount → window)', item: { kind: 'range' } }, { label: 'Sequence (trigger → values)', item: { kind: 'sequence' } }, { label: 'Looks (colour + window)', item: { kind: 'looks' } }, { label: 'Colours (index → named colours)', item: { kind: 'colors' } }, { label: 'Values (index → named numbers)', item: { kind: 'values' } }, { label: 'Composite (your own block)', item: { kind: 'composite' } }] }
 
 const OPERATORS: Record<string, string> = {
   equals: 'Logic', latch: 'Logic', and: 'Logic', not: 'Logic', counter: 'Logic', gate: 'Logic',
-  constant: 'Math', level: 'Math', steps: 'Math', range: 'Math', mix: 'Math', values: 'Math', colors: 'Math', pattern: 'Math', composite: 'Math', combine: 'Math', split: 'Math',
-  fade: 'Time', timer: 'Time', hold: 'Time', drop: 'Time', sequence: 'Time', looks: 'Time',
+  constant: 'Math', level: 'Math', steps: 'Math', range: 'Math', mix: 'Math', values: 'Math', colors: 'Math', pattern: 'Math', composite: 'Math', split: 'Math',
+  fade: 'Time', hold: 'Time', drop: 'Time', sequence: 'Time', looks: 'Time',
 }
 
-const OPERATOR_TABS: Tab[] = ['Logic', 'Math', 'Time'].map((title) => ({ title, sections: [{ title, items: TRANSFORMERS.items.filter((i) => OPERATORS[i.item.kind] === title) }] }))
+const OPERATOR_TABS: Tab[] = ['Logic', 'Math', 'Time'].map((title) => ({ title, sections: [{ title, items: TRANSFORMERS.items.filter((i) => (OPERATORS[i.item.kind] ?? blockDef(i.item.kind)?.tab) === title) }] }))
 
 const HARDWARE: Category[] = [
   { title: 'Space', items: [{ label: 'Box (room, stage, bar)', item: { kind: 'box' } }] },
@@ -76,7 +79,7 @@ function Item({ item, label, onAdd }: { item: PaletteItem; label: string; onAdd:
         e.dataTransfer.effectAllowed = 'move'
       }}
       onDoubleClick={() => onAdd(item)}
-      title={`${KIND_INFO[item.kind]} · drag onto the canvas, or double-click`}
+      title={`${kindInfo(item.kind)} · drag onto the canvas, or double-click`}
     >
       {label}
     </div>

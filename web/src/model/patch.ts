@@ -1,5 +1,6 @@
 import { type Patch, type TubeBlock, type BoardBlock, type StripMode, type StripAlong, type Wire, type Show, SELECTOR_ID, SCENE_PORT, ON_PORT, FIXTURE_PORT, CHANNELS_PORT, isLight, scenesOf, profileOf } from './show'
 import { outputPorts, portOf } from './ports'
+import { blockDef } from '../blocks'
 
 export function nextAddress(show: Show) {
   return show.blocks.reduce((max, b) => {
@@ -43,7 +44,7 @@ export function sourcesOf(show: Show, id: string): Source[] {
     })
     return feeds.length ? [...feeds, { from: SELECTOR_ID, chan: null, port: SCENE_PORT, scene: scenes.length }] : []
   }
-  return show.wires.filter((w) => w.to === id).map((w) => ({ ...via(show, w), port: w.port, scene: null, ...(block.kind === 'combine' || ['color', 'multi'].includes(portOf(show, w)?.type ?? '') ? { keep: true } : {}) }))
+  return show.wires.filter((w) => w.to === id).map((w) => ({ ...via(show, w), port: w.port, scene: null, ...(blockDef(block.kind)?.slotted || ['color', 'multi'].includes(portOf(show, w)?.type ?? '') ? { keep: true } : {}) }))
 }
 
 export function fixturesOf(show: Show, port: string, member = false) {

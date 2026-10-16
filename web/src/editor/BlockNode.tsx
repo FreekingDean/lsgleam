@@ -2,8 +2,8 @@ import { Position, type NodeProps, type Node } from '@xyflow/react'
 import { useContext } from 'react'
 import { PickTitle, PortHandle, PortRow } from './PortHandle'
 import { FocusContext } from './connect'
-import { KIND_INFO, TYPE_COLORS, portHint } from '../model/catalog'
-import { formatDuration } from '../model/format'
+import { TYPE_COLORS, portHint } from '../model/catalog'
+import { defOf, hasDef, kindInfo } from '../blocks'
 import { profileOf, type Block, type Patch, type Port, type Rail } from '../model/show'
 import { LiveValue, useLive } from './live'
 
@@ -11,6 +11,7 @@ export type FlowNode = Node<{ block: Block; inputs: Port[]; outputs: Port[]; pat
 export type RailFlowNode = Node<{ title: string; rails: Rail[]; side: 'in' | 'out' }, 'rail'>
 
 function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Port[]) {
+  if (hasDef(b)) return defOf(b).subtitle(b)
   switch (b.kind) {
     case 'audio': return b.device || 'default device'
     case 'dmxin': return `${b.channels} faders`
@@ -46,8 +47,6 @@ function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Por
     case 'mix': return `${b.type}: a → b`
     case 'fade': return `↑ ${b.rise}s · ↓ ${b.fall}s · ${b.curve}`
     case 'counter': return `0…${b.max}`
-    case 'timer': return `0→${b.countTo} over ${formatDuration(b.seconds)}${b.end === 'loop' ? ' · loop' : ''}`
-    case 'combine': return '→ multichannel'
     case 'split': return outputs.length ? `multichannel → ${outputs.length}` : 'no Combine upstream'
     case 'cdj': return `player ${b.player}`
     case 'box': return b.size.map((v) => v.toFixed(1)).join(' × ') + ' m'
@@ -65,7 +64,7 @@ export function BlockNode({ id, data, selected }: NodeProps<FlowNode>) {
     return live.debug && selected && key ? live.get(key) : undefined
   }
   return (
-    <div className={`td-node ${block.kind}${selected ? ' selected' : ''}`} title={KIND_INFO[block.kind]}>
+    <div className={`td-node ${block.kind}${selected ? ' selected' : ''}`} title={kindInfo(block.kind)}>
       <div className="td-node-kind">{block.kind}{eye && <button className={`eye nodrag${focus.hidden.has(id) ? ' off' : ''}`} onClick={(e) => { e.stopPropagation(); focus.toggleHidden(id) }} title={focus.hidden.has(id) ? 'wires hidden: click to show them' : 'click to hide this node\'s wires (selecting it still shows them)'}>{focus.hidden.has(id) ? '◌' : '◉'}</button>}</div>
       <div className="td-node-name">{block.name}</div>
       <div className="td-node-type">{subtitle(block, data.patch, data.targets, data.outputs)}</div>

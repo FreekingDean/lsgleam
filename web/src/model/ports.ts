@@ -1,6 +1,7 @@
 import { allProfiles } from './fixtures'
 import { NODE_H, type AudioBlock, type LightBlock, type GroupBlock, type InputBlock, type OutputBlock, type CombineBlock, type SplitBlock, type StripMode, type ColorStop, type Block, type Kind, type Wire, type Show, EMPTY_SHOW, ON_PORT, FIXTURE_PORT, SOURCE_KINDS, isLight, scenesOf, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, LOOK_CHANS, COLOR_PORT, RGB, LOOK_CHANNELS, NUDGE_PORT, profileOf, memberPort, type Rail, RAIL_SEP, membersOf } from './show'
 import { BLT_SIGNALS, bltDecks } from './catalog'
+import { WIDE_TYPES, blockDef, combineSlots, defOf, elementOf, hasDef } from '../blocks'
 
 const STRIP_USES: Record<StripMode, string[]> = { solid: ['color', 'dimmer'], band: ['color', 'dimmer', 'position', 'width', 'spread'], fill: ['color', 'dimmer', 'position', 'width', 'spread'], chase: ['color', 'dimmer', 'position', 'width', 'speed', 'spread'], ramp: ['dimmer', 'position', 'speed', 'spread', 'stop', 'at'] }
 export const stripParams = (b: { stops: ColorStop[] }): Port[] => [color(), typed('dimmer', 'signal'), typed('position', 'signal'), typed('width', 'signal'), typed('speed', 'signal', 'speed (laps/s)'), typed('spread', 'signal', 'spread across tubes'), ...b.stops.flatMap((_, k) => [typed(`stop${k}`, 'color', `stop ${k + 1} colour`), typed(`at${k}`, 'signal', `stop ${k + 1} spot`)])]
@@ -25,37 +26,9 @@ export function multiFeeds(show: Show | undefined, b: Block, seen = new Set<stri
 
 const multiPort = (show: Show | undefined, b: Block, id: string): Port => ({ ...typed(id, multiFeeds(show, b).some((w) => w.port === id) ? 'multi' : 'signal'), multi: true })
 
-export const ELEMENT_TYPES = ['signal', 'index', 'number', 'color', 'look', 'audio']
-export const WIDE_TYPES = ['color', 'look', 'audio']
-const MAX_SLOTS = 32
-const slotNumber = (id: string) => Number(id.slice(1)) || 0
-
-function sourcePort(show: Show, w: Wire, seen?: Set<string>) {
+export function sourcePort(show: Show, w: Wire, seen?: Set<string>) {
   const from = show.blocks.find((b) => b.id === w.from)
   return from && outputPorts(from, show, seen).find((p) => p.id === w.fromPort)
-}
-
-export function elementOf(show: Show | undefined, b: CombineBlock, seen = new Set<string>()) {
-  const path = new Set(seen).add(b.id)
-  return show?.wires.filter((w) => w.to === b.id).map((w) => sourcePort(show, w, path)?.type).find((t) => t && ELEMENT_TYPES.includes(t))
-}
-
-export function combineSlots(show: Show | undefined, b: CombineBlock, seen = new Set<string>()): Port[] {
-  if (!show || seen.has(b.id)) return []
-  const path = new Set(seen).add(b.id)
-  const type = elementOf(show, b, seen) ?? 'any'
-  const feeds = show.wires.filter((w) => w.to === b.id).sort((x, y) => slotNumber(x.port) - slotNumber(y.port))
-  return feeds.filter((w, i) => feeds.findIndex((x) => x.port === w.port) === i).map((w) => {
-    const from = show.blocks.find((x) => x.id === w.from)
-    const outs = from ? outputPorts(from, show, path) : []
-    return typed(w.port, type, b.names[w.port]?.trim() || (outs.length > 1 ? outs.find((p) => p.id === w.fromPort)?.label : from?.name) || w.port)
-  })
-}
-
-function combineInputs(show: Show | undefined, b: CombineBlock): Port[] {
-  const slots = combineSlots(show, b)
-  const open = `s${Math.max(0, ...[...slots.map((p) => p.id), ...Object.keys(b.names)].map(slotNumber)) + 1}`
-  return slots.length < MAX_SLOTS ? [...slots, typed(open, elementOf(show, b) ?? 'any', '+')] : slots
 }
 
 export function combineOf(show: Show, from: string, fromPort = 'out', seen = new Set<string>()): CombineBlock | undefined {
@@ -83,7 +56,8 @@ function wireOk(show: Show, w: Wire) {
   const target = b && allInputPorts(b, show).find((p) => p.id === w.port)
   if (!source) return show.blocks.find((x) => x.id === w.from)?.kind !== 'split'
   if (!target) return true
-  if (b.kind === 'combine') return ELEMENT_TYPES.includes(source.type) && source.type === target.type
+  const accepts = blockDef(b.kind)?.accepts
+  if (accepts) return accepts(source, target)
   if (source.type !== 'multi' && target.type !== 'multi') return true
   if (target.multi && source.type === 'multi' && !perChannel(show, w)) return false
   return source.type === target.type || (!!target.multi && show.wires.filter((x) => x.to === w.to && x.port === w.port && (x.scene ?? null) === (w.scene ?? null)).length === 1)
@@ -114,6 +88,7 @@ function alternatives(b: Block): [string[], string[]][] {
 }
 
 function allInputPorts(b: Block, show?: Show): Port[] {
+  if (hasDef(b)) return defOf(b).inputs(b, show)
   switch (b.kind) {
     case 'audio':
     case 'cdj':
@@ -137,10 +112,8 @@ function allInputPorts(b: Block, show?: Show): Port[] {
     case 'not': return [multiPort(show, b, 'signal')]
     case 'mix': return [...(b.type === 'color' ? [typed('a', 'color'), typed('b', 'color')] : [multiPort(show, b, 'a'), multiPort(show, b, 'b')]), typed('mix', 'signal', 'mix (0 = a, 1 = b)')]
     case 'fade': return [multiPort(show, b, 'signal')]
-    case 'combine': return combineInputs(show, b)
     case 'split': return [typed('in', 'multi', 'multichannel')]
     case 'counter': return [typed('trigger', 'signal', 'count'), typed('reset', 'signal')]
-    case 'timer': return [typed('reset', 'signal'), typed('run', 'signal')]
     case 'level': return [typed('audio', 'audio')]
     case 'steps': return [typed('signal', 'signal')]
     case 'gate': return [multiPort(show, b, 'signal')]
@@ -171,6 +144,7 @@ function allInputPorts(b: Block, show?: Show): Port[] {
 }
 
 export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Port[] {
+  if (hasDef(b)) return defOf(b).outputs(b, show, seen)
   const flow = multiFeeds(show, b, seen).length ? 'multi' : 'signal'
   switch (b.kind) {
     case 'audio': return audioInputs(b).map((p) => {
@@ -221,16 +195,11 @@ export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Po
     case 'not': return [typed('out', flow, 'not')]
     case 'mix': return [typed('out', b.type === 'color' ? 'color' : flow, 'mixed')]
     case 'fade': return [typed('out', flow, 'faded')]
-    case 'combine': {
-      const slots = combineSlots(show, b, seen)
-      return [typed('out', 'multi', slots.length ? `${slots.length} × ${slots[0].type}` : 'multichannel')]
-    }
     case 'split': {
       const from = show && !seen.has(b.id) ? splitSource(show, b, seen) : undefined
       return !from ? [] : combineSlots(show, from, new Set(seen).add(b.id)).map((p) => (WIDE_TYPES.includes(p.type) ? { ...p, chans: `${p.id}_*`, strip: `${p.id}_` } : { ...p, chans: p.id }))
     }
     case 'counter': return [typed('out', 'index', 'count')]
-    case 'timer': return [typed('count', 'index'), typed('value', 'number'), typed('progress', 'signal')]
     case 'values': return b.rows.map((r, i) => ({ ...typed(`v${i}`, 'signal', r.name), chans: `v${i}` }))
     case 'colors': return b.rows.map((r, i) => ({ ...typed(`c${i}`, 'color', r.name), chans: RGB.map((ch) => `c${i}_${ch}`).join(' '), strip: `c${i}_` }))
   }

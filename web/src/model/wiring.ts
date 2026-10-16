@@ -1,5 +1,6 @@
 import { type Block, type Wire, type Show, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB, LOOK_CHANNELS, profileOf } from './show'
-import { ELEMENT_TYPES, pruneWires, inputPorts, outputPorts, blockHeight } from './ports'
+import { pruneWires, inputPorts, outputPorts, blockHeight } from './ports'
+import { ELEMENT_TYPES, blockDef } from '../blocks'
 
 export function drivenPorts(show: Show, id: string, tab: string | null) {
   const block = show.blocks.find((b) => b.id === id)
@@ -26,7 +27,7 @@ export function canWire(show: Show, from: string, fromPort: string, to: string, 
   if (here.some((w) => w.from === from && w.fromPort === fromPort && w.to === to && w.port === port)) return false
   const output = target.type === 'fixture' || target.type === 'pixels'
   if (output && here.some((w) => w.to === to && w.from === from)) return false
-  if ((target.type !== 'signal' || source.type === 'multi' || b.kind === 'combine') && !output && here.some((w) => w.to === to && w.port === port)) return false
+  if ((target.type !== 'signal' || source.type === 'multi' || blockDef(b.kind)?.slotted) && !output && here.some((w) => w.to === to && w.port === port)) return false
   const driven = drivenPorts(show, to, tab)
   for (const [master, channels] of exclusions(b)) {
     if (port === master && channels.some((ch) => driven.has(ch))) return false
@@ -36,7 +37,7 @@ export function canWire(show: Show, from: string, fromPort: string, to: string, 
   return pruneWires(next) === next
 }
 
-const resized = (show: Show): Show => ({ ...show, blocks: show.blocks.map((b) => (b.kind === 'combine' || b.kind === 'split') && b.h !== blockHeight(b, show) ? { ...b, h: blockHeight(b, show) } : b) })
+const resized = (show: Show): Show => ({ ...show, blocks: show.blocks.map((b) => (blockDef(b.kind)?.slotted || b.kind === 'split') && b.h !== blockHeight(b, show) ? { ...b, h: blockHeight(b, show) } : b) })
 
 export function addWire(show: Show, wire: Wire): Show {
   return resized({ ...show, wires: [...show.wires, wire] })

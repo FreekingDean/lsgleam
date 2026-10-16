@@ -3,6 +3,7 @@ import { NODE_W, NODE_H, type Placement, type TubeBlock, type TubeDesign, type B
 import { BLT_DEFAULTS, AUDIOSLICE_DEFAULTS } from './catalog'
 import { pruneWires, outputPorts, hasInput, blockHeight } from './ports'
 import { nextAddress } from './patch'
+import { defOf, hasDef } from '../blocks'
 import { pruneCables } from './units'
 
 export function placeUnit(show: Show, key: string, sim: Placement, flip?: boolean): Show {
@@ -83,7 +84,8 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
   const n = show.nextId
   const base = { x, y, w: NODE_W, h: NODE_H, ...(tab && !LAYOUT_KINDS.includes(item.kind) && !SHOW_KINDS.includes(item.kind) ? { scene: tab } : {}) }
   let block: Block
-  switch (item.kind) {
+  if (hasDef(item)) block = defOf(item).create(base, n)
+  else switch (item.kind) {
     case 'box':
       block = { ...base, id: `box${n}`, name: `Room ${n}`, kind: 'box', size: [30.48, 9.144, 4], locked: false }
       break
@@ -176,12 +178,6 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
       break
     case 'counter':
       block = { ...base, id: `count${n}`, name: `count${n}`, kind: 'counter', max: 3 }
-      break
-    case 'timer':
-      block = { ...base, id: `timer${n}`, name: `timer${n}`, kind: 'timer', seconds: 4 * 3600, countTo: 4, end: 'hold' }
-      break
-    case 'combine':
-      block = { ...base, id: `comb${n}`, name: `combine${n}`, kind: 'combine', names: {} }
       break
     case 'split':
       block = { ...base, id: `split${n}`, name: `split${n}`, kind: 'split' }

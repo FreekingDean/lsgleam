@@ -1,9 +1,13 @@
 import { findProfile, type FixtureProfile } from './fixtures'
+import type { TimerBlock } from '../blocks/timer'
+import type { CombineBlock } from '../blocks/combine'
+
+export type { TimerBlock, CombineBlock }
 
 export const NODE_W = 160
 export const NODE_H = 130
 
-type Base = { id: string; name: string; x: number; y: number; w: number; h: number; scene?: string; hidden?: string[]; sim?: Placement; flip?: boolean }
+export type Base = { id: string; name: string; x: number; y: number; w: number; h: number; scene?: string; hidden?: string[]; sim?: Placement; flip?: boolean }
 
 export type Position = { name: string; values: Record<string, number> }
 
@@ -49,8 +53,6 @@ export type NotBlock = Base & { kind: 'not' }
 export type MixBlock = Base & { kind: 'mix'; type: 'signal' | 'color' }
 export type FadeBlock = Base & { kind: 'fade'; rise: number; fall: number; curve: 'linear' | 'smooth' }
 export type CounterBlock = Base & { kind: 'counter'; max: number }
-export type TimerBlock = Base & { kind: 'timer'; seconds: number; countTo: number; end: 'hold' | 'loop' }
-export type CombineBlock = Base & { kind: 'combine'; names: Record<string, string> }
 export type SplitBlock = Base & { kind: 'split' }
 export type ConstantBlock = Base & { kind: 'constant'; type: 'signal' | 'index'; value: number; pulse: number }
 export type CdjBlock = Base & { kind: 'cdj'; player: number }

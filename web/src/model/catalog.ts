@@ -2,7 +2,7 @@ import type { BltBlock, PatternMode, SequenceBlock, Kind, Port } from './show'
 
 export const TYPE_COLORS: Record<string, string> = { audio: '#e06c6c', signal: '#6cb86c', index: '#f39c12', number: '#9aa5b1', look: '#b07ddc', color: '#ff8fd0', fixture: '#4fb3bf', dmx: '#5c8ed6', pixel: '#ffd24a', pixels: '#ffd24a', multi: '#7fd4ff', any: '#666b73' }
 
-export const KIND_INFO: Record<Kind, string> = {
+export const KIND_INFO: Partial<Record<Kind, string>> = {
   audio: 'Audio device input',
   dmxin: 'DMX controller: cable it into an Art-Net input universe; one signal per fader',
   blt: 'Pioneer decks via Beat Link Trigger (OSC)',
@@ -33,8 +33,6 @@ export const KIND_INFO: Record<Kind, string> = {
   mix: 'Crossfades two signals or colours: a × (1 − mix) + b × mix',
   fade: 'Ramps a signal linearly: up over the rise time, down over the fall time',
   counter: 'Counts triggers into an index, clamped at max',
-  timer: 'Counts from 0 to N over a set time: whole steps, the smooth value and progress 0–1',
-  combine: 'Bundles values of one type into one multichannel wire: wire into the open slot to add one',
   split: 'Unbundles a multichannel wire back into the values its Combine bundled',
   cdj: 'A player sending audio into an audio input',
   box: 'A room, stage or other space with width, depth and height',

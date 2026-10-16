@@ -1,12 +1,12 @@
 import type { Bridge } from './bridge'
 import type { PortValues } from '../editor/live'
 import { INPUTS_ID, OUTPUTS_ID, membersOf, profileOf, scenesOf, SELECTOR_ID, type ArtnetBlock, type AudioSliceBlock, type Block, type ColorsBlock, type Show, type StripBlock, type ValuesBlock } from '../model/show'
-import { combineSlots, WIDE_TYPES } from '../model/ports'
 import { AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, audioSliceAlpha, audioSlicePath, patternMasks, sequenceValues } from '../model/catalog'
 import { boardPlan, controllerPatch, selectorSources, sourcesOf } from '../model/patch'
 import { hexToRgb } from '../model/format'
 import { tubeGeometry } from '../model/geometry'
 import { j, PRELUDE } from './prelude'
+import { defOf, hasDef } from '../blocks'
 import { TINTS, showDir, inputsDir, outputsDir, spotOf, placed, railCode } from './tree'
 
 export type DmxValues = Record<string, number[]>
@@ -69,6 +69,7 @@ probe.destroy()
     if (block.kind === 'scene' || block.kind === 'composite' || block.kind === 'cdj' || block.kind === 'box' || block.kind === 'tubeset') return null
     const sources = j(sourcesOf(show, block.id))
     const b = placed(show, block)
+    if (hasDef(block)) return `build_${block.kind}(${[j(b), sources, ...(defOf(block).args?.(block, show) ?? []).map(j)].join(', ')})`
     if (block.kind === 'board') return (`build_board(${j(b)}, ${sources}, ${j(boardPlan(show, block).plan)})`)
     if (block.kind === 'tube') return (`build_tube(${j(b)}, ${sources}, ${j(tubeGeometry(show, block))})`)
     if (block.kind === 'strip') return (`build_strip(${j(b)}, ${sources}, ${j(stripConfig(block))})`)
@@ -86,7 +87,6 @@ probe.destroy()
       const table = colorTable(block)
       return (`build_colors(${j(b)}, ${sources}, ${j(table)})`)
     }
-    if (block.kind === 'combine') return (`build_combine(${j(b)}, ${sources}, ${j(WIDE_TYPES.includes(combineSlots(show, block)[0]?.type ?? ''))})`)
     if (block.kind === 'values') return (`build_values(${j(b)}, ${sources}, ${j(valueTable(block))})`)
     if (block.kind === 'sequence') return (`build_sequence(${j(b)}, ${sources}, ${j(sequenceValues(block))})`)
     if (block.kind === 'group') {
