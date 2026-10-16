@@ -22,8 +22,6 @@ export function multiFeeds(show: Show | undefined, b: Block, seen = new Set<stri
   })
 }
 
-const multiPort = (show: Show | undefined, b: Block, id: string): Port => ({ ...typed(id, multiFeeds(show, b).some((w) => w.port === id) ? 'multi' : 'signal'), multi: true })
-
 function sourcePort(show: Show, w: Wire, seen?: Set<string>) {
   const from = show.blocks.find((b) => b.id === w.from)
   return from && outputPorts(from, show, seen).find((p) => p.id === w.fromPort)
@@ -98,27 +96,13 @@ function allInputPorts(b: Block, show?: Show): Port[] {
     case 'blt':
     case 'audioslice':
     case 'input':
-    case 'constant':
       return []
     case 'manual': return [typed('index', 'index', 'scene index')]
     case 'scene': return [typed(ON_PORT, 'signal'), ...innerInputs(b, show)]
     case 'composite': return innerInputs(b, show)
     case 'output': return [typed('value', b.type)]
-    case 'equals': return [typed('index', 'index')]
-    case 'latch': return [typed('set', 'signal'), typed('reset', 'signal')]
-    case 'and': return [multiPort(show, b, 'a'), multiPort(show, b, 'b')]
-    case 'not': return [multiPort(show, b, 'signal')]
-    case 'mix': return [...(b.type === 'color' ? [typed('a', 'color'), typed('b', 'color')] : [multiPort(show, b, 'a'), multiPort(show, b, 'b')]), typed('mix', 'signal', 'mix (0 = a, 1 = b)')]
-    case 'fade': return [multiPort(show, b, 'signal')]
     case 'split': return [typed('in', 'multi', 'multichannel')]
-    case 'counter': return [typed('trigger', 'signal', 'count'), typed('reset', 'signal')]
-    case 'level': return [typed('audio', 'audio')]
-    case 'steps': return [typed('signal', 'signal')]
-    case 'gate': return [multiPort(show, b, 'signal')]
     case 'pattern': return [typed('signal', 'signal'), b.advance === 'step' ? typed('step', 'index', 'step index') : typed('trigger', 'signal', 'next step'), typed('floor', 'signal', 'minimum')]
-    case 'drop': return [typed('signal', 'signal', 'kick'), typed('beat', 'signal')]
-    case 'hold': return [typed('trigger', 'signal', 'start'), typed('beat', 'signal')]
-    case 'range': return [multiPort(show, b, 'signal'), typed('amount', 'signal'), typed('tameMin', 'signal', 'tame min'), typed('tameMax', 'signal', 'tame max'), typed('wildMin', 'signal', 'wild min'), typed('wildMax', 'signal', 'wild max')]
     case 'sequence': return [typed('trigger', 'signal', 'next value'), typed('reset', 'signal')]
     case 'looks': return [b.advance === 'step' ? typed('scene', 'index', 'look index') : typed('next', 'signal', 'next look'), typed('offset', 'index', 'look offset'), typed('dimmer', 'signal'), typed('wild', 'signal'), color()]
     case 'colors': return [typed('index', 'index')]
@@ -143,7 +127,6 @@ function allInputPorts(b: Block, show?: Show): Port[] {
 
 export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Port[] {
   if (hasDef(b)) return defOf(b).outputs(b, show, seen, PORTS)
-  const flow = multiFeeds(show, b, seen).length ? 'multi' : 'signal'
   switch (b.kind) {
     case 'audio': return audioInputs(b).map((p) => {
       const cdj = show?.cables.find((c) => c.to === b.id && c.port === p.id)
@@ -156,13 +139,7 @@ export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Po
       return bltDecks(b).flatMap((deck) =>
         BLT_SIGNALS.filter((sig) => b.signals.includes(sig.id)).map((sig) => typed(`${deck}_${sig.id}`, sig.type, `${deck.replace('d', 'deck ')} ${sig.id}`)))
     case 'audioslice': return b.signals.map((s) => typed(s.replace('/', '_'), 'signal', s))
-    case 'level': return [typed('out', 'signal', 'level')]
-    case 'steps': return [typed('out', 'index', 'index')]
-    case 'gate': return [typed('out', flow, 'gated')]
     case 'pattern': return Array.from({ length: b.slots }, (_, i) => typed(`slot${i + 1}`, 'signal', `slot ${i + 1}`))
-    case 'drop': return [typed('drop', 'signal'), typed('armed', 'signal'), typed('drops', 'index', 'drops (count)')]
-    case 'hold': return [typed('hold', 'signal')]
-    case 'range': return [typed('out', flow, 'signal')]
     case 'sequence': return [typed('out', 'signal', 'value')]
     case 'looks': return [look(), typed('scene', 'index')]
     case 'fixture':
@@ -186,24 +163,16 @@ export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Po
     case 'output': return [typed('out', b.type, b.name)]
     case 'composite': return (show?.blocks ?? []).filter((x): x is OutputBlock => x.kind === 'output' && x.scene === b.id).map((x) => typed(x.id, x.type, x.name))
     case 'manual': return scenesOf(show ?? EMPTY_SHOW).map((s) => typed(`s_${s.id}`, 'signal', s.name))
-    case 'equals': return [typed('out', 'signal', 'equal')]
-    case 'constant': return [typed('out', b.type, b.pulse > 0 ? `pulse ${b.pulse} Hz` : `${b.value}`)]
-    case 'latch': return [typed('out', 'signal', 'latched')]
-    case 'and': return [typed('out', flow, 'both')]
-    case 'not': return [typed('out', flow, 'not')]
-    case 'mix': return [typed('out', b.type === 'color' ? 'color' : flow, 'mixed')]
-    case 'fade': return [typed('out', flow, 'faded')]
     case 'split': {
       const from = show && !seen.has(b.id) ? splitSource(show, b, seen) : undefined
       return !from ? [] : combineSlots(show, from, PORTS, new Set(seen).add(b.id)).map((p) => (WIDE_TYPES.includes(p.type) ? { ...p, chans: `${p.id}_*`, strip: `${p.id}_` } : { ...p, chans: p.id }))
     }
-    case 'counter': return [typed('out', 'index', 'count')]
     case 'values': return b.rows.map((r, i) => ({ ...typed(`v${i}`, 'signal', r.name), chans: `v${i}` }))
     case 'colors': return b.rows.map((r, i) => ({ ...typed(`c${i}`, 'color', r.name), chans: RGB.map((ch) => `c${i}_${ch}`).join(' '), strip: `c${i}_` }))
   }
 }
 
-export const PORTS: Ports = { outputPorts, sourcePort }
+export const PORTS: Ports = { outputPorts, sourcePort, multiFeeds }
 
 export function hasInput(b: Block, port: string, show: Show) {
   return inputPorts(b, show).some((p) => p.id === port)

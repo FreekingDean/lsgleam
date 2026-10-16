@@ -1,8 +1,22 @@
 import { findProfile, type FixtureProfile } from './fixtures'
 import type { TimerBlock } from '../blocks/timer'
 import type { CombineBlock } from '../blocks/combine'
+import type { ConstantBlock } from '../blocks/constant'
+import type { LatchBlock } from '../blocks/latch'
+import type { AndBlock } from '../blocks/and'
+import type { NotBlock } from '../blocks/not'
+import type { EqualsBlock } from '../blocks/equals'
+import type { CounterBlock } from '../blocks/counter'
+import type { StepsBlock } from '../blocks/steps'
+import type { LevelBlock } from '../blocks/level'
+import type { GateBlock } from '../blocks/gate'
+import type { FadeBlock } from '../blocks/fade'
+import type { MixBlock } from '../blocks/mix'
+import type { HoldBlock } from '../blocks/hold'
+import type { DropBlock } from '../blocks/drop'
+import type { RangeBlock } from '../blocks/range'
 
-export type { TimerBlock, CombineBlock }
+export type { TimerBlock, CombineBlock, ConstantBlock, LatchBlock, AndBlock, NotBlock, EqualsBlock, CounterBlock, StepsBlock, LevelBlock, GateBlock, FadeBlock, MixBlock, HoldBlock, DropBlock, RangeBlock }
 
 export const NODE_W = 160
 export const NODE_H = 130
@@ -15,16 +29,10 @@ export type AudioBlock = Base & { kind: 'audio'; device: string; channels: numbe
 export type DmxInBlock = Base & { kind: 'dmxin'; channels: number }
 export type BltBlock = Base & { kind: 'blt'; port: number; decks: number; master: boolean; signals: string[]; songs: string[] }
 export type AudioSliceBlock = Base & { kind: 'audioslice'; port: number; signals: string[]; apiPort: number; token: string; smoothing: number }
-export type LevelBlock = Base & { kind: 'level'; gain: number; attack: number; release: number }
-export type StepsBlock = Base & { kind: 'steps'; steps: number }
-export type GateBlock = Base & { kind: 'gate'; threshold: number; rescale: boolean }
 export type PatternMode = 'all' | 'alternate' | 'alternate2' | 'chase' | 'outsidein' | 'fillin' | 'fillout'
 export type PatternAdvance = 'step' | 'trigger'
-export type DropBlock = Base & { kind: 'drop'; threshold: number; beats: number; cooldown: number }
 export type Scene = { name: string; color: string; window: [number, number] }
 export type LooksBlock = Base & { kind: 'looks'; scenes: Scene[]; advance: PatternAdvance; every: number }
-export type HoldBlock = Base & { kind: 'hold'; beats: number }
-export type RangeBlock = Base & { kind: 'range'; tame: [number, number]; wild: [number, number] }
 export type SequenceBlock = Base & { kind: 'sequence'; values: number[]; unit: number; center: number; every: number }
 export type PatternBlock = Base & { kind: 'pattern'; slots: number; mode: PatternMode; advance: PatternAdvance; every: number; floor: number }
 export type Placement = { position: [number, number, number]; rotation: [number, number, number] }
@@ -46,15 +54,7 @@ export type InputBlock = Base & { kind: 'input'; type: InputType }
 export type OutputBlock = Base & { kind: 'output'; type: InputType }
 export type CompositeBlock = Base & { kind: 'composite' }
 export type ManualBlock = Base & { kind: 'manual'; active: number }
-export type EqualsBlock = Base & { kind: 'equals'; value: number }
-export type LatchBlock = Base & { kind: 'latch' }
-export type AndBlock = Base & { kind: 'and' }
-export type NotBlock = Base & { kind: 'not' }
-export type MixBlock = Base & { kind: 'mix'; type: 'signal' | 'color' }
-export type FadeBlock = Base & { kind: 'fade'; rise: number; fall: number; curve: 'linear' | 'smooth' }
-export type CounterBlock = Base & { kind: 'counter'; max: number }
 export type SplitBlock = Base & { kind: 'split' }
-export type ConstantBlock = Base & { kind: 'constant'; type: 'signal' | 'index'; value: number; pulse: number }
 export type CdjBlock = Base & { kind: 'cdj'; player: number }
 export type BoxBlock = Base & { kind: 'box'; size: [number, number, number]; locked: boolean }
 export type Point = [number, number, number]

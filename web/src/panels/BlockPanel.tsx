@@ -8,7 +8,7 @@ import type { Layout, Props } from './shared'
 import { AudioPanel, DmxInPanel, ArtnetPanel, CdjPanel, BoxPanel, BltPanel, AudioSlicePanel } from './hardware'
 import { TubeSetPanel, BoardPanel, StripPanel } from './pixels'
 import { ScenePanel, InputPanel, ManualPanel } from './scene'
-import { ConstantPanel, CounterPanel, SplitPanel, EqualsPanel, ValuesPanel, ColorsPanel, LevelPanel, GatePanel, FadePanel, StepsPanel, DropPanel, HoldPanel, RangePanel, SequencePanel, LooksPanel, PatternPanel } from './logic'
+import { SplitPanel, ValuesPanel, ColorsPanel, SequencePanel, LooksPanel, PatternPanel } from './logic'
 import { GroupPanel, FixturePanel, LightPanel } from './lights'
 import { blockDef, hasDef } from '../blocks'
 import { panelOf } from '../blocks/panels'
@@ -75,14 +75,7 @@ function body(props: Props) {
     case 'dmxin': return <DmxInPanel {...props} block={block} />
     case 'blt': return <BltPanel {...props} block={block} />
     case 'audioslice': return <AudioSlicePanel {...props} block={block} />
-    case 'level': return <LevelPanel {...props} block={block} />
-    case 'steps': return <StepsPanel {...props} block={block} />
-    case 'gate': return <GatePanel {...props} block={block} />
-    case 'fade': return <FadePanel {...props} block={block} />
     case 'pattern': return <PatternPanel {...props} block={block} />
-    case 'drop': return <DropPanel {...props} block={block} />
-    case 'hold': return <HoldPanel {...props} block={block} />
-    case 'range': return <RangePanel {...props} block={block} />
     case 'sequence': return <SequencePanel {...props} block={block} />
     case 'looks': return <LooksPanel {...props} block={block} />
     case 'fixture': return <FixturePanel {...props} block={block} />
@@ -114,27 +107,9 @@ function body(props: Props) {
       </>
     )
     case 'manual': return <ManualPanel {...props} block={block} />
-    case 'equals': return <EqualsPanel {...props} block={block} />
-    case 'constant': return <ConstantPanel {...props} block={block} />
-    case 'counter': return <CounterPanel {...props} block={block} />
     case 'split': return <SplitPanel {...props} block={block} />
     case 'colors': return <ColorsPanel {...props} block={block} />
     case 'values': return <ValuesPanel {...props} block={block} />
-    case 'latch': return <div className="help">1 from a rising edge on set until reset goes high. Song match sets it, the drop resets it: that's "primed".</div>
-    case 'mix': return (
-      <>
-        <div className="par">
-          <label>Type</label>
-          <select value={block.type} onChange={(e) => props.onPatch({ type: e.target.value as 'signal' | 'color' })}>
-            <option value="signal">signal</option>
-            <option value="color">colour</option>
-          </select>
-        </div>
-        <div className="help">out = a × (1 − mix) + b × mix. Crossfade one value instead of a whole scene: a = the season value, b = the drop value, mix = a Fade of the drop (rise 0, fall 15) brought in as a scene input.</div>
-      </>
-    )
-    case 'not': return <div className="help">1 − the signal, clamped 0–1. For precedence: season `on` = Not(battle) × Not(drop) (two Nots into an And), drop `on` = drop × Not(battle), battle `on` = battle.</div>
-    case 'and': return <div className="help">Multiplies the two signals, so it's 1 only while both are on. Drop × primed is "an accepted drop".</div>
   }
 }
 

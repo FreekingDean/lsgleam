@@ -104,24 +104,6 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
     case 'audioslice':
       block = { ...base, id: `as${n}`, name: `as${n}`, kind: 'audioslice', port: 9002, signals: AUDIOSLICE_DEFAULTS, apiPort: 8722, token: '', smoothing: 0 }
       break
-    case 'level':
-      block = { ...base, id: `level${n}`, name: `level${n}`, kind: 'level', gain: 4, attack: 0.05, release: 0.3 }
-      break
-    case 'steps':
-      block = { ...base, id: `steps${n}`, name: `steps${n}`, kind: 'steps', steps: 4 }
-      break
-    case 'gate':
-      block = { ...base, id: `gate${n}`, name: `gate${n}`, kind: 'gate', threshold: 0.3, rescale: true }
-      break
-    case 'drop':
-      block = { ...base, id: `drop${n}`, name: `drop${n}`, kind: 'drop', threshold: 0.2, beats: 12, cooldown: 8 }
-      break
-    case 'hold':
-      block = { ...base, id: `hold${n}`, name: `hold${n}`, kind: 'hold', beats: 32 }
-      break
-    case 'range':
-      block = { ...base, id: `rng${n}`, name: `rng${n}`, kind: 'range', tame: [0.2, 0.5], wild: [0, 1] }
-      break
     case 'sequence':
       block = { ...base, id: `seq${n}`, name: `seq${n}`, kind: 'sequence', values: [1, -1, 2, -1, 1, -2], unit: 0.05, center: 0.5, every: 1 }
       break
@@ -158,27 +140,6 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
     case 'manual':
       block = { ...base, id: `manual${n}`, name: `manual${n}`, kind: 'manual', active: 0 }
       break
-    case 'constant':
-      block = { ...base, id: `const${n}`, name: `const${n}`, kind: 'constant', type: 'signal', value: 1, pulse: 0 }
-      break
-    case 'latch':
-      block = { ...base, id: `latch${n}`, name: `latch${n}`, kind: 'latch' }
-      break
-    case 'and':
-      block = { ...base, id: `and${n}`, name: `and${n}`, kind: 'and' }
-      break
-    case 'not':
-      block = { ...base, id: `not${n}`, name: `not${n}`, kind: 'not' }
-      break
-    case 'mix':
-      block = { ...base, id: `mix${n}`, name: `mix${n}`, kind: 'mix', type: 'signal' }
-      break
-    case 'fade':
-      block = { ...base, id: `fade${n}`, name: `fade${n}`, kind: 'fade', rise: 0, fall: 4, curve: 'linear' }
-      break
-    case 'counter':
-      block = { ...base, id: `count${n}`, name: `count${n}`, kind: 'counter', max: 3 }
-      break
     case 'split':
       block = { ...base, id: `split${n}`, name: `split${n}`, kind: 'split' }
       break
@@ -206,8 +167,6 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
     case 'output':
       block = { ...base, id: `out${n}`, name: `${item.type ?? 'signal'} out ${n}`, kind: 'output', type: item.type ?? 'signal' }
       break
-    case 'equals':
-      block = { ...base, id: `eq${n}`, name: `eq${n}`, kind: 'equals', value: 0 }
   }
   block.h = blockHeight(block, show)
   const next = { ...show, nextId: n + 1, blocks: [...show.blocks, block] }
