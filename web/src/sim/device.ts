@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Kind, Placement } from '../show'
+import type { Kind, Placement } from '../model/show'
 import { disposeAll, place, type Light } from './par'
 
 const SIZES: Partial<Record<Kind, [number, number, number]>> = { board: [0.2, 0.05, 0.12], dmxin: [0.5, 0.08, 0.3], artnet: [0.25, 0.06, 0.15], audio: [0.3, 0.05, 0.2], cdj: [0.33, 0.12, 0.42] }

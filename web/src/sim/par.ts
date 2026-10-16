@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Placement } from '../show'
+import type { Placement } from '../model/show'
 
 const MAX_INTENSITY = 22
 const BEAM_ANGLE = Math.PI / 5

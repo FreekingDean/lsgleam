@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
-import type { Point } from '../show'
+import type { Point } from '../model/show'
 import { disposeAll } from './par'
 import { curveOf, ledPositions } from './tube'
 

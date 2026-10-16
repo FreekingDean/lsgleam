@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Placement } from '../show'
+import type { Placement } from '../model/show'
 import { beam, disposeAll, place, spot, type Light } from './par'
 
 const MAX_INTENSITY = 40

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Placement, Point } from '../show'
+import type { Placement, Point } from '../model/show'
 import { disposeAll, place, type Light } from './par'
 
 export function curveOf(path: Point[]) {
