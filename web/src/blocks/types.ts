@@ -6,8 +6,8 @@ export type BlockDef<B extends Block = Block> = {
   kind: B['kind']
   label: string
   info: string
-  tab: 'Logic' | 'Math' | 'Time'
-  python: string
+  tab: 'Logic' | 'Math' | 'Time' | 'Hardware'
+  python?: string
   builder?: string
   slotted?: boolean
   create(base: Pick<Base, 'x' | 'y' | 'w' | 'h' | 'scene'>, n: number): B

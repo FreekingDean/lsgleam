@@ -1,23 +1,16 @@
-import type { BltBlock, PatternMode, SequenceBlock, Kind, Port } from './show'
+import type { PatternMode, SequenceBlock, Kind, Port } from './show'
 
 export const TYPE_COLORS: Record<string, string> = { audio: '#e06c6c', signal: '#6cb86c', index: '#f39c12', number: '#9aa5b1', look: '#b07ddc', color: '#ff8fd0', fixture: '#4fb3bf', dmx: '#5c8ed6', pixel: '#ffd24a', pixels: '#ffd24a', multi: '#7fd4ff', any: '#666b73' }
 
 export const KIND_INFO: Partial<Record<Kind, string>> = {
-  audio: 'Audio device input',
-  dmxin: 'DMX controller: cable it into an Art-Net input universe; one signal per fader',
-  blt: 'Pioneer decks via Beat Link Trigger (OSC)',
-  audioslice: 'Stem energy, hits and beats from AudioSlice (OSC)',
   fixture: 'A light in the room, patched on a DMX chain',
   light: 'What this scene sends to every fixture wired to it on the show tab',
   group: 'Spreads a pattern and positions over the fixtures wired to it on the show tab',
-  artnet: 'Art-Net / sACN interface: the universes it sends and listens to',
   scene: 'Turns its inputs into fixture outputs, weighted by on',
   input: 'A value this scene or composite takes from outside: one input port on its node',
   output: 'A value this composite sends out: one output port on its node',
   composite: 'Your own block: double-click to build it from inputs, transformers and outputs inside',
   manual: 'Scene select: buttons, or an index that picks scene N',
-  cdj: 'A player sending audio into an audio input',
-  box: 'A room, stage or other space with width, depth and height',
   tube: 'An LED tube or strip: LED count, pixel protocol and a 3D shape',
   tubeset: 'LED tubes: one or more tubes in a shape (tree, burst, fan or your own), placed as one; each tube cables separately',
   strip: 'Pixel output: an effect (solid, band, fill, chase, ramp) for every LED tube wired to it on the show tab',
@@ -106,40 +99,3 @@ export function patternMasks(mode: PatternMode, slots: number): number[][] {
     }
   }
 }
-
-export const BLT_SIGNALS: { id: string; type: string }[] = [
-  { id: 'playing', type: 'signal' },
-  { id: 'onair', type: 'signal' },
-  { id: 'master', type: 'signal' },
-  { id: 'beat', type: 'index' },
-  { id: 'bpm', type: 'number' },
-  { id: 'pitch', type: 'number' },
-  { id: 'progress', type: 'signal' },
-  { id: 'song', type: 'index' },
-]
-export const bltDecks = (b: BltBlock) => [...(b.master ? ['master'] : []), ...Array.from({ length: b.decks }, (_, d) => `d${d + 1}`)]
-export const BLT_DEFAULTS = ['playing', 'onair', 'beat', 'bpm']
-
-export const AUDIOSLICE_STEMS = ['vocals', 'bass', 'other', 'drums', 'kick', 'snare', 'hihat', 'perc', 'tom', 'audio', 'beat', 'beat_ramp', 'is_music', 'model_beat', 'model_downbeat']
-export const AUDIOSLICE_STREAMS: Record<string, number> = { energy: 1, pan: 2, onset: 3, spread: 4, pitch: 5 }
-export const AUDIOSLICE_SOURCES: { stem: string; streams: string[] }[] = [
-  { stem: 'kick', streams: ['energy', 'onset'] },
-  { stem: 'snare', streams: ['energy', 'onset', 'pan', 'spread'] },
-  { stem: 'hihat', streams: ['energy', 'onset', 'pan', 'spread'] },
-  { stem: 'tom', streams: ['energy', 'onset', 'pan', 'spread'] },
-  { stem: 'perc', streams: ['energy', 'onset', 'pan', 'spread'] },
-  { stem: 'drums', streams: ['energy'] },
-  { stem: 'audio', streams: ['energy', 'onset'] },
-  { stem: 'vocals', streams: ['energy', 'pan', 'spread', 'pitch'] },
-  { stem: 'bass', streams: ['energy', 'pitch'] },
-  { stem: 'other', streams: ['energy', 'pan', 'spread'] },
-  { stem: 'beat', streams: ['energy'] },
-  { stem: 'beat_ramp', streams: ['energy'] },
-  { stem: 'model_beat', streams: ['energy'] },
-  { stem: 'model_downbeat', streams: ['energy'] },
-]
-export const AUDIOSLICE_BEAT_STEMS = ['beat', 'model_beat', 'model_downbeat']
-export const AUDIOSLICE_DEFAULTS = ['kick/energy', 'kick/onset', 'snare/energy', 'snare/onset', 'hihat/energy', 'bass/energy', 'vocals/energy', 'beat/energy']
-export const audioSlicePath = (signal: string) => `/as/${signal}`
-const AUDIOSLICE_FRAME_MS = 11.6099
-export const audioSliceAlpha = (ms: number) => (ms > 0 ? AUDIOSLICE_FRAME_MS / (ms + AUDIOSLICE_FRAME_MS) : 1)

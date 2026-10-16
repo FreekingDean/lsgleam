@@ -13,14 +13,9 @@ export type RailFlowNode = Node<{ title: string; rails: Rail[]; side: 'in' | 'ou
 function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Port[]) {
   if (hasDef(b)) return defOf(b).subtitle(b, outputs)
   switch (b.kind) {
-    case 'audio': return b.device || 'default device'
-    case 'dmxin': return `${b.channels} faders`
-    case 'blt': return `OSC :${b.port} · ${b.decks} decks`
-    case 'audioslice': return `OSC :${b.port} · ${b.signals.length} signals`
     case 'fixture': return `${profileOf(b).label} · ${patch ? `U${patch.universe}` : 'unpatched'} @${b.address}`
     case 'light': return `${profileOf(b).label} → ${targets.join(', ') || 'nothing yet'}`
     case 'group': return `${b.mode} → ${targets.length}× ${profileOf(b).label}`
-    case 'artnet': return `${b.protocol} → ${b.ip} · U${b.universes.join(',')}`
     case 'scene': return 'scene'
     case 'input': return b.type
     case 'output': return `${b.type} out`
@@ -29,8 +24,6 @@ function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Por
     case 'tube': return `${b.leds} LEDs`
     case 'strip': return `${b.mode} → ${targets.join(', ') || 'nothing yet'}`
     case 'board': return b.ip
-    case 'cdj': return `player ${b.player}`
-    case 'box': return b.size.map((v) => v.toFixed(1)).join(' × ') + ' m'
   }
 }
 

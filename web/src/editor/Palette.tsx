@@ -9,7 +9,7 @@ type Props = { onAdd: (item: PaletteItem) => void; tab: string | null; composite
 type Category = { title: string; items: { label: string; item: PaletteItem }[] }
 type Tab = { title: string; sections: Category[] }
 
-const defined = (kind: DefKind) => ({ label: BLOCKS[kind].label, item: { kind } })
+const defined = (kind: DefKind) => ({ label: BLOCKS[kind].label, item: { kind } as PaletteItem })
 
 const TRANSFORMERS: Category = { title: 'Transformers', items: [defined('constant'), defined('level'), defined('gate'), defined('steps'), defined('equals'), defined('latch'), defined('and'), defined('not'), defined('mix'), defined('fade'), defined('counter'), defined('timer'), defined('combine'), defined('split'), defined('pattern'), defined('drop'), defined('hold'), defined('range'), defined('sequence'), defined('looks'), defined('colors'), defined('values'), { label: 'Composite (your own block)', item: { kind: 'composite' } }] }
 
@@ -20,10 +20,10 @@ const OPERATORS: Record<string, string> = {
 const OPERATOR_TABS: Tab[] = ['Logic', 'Math', 'Time'].map((title) => ({ title, sections: [{ title, items: TRANSFORMERS.items.filter((i) => (OPERATORS[i.item.kind] ?? blockDef(i.item.kind)?.tab) === title) }] }))
 
 const HARDWARE: Category[] = [
-  { title: 'Space', items: [{ label: 'Box (room, stage, bar)', item: { kind: 'box' } }] },
-  { title: 'DMX', items: [{ label: 'Art-Net / sACN node', item: { kind: 'artnet' } }, { label: 'DMX controller (faders in)', item: { kind: 'dmxin' } }] },
-  { title: 'Audio', items: [{ label: 'Audio source (CDJ)', item: { kind: 'cdj' } }, { label: 'Audio input (interface)', item: { kind: 'audio' } }] },
-  { title: 'Software', items: [{ label: 'Beat Link Trigger (OSC)', item: { kind: 'blt' } }, { label: 'AudioSlice (OSC)', item: { kind: 'audioslice' } }] },
+  { title: 'Space', items: [defined('box')] },
+  { title: 'DMX', items: [defined('artnet'), defined('dmxin')] },
+  { title: 'Audio', items: [defined('cdj'), defined('audio')] },
+  { title: 'Software', items: [defined('blt'), defined('audioslice')] },
 ]
 
 const PIXELS: Category = { title: 'Pixels', items: [{ label: 'LED tubes', item: { kind: 'tubeset' } }, { label: 'Pixel controller (Art-Net)', item: { kind: 'board' } }] }
