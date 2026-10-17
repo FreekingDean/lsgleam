@@ -26,7 +26,7 @@ const HARDWARE: Category[] = [
   { title: 'Software', items: [defined('blt'), defined('audioslice')] },
 ]
 
-const PIXELS: Category = { title: 'Pixels', items: [{ label: 'LED tubes', item: { kind: 'tubeset' } }, { label: 'Pixel controller (Art-Net)', item: { kind: 'board' } }] }
+const PIXELS: Category = { title: 'Pixels', items: [{ label: 'LED tubes', item: { kind: 'tubeset' } }, defined('board')] }
 
 const SHOW: Tab[] = [
   { title: 'Scenes', sections: [{ title: 'Scenes', items: [{ label: 'Scene', item: { kind: 'scene' } }, { label: 'Scene select (buttons / index)', item: { kind: 'manual' } }] }] },
@@ -62,7 +62,7 @@ const scene = (profiles: FixtureProfile[]): Tab[] => [
     { label: 'Colour (Red, Green, Blue)', item: { kind: 'input', type: 'color' } },
     { label: 'Multichannel (several signals on one wire)', item: { kind: 'input', type: 'multi' } },
   ] }] },
-  { title: 'Outputs', sections: [{ title: 'Outputs', items: [...profiles.flatMap((f) => [{ label: `${f.label} out`, item: { kind: 'light', profile: f.id } as PaletteItem }, { label: `${f.label} group out`, item: { kind: 'group', profile: f.id } as PaletteItem }]), { label: 'Pixel out (LED tubes)', item: { kind: 'strip' } }] }] },
+  { title: 'Outputs', sections: [{ title: 'Outputs', items: [...profiles.flatMap((f) => [{ label: `${f.label} out`, item: { kind: 'light', profile: f.id } as PaletteItem }, { label: `${f.label} group out`, item: { kind: 'group', profile: f.id } as PaletteItem }]), defined('strip')] }] },
   ...OPERATOR_TABS,
 ]
 

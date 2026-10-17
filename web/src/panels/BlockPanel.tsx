@@ -5,7 +5,7 @@ import { fixturesOf } from '../model/patch'
 import { ceilingAt, onWall } from '../model/units'
 import { inputPorts, PORTS } from '../model/ports'
 import type { Layout, Props } from './shared'
-import { TubeSetPanel, BoardPanel, StripPanel } from './pixels'
+import { TubeSetPanel } from './pixels'
 import { ScenePanel, InputPanel, ManualPanel } from './scene'
 import { GroupPanel, FixturePanel, LightPanel } from './lights'
 import { blockDef, hasDef } from '../blocks'
@@ -66,15 +66,13 @@ function body(props: Props) {
   const { block } = props
   if (hasDef(block)) {
     const Panel = panelOf(block.kind)
-    return <Panel {...props} ports={PORTS} />
+    return <Panel {...props} ports={PORTS} targets={fixturesOf(props.show, block.id).map((id) => props.show.blocks.find((b) => b.id === id)?.name ?? id)} />
   }
   switch (block.kind) {
     case 'fixture': return <FixturePanel {...props} block={block} />
     case 'light': return <LightPanel {...props} block={block} />
     case 'group': return <GroupPanel {...props} block={block} />
     case 'tubeset': return <TubeSetPanel {...props} block={block} />
-    case 'strip': return <StripPanel {...props} block={block} />
-    case 'board': return <BoardPanel {...props} block={block} />
     case 'scene': return <ScenePanel {...props} block={block} />
     case 'input': return <InputPanel {...props} block={block} />
     case 'output': return (

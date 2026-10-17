@@ -109,18 +109,12 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
     case 'manual':
       block = { ...base, id: `manual${n}`, name: `manual${n}`, kind: 'manual', active: 0 }
       break
-    case 'strip':
-      block = { ...base, id: `px${n}`, name: `Pixels ${n}`, kind: 'strip', mode: 'band', color: '#ffffff', stops: [{ at: 0, color: '#ff2060' }, { at: 1, color: '#2060ff' }], spread: 0, along: 'tube', dimmer: 1, position: 0.5, width: 0.2, speed: 0.5 }
-      break
     case 'tubeset': {
       const design = show.designs?.find((d) => d.id === item.design)
       if (!design) show = { ...show, designs: [...(show.designs ?? []), { id: `design${n}`, name: `LED tubes ${n}`, tubes: [{ id: 't1', name: 'Tube 1', leds: 60, length: 1, protocol: 'sk9822', path: [[0, 0, 0], [1, 0, 0]] }] }] }
       block = { ...base, id: `tset${n}`, name: design ? `${design.name} ${n}` : `LED tubes ${n}`, kind: 'tubeset', design: design?.id ?? `design${n}` }
       break
     }
-    case 'board':
-      block = { ...base, id: `board${n}`, name: `Pixel board ${n}`, kind: 'board', protocol: 'sk9822', ip: '192.168.1.50', active: true, outputs: 8, ledsPerOutput: 300, ledsPerUniverse: 150, startUniverse: 0 }
-      break
     case 'composite':
       block = { ...base, id: `comp${n}`, name: `Composite ${n}`, kind: 'composite' }
       break
