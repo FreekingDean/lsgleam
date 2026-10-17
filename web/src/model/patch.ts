@@ -2,12 +2,6 @@ import { type Patch, type BoardBlock, type StripMode, type StripAlong, type Wire
 import { outputPorts, portOf } from './ports'
 import { blockDef, boardPlan, chainOf, universesPerOutput } from '../blocks'
 
-export function nextAddress(show: Show) {
-  return show.blocks.reduce((max, b) => {
-    return b.kind === 'fixture' ? Math.max(max, b.address + profileOf(b).channels.length) : max
-  }, 1)
-}
-
 export type Source = { from: string; chan: string | null; port: string; scene: number | null; strip?: string; mode?: StripMode; along?: StripAlong; keep?: boolean }
 
 export function sourcesOf(show: Show, id: string): Source[] {
@@ -45,13 +39,6 @@ export function sourcesOf(show: Show, id: string): Source[] {
     return feeds.length ? [...feeds, { from: SELECTOR_ID, chan: null, port: SCENE_PORT, scene: scenes.length }] : []
   }
   return show.wires.filter((w) => w.to === id).map((w) => ({ ...via(show, w), port: w.port, scene: null, ...(blockDef(block.kind)?.slotted || ['color', 'multi'].includes(portOf(show, w)?.type ?? '') ? { keep: true } : {}) }))
-}
-
-export function fixturesOf(show: Show, port: string, member = false) {
-  const id = port.split(':')[0]
-  const out = show.blocks.find((b) => b.id === id)
-  const wired = new Set(show.wires.filter((w) => out?.scene && w.from === out.scene && (w.fromPort === port || (member && w.fromPort.startsWith(`${port}:`)))).map((w) => w.to))
-  return show.blocks.filter((b) => (b.kind === 'fixture' || b.kind === 'tube') && wired.has(b.id)).map((b) => b.id)
 }
 
 function chanOf(show: Show, w: Wire) {

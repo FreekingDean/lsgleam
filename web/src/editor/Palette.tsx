@@ -11,13 +11,9 @@ type Tab = { title: string; sections: Category[] }
 
 const defined = (kind: DefKind) => ({ label: BLOCKS[kind].label, item: { kind } as PaletteItem })
 
-const TRANSFORMERS: Category = { title: 'Transformers', items: [defined('constant'), defined('level'), defined('gate'), defined('steps'), defined('equals'), defined('latch'), defined('and'), defined('not'), defined('mix'), defined('fade'), defined('counter'), defined('timer'), defined('combine'), defined('split'), defined('pattern'), defined('drop'), defined('hold'), defined('range'), defined('sequence'), defined('looks'), defined('colors'), defined('values'), { label: 'Composite (your own block)', item: { kind: 'composite' } }] }
+const TRANSFORMERS: Category = { title: 'Transformers', items: [defined('constant'), defined('level'), defined('gate'), defined('steps'), defined('equals'), defined('latch'), defined('and'), defined('not'), defined('mix'), defined('fade'), defined('counter'), defined('timer'), defined('combine'), defined('split'), defined('pattern'), defined('drop'), defined('hold'), defined('range'), defined('sequence'), defined('looks'), defined('colors'), defined('values'), defined('composite')] }
 
-const OPERATORS: Record<string, string> = {
-  composite: 'Math',
-}
-
-const OPERATOR_TABS: Tab[] = ['Logic', 'Math', 'Time'].map((title) => ({ title, sections: [{ title, items: TRANSFORMERS.items.filter((i) => (OPERATORS[i.item.kind] ?? blockDef(i.item.kind)?.tab) === title) }] }))
+const OPERATOR_TABS: Tab[] = ['Logic', 'Math', 'Time'].map((title) => ({ title, sections: [{ title, items: TRANSFORMERS.items.filter((i) => blockDef(i.item.kind)?.tab === title) }] }))
 
 const HARDWARE: Category[] = [
   { title: 'Space', items: [defined('box')] },
@@ -29,7 +25,7 @@ const HARDWARE: Category[] = [
 const PIXELS: Category = { title: 'Pixels', items: [{ label: 'LED tubes', item: { kind: 'tubeset' } }, defined('board')] }
 
 const SHOW: Tab[] = [
-  { title: 'Scenes', sections: [{ title: 'Scenes', items: [{ label: 'Scene', item: { kind: 'scene' } }, { label: 'Scene select (buttons / index)', item: { kind: 'manual' } }] }] },
+  { title: 'Scenes', sections: [{ title: 'Scenes', items: [defined('scene'), defined('manual')] }] },
   ...OPERATOR_TABS,
 ]
 

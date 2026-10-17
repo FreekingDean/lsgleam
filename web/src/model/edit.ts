@@ -1,7 +1,5 @@
-import { findProfile } from './fixtures'
 import { NODE_W, NODE_H, type Placement, type TubeBlock, type TubeDesign, type Block, type Wire, type Show, LAYOUT_KINDS, SHOW_KINDS, isLight, scenesOf, type PaletteItem } from './show'
 import { pruneWires, outputPorts, hasInput, blockHeight } from './ports'
-import { nextAddress } from './patch'
 import { defOf, hasDef } from '../blocks'
 import { pruneCables } from './units'
 
@@ -83,44 +81,11 @@ export function newBlock(show: Show, item: PaletteItem, x: number, y: number, ta
   const n = show.nextId
   const base = { x, y, w: NODE_W, h: NODE_H, ...(tab && !LAYOUT_KINDS.includes(item.kind) && !SHOW_KINDS.includes(item.kind) ? { scene: tab } : {}) }
   let block: Block
-  if (hasDef(item)) block = defOf(item).create(base, n)
-  else switch (item.kind) {
-    case 'fixture': {
-      const profile = findProfile(item.profile)
-      block = { ...base, id: `fix${n}`, name: `fix${n}`, kind: 'fixture', profile: profile.id, address: nextAddress(show), values: profile.channels.map((c) => c.default) }
-      break
-    }
-    case 'light': {
-      const profile = findProfile(item.profile)
-      block = { ...base, id: `lt${n}`, name: `${profile.label} out`, kind: 'light', profile: profile.id, values: profile.channels.map((c) => c.default), positions: [] }
-      break
-    }
-    case 'group': {
-      const profile = findProfile(item.profile)
-      block = { ...base, id: `grp${n}`, name: `${profile.label} group`, kind: 'group', profile: profile.id, size: 4, values: profile.channels.map((c) => c.default), aims: {}, positions: [], mode: 'alternate', advance: 'step', every: 1, floor: 0 }
-      break
-    }
-    case 'scene':
-      block = { ...base, id: `scene${n}`, name: `Scene ${n}`, kind: 'scene', fadeIn: 0.5, fadeOut: 0.5, w: 260 }
-      break
-    case 'input':
-      block = { ...base, id: `in${n}`, name: `${item.type ?? 'signal'} ${n}`, kind: 'input', type: item.type ?? 'signal' }
-      break
-    case 'manual':
-      block = { ...base, id: `manual${n}`, name: `manual${n}`, kind: 'manual', active: 0 }
-      break
-    case 'tubeset': {
-      const design = show.designs?.find((d) => d.id === item.design)
-      if (!design) show = { ...show, designs: [...(show.designs ?? []), { id: `design${n}`, name: `LED tubes ${n}`, tubes: [{ id: 't1', name: 'Tube 1', leds: 60, length: 1, protocol: 'sk9822', path: [[0, 0, 0], [1, 0, 0]] }] }] }
-      block = { ...base, id: `tset${n}`, name: design ? `${design.name} ${n}` : `LED tubes ${n}`, kind: 'tubeset', design: design?.id ?? `design${n}` }
-      break
-    }
-    case 'composite':
-      block = { ...base, id: `comp${n}`, name: `Composite ${n}`, kind: 'composite' }
-      break
-    case 'output':
-      block = { ...base, id: `out${n}`, name: `${item.type ?? 'signal'} out ${n}`, kind: 'output', type: item.type ?? 'signal' }
-      break
+  if (hasDef(item)) block = defOf(item).create(base, n, item, show)
+  else {
+    const design = show.designs?.find((d) => d.id === item.design)
+    if (!design) show = { ...show, designs: [...(show.designs ?? []), { id: `design${n}`, name: `LED tubes ${n}`, tubes: [{ id: 't1', name: 'Tube 1', leds: 60, length: 1, protocol: 'sk9822', path: [[0, 0, 0], [1, 0, 0]] }] }] }
+    block = { ...base, id: `tset${n}`, name: design ? `${design.name} ${n}` : `LED tubes ${n}`, kind: 'tubeset', design: design?.id ?? `design${n}` }
   }
   block.h = blockHeight(block, show)
   const next = { ...show, nextId: n + 1, blocks: [...show.blocks, block] }

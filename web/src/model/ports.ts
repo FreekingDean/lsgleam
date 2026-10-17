@@ -1,10 +1,6 @@
 import { allProfiles } from './fixtures'
-import { NODE_H, type LightBlock, type GroupBlock, type InputBlock, type OutputBlock, type CombineBlock, type Block, type Kind, type Wire, type Show, EMPTY_SHOW, ON_PORT, FIXTURE_PORT, SOURCE_KINDS, isLight, scenesOf, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, LOOK_CHANS, COLOR_PORT, RGB, LOOK_CHANNELS, NUDGE_PORT, profileOf, memberPort, type Rail, RAIL_SEP, membersOf, typed } from './show'
+import { NODE_H, type CombineBlock, type Block, type Kind, type Wire, type Show, FIXTURE_PORT, SOURCE_KINDS, isLight, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB, LOOK_CHANNELS, profileOf, type Rail, RAIL_SEP, membersOf, typed } from './show'
 import { type Ports, blockDef, defOf, elementOf, hasDef } from '../blocks'
-
-const hasRgb = (b: LightBlock | GroupBlock) => profileOf(b).channels.some((ch) => ch.name === 'Red')
-const color = (): Port => ({ id: COLOR_PORT, label: 'color', type: 'color' })
-const look = (): Port => ({ id: LOOK_PORT, label: 'look', type: 'look', chans: LOOK_CHANS })
 
 const MULTI_INPUTS: Partial<Record<Kind, string[]>> = { gate: ['signal'], not: ['signal'], fade: ['signal'], range: ['signal'], mix: ['a', 'b'], and: ['a', 'b'] }
 
@@ -76,51 +72,12 @@ function alternatives(b: Block): [string[], string[]][] {
 
 function allInputPorts(b: Block, show?: Show): Port[] {
   if (hasDef(b)) return defOf(b).inputs(b, show, PORTS)
-  switch (b.kind) {
-    case 'tubeset':
-    case 'input':
-      return []
-    case 'manual': return [typed('index', 'index', 'scene index')]
-    case 'scene': return [typed(ON_PORT, 'signal'), ...innerInputs(b, show)]
-    case 'composite': return innerInputs(b, show)
-    case 'output': return [typed('value', b.type)]
-    case 'fixture': return [{ ...typed(FIXTURE_PORT, 'fixture', b.name), profile: b.profile }]
-    case 'tube': return [typed(FIXTURE_PORT, 'pixels', b.name)]
-    case 'light': {
-      const profile = profileOf(b)
-      const ports = profile.channels.map((ch) => typed(ch.name, 'signal', ch.label))
-      return [look(), ...(hasRgb(b) ? [color()] : []), ...(profile.position ? [typed(POSITION_PORT, 'index')] : []), ...ports]
-    }
-    case 'group': {
-      const profile = profileOf(b)
-      const ports = profile.channels.map((ch) => typed(ch.name, 'signal', ch.label))
-      const advance = b.advance === 'step' ? [typed('step', 'index', 'pattern step')] : [typed('trigger', 'signal', 'pattern next')]
-      const aim = profile.position ? [typed(POSITION_PORT, 'index'), typed(NUDGE_PORT, 'signal', `nudge ${profile.position[0]}`)] : []
-      return [look(), ...(hasRgb(b) ? [color()] : []), typed(PATTERN_PORT, 'signal'), typed('floor', 'signal', 'minimum'), ...advance, ...aim, ...ports]
-    }
-  }
+  return b.kind === 'tube' ? [typed(FIXTURE_PORT, 'pixels', b.name)] : []
 }
 
 export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Port[] {
   if (hasDef(b)) return defOf(b).outputs(b, show, seen, PORTS)
-  switch (b.kind) {
-    case 'fixture':
-    case 'light':
-    case 'group':
-    case 'tube':
-    case 'tubeset':
-      return []
-    case 'scene': return (show?.blocks ?? []).filter((x) => x.scene === b.id).flatMap((x) => {
-      if (x.kind === 'group') return Array.from({ length: x.size }, (_, i) => ({ ...typed(memberPort(x.id, i), 'fixture', `${x.name} ${i + 1}`), profile: x.profile }))
-      if (x.kind === 'light') return [{ ...typed(x.id, 'fixture', x.name), profile: x.profile }]
-      if (x.kind === 'strip') return [typed(x.id, 'pixels', x.name)]
-      return []
-    })
-    case 'input': return [typed('out', b.type, b.name)]
-    case 'output': return [typed('out', b.type, b.name)]
-    case 'composite': return (show?.blocks ?? []).filter((x): x is OutputBlock => x.kind === 'output' && x.scene === b.id).map((x) => typed(x.id, x.type, x.name))
-    case 'manual': return scenesOf(show ?? EMPTY_SHOW).map((s) => typed(`s_${s.id}`, 'signal', s.name))
-  }
+  return []
 }
 
 export const PORTS: Ports = { outputPorts, sourcePort, multiFeeds, combineOf }
@@ -148,5 +105,3 @@ export function blockHeight(b: Block, show?: Show) {
   const ports = Math.max(inputPorts(b, show).length, outputPorts(b, show).length)
   return Math.max(NODE_H, 60 + ports * 16)
 }
-
-const innerInputs = (b: Block, show?: Show) => (show?.blocks ?? []).filter((x): x is InputBlock => x.kind === 'input' && x.scene === b.id).map((x) => typed(x.id, x.type, x.name))

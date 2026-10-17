@@ -34,6 +34,14 @@ import { box } from './box'
 import { artnet } from './artnet'
 import { strip } from './strip'
 import { board } from './board'
+import { fixture } from './fixture'
+import { light } from './light'
+import { group } from './group'
+import { manual } from './manual'
+import { input } from './input'
+import { output } from './output'
+import { scene } from './scene'
+import { composite } from './composite'
 
 export { ELEMENT_TYPES, WIDE_TYPES, combineSlots, elementOf } from './combine'
 export { splitSource } from './split'
@@ -46,8 +54,10 @@ export { AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, AUDIOSLICE_SOURCES, AUDIOSLICE_BE
 export { chainOf } from './artnet'
 export { stripParams, stripConfig } from './strip'
 export { universesPerOutput, boardUniverses, outputUniverses, pixelChain, boardPlan } from './board'
+export { nextAddress } from './fixture'
+export { fixturesOf } from './group'
 
-export const BLOCKS = { timer, combine, constant, latch, and, not, equals, counter, steps, level, gate, fade, mix, hold, drop, range, split, sequence, values, colors, pattern, looks, audio, dmxin, blt, audioslice, cdj, box, artnet, strip, board }
+export const BLOCKS = { timer, combine, constant, latch, and, not, equals, counter, steps, level, gate, fade, mix, hold, drop, range, split, sequence, values, colors, pattern, looks, audio, dmxin, blt, audioslice, cdj, box, artnet, strip, board, fixture, light, group, manual, input, output, scene, composite }
 export type DefKind = keyof typeof BLOCKS
 
 export const blockDef = (kind: Kind): BlockDef | undefined => (BLOCKS as Partial<Record<Kind, BlockDef>>)[kind]

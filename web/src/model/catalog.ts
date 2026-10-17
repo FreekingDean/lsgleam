@@ -3,14 +3,6 @@ import type { PatternMode, SequenceBlock, Kind, Port } from './show'
 export const TYPE_COLORS: Record<string, string> = { audio: '#e06c6c', signal: '#6cb86c', index: '#f39c12', number: '#9aa5b1', look: '#b07ddc', color: '#ff8fd0', fixture: '#4fb3bf', dmx: '#5c8ed6', pixel: '#ffd24a', pixels: '#ffd24a', multi: '#7fd4ff', any: '#666b73' }
 
 export const KIND_INFO: Partial<Record<Kind, string>> = {
-  fixture: 'A light in the room, patched on a DMX chain',
-  light: 'What this scene sends to every fixture wired to it on the show tab',
-  group: 'Spreads a pattern and positions over the fixtures wired to it on the show tab',
-  scene: 'Turns its inputs into fixture outputs, weighted by on',
-  input: 'A value this scene or composite takes from outside: one input port on its node',
-  output: 'A value this composite sends out: one output port on its node',
-  composite: 'Your own block: double-click to build it from inputs, transformers and outputs inside',
-  manual: 'Scene select: buttons, or an index that picks scene N',
   tube: 'An LED tube or strip: LED count, pixel protocol and a 3D shape',
   tubeset: 'LED tubes: one or more tubes in a shape (tree, burst, fan or your own), placed as one; each tube cables separately',
 }

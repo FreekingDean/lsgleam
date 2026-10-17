@@ -4,25 +4,15 @@ import { PickTitle, PortHandle, PortRow } from './PortHandle'
 import { FocusContext } from './connect'
 import { TYPE_COLORS, portHint } from '../model/catalog'
 import { defOf, hasDef, kindInfo } from '../blocks'
-import { profileOf, type Block, type Patch, type Port, type Rail } from '../model/show'
+import { type Block, type Patch, type Port, type Rail } from '../model/show'
 import { LiveValue, useLive } from './live'
 
 export type FlowNode = Node<{ block: Block; inputs: Port[]; outputs: Port[]; patch: Patch | null; keys: Record<string, string | null>; targets: string[] }, 'block'>
 export type RailFlowNode = Node<{ title: string; rails: Rail[]; side: 'in' | 'out' }, 'rail'>
 
 function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Port[]) {
-  if (hasDef(b)) return defOf(b).subtitle(b, outputs, targets)
-  switch (b.kind) {
-    case 'fixture': return `${profileOf(b).label} · ${patch ? `U${patch.universe}` : 'unpatched'} @${b.address}`
-    case 'light': return `${profileOf(b).label} → ${targets.join(', ') || 'nothing yet'}`
-    case 'group': return `${b.mode} → ${targets.length}× ${profileOf(b).label}`
-    case 'scene': return 'scene'
-    case 'input': return b.type
-    case 'output': return `${b.type} out`
-    case 'composite': return 'double-click to edit'
-    case 'manual': return 'buttons'
-    case 'tube': return `${b.leds} LEDs`
-  }
+  if (hasDef(b)) return defOf(b).subtitle(b, outputs, targets, patch)
+  if (b.kind === 'tube') return `${b.leds} LEDs`
 }
 
 export function BlockNode({ id, data, selected }: NodeProps<FlowNode>) {

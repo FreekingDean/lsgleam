@@ -30,8 +30,16 @@ import type { BoxBlock } from '../blocks/box'
 import type { ArtnetBlock } from '../blocks/artnet'
 import type { StripBlock } from '../blocks/strip'
 import type { BoardBlock } from '../blocks/board'
+import type { FixtureBlock } from '../blocks/fixture'
+import type { LightBlock } from '../blocks/light'
+import type { GroupBlock } from '../blocks/group'
+import type { ManualBlock } from '../blocks/manual'
+import type { InputBlock } from '../blocks/input'
+import type { OutputBlock } from '../blocks/output'
+import type { SceneBlock } from '../blocks/scene'
+import type { CompositeBlock } from '../blocks/composite'
 
-export type { TimerBlock, CombineBlock, ConstantBlock, LatchBlock, AndBlock, NotBlock, EqualsBlock, CounterBlock, StepsBlock, LevelBlock, GateBlock, FadeBlock, MixBlock, HoldBlock, DropBlock, RangeBlock, SplitBlock, SequenceBlock, ValuesBlock, ColorsBlock, PatternBlock, LooksBlock, AudioBlock, DmxInBlock, BltBlock, AudioSliceBlock, CdjBlock, BoxBlock, ArtnetBlock, StripBlock, BoardBlock }
+export type { TimerBlock, CombineBlock, ConstantBlock, LatchBlock, AndBlock, NotBlock, EqualsBlock, CounterBlock, StepsBlock, LevelBlock, GateBlock, FadeBlock, MixBlock, HoldBlock, DropBlock, RangeBlock, SplitBlock, SequenceBlock, ValuesBlock, ColorsBlock, PatternBlock, LooksBlock, AudioBlock, DmxInBlock, BltBlock, AudioSliceBlock, CdjBlock, BoxBlock, ArtnetBlock, StripBlock, BoardBlock, FixtureBlock, LightBlock, GroupBlock, ManualBlock, InputBlock, OutputBlock, SceneBlock, CompositeBlock }
 
 export const NODE_W = 160
 export const NODE_H = 130
@@ -45,20 +53,12 @@ export type PatternAdvance = 'step' | 'trigger'
 export type Scene = { name: string; color: string; window: [number, number] }
 export type Placement = { position: [number, number, number]; rotation: [number, number, number] }
 export type Patch = { node: string; universe: number }
-export type FixtureBlock = Base & { kind: 'fixture'; profile: string; address: number; values: number[] }
-export type LightBlock = Base & { kind: 'light'; profile: string; values: number[]; positions: Position[] }
 export type Aims = Record<string, Record<string, number>>
 export type GroupPosition = { name: string; members: Aims }
-export type GroupBlock = Base & { kind: 'group'; profile: string; size: number; values: number[]; aims: Aims; positions: GroupPosition[]; mode: PatternMode; advance: PatternAdvance; every: number; floor: number }
-export type SceneBlock = Base & { kind: 'scene'; fadeIn: number; fadeOut: number }
 export type InputType = 'signal' | 'index' | 'audio' | 'number' | 'color' | 'multi'
 export const INPUT_TYPES: InputType[] = ['signal', 'index', 'audio', 'number', 'color', 'multi']
 export type ColorRow = { name: string; colors: string[] }
 export type ValueRow = { name: string; values: number[] }
-export type InputBlock = Base & { kind: 'input'; type: InputType }
-export type OutputBlock = Base & { kind: 'output'; type: InputType }
-export type CompositeBlock = Base & { kind: 'composite' }
-export type ManualBlock = Base & { kind: 'manual'; active: number }
 export type Point = [number, number, number]
 export type TubeBlock = Base & { kind: 'tube'; leds: number; length: number; protocol: string; path: Point[]; set?: string; member?: string }
 export type DesignTube = { id: string; name: string; leds: number; length: number; protocol: string; path: Point[] }

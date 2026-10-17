@@ -523,98 +523,9 @@ def named(c, sources, last, name, x):
     last.outputConnectors[0].connect(ren.inputConnectors[0])
     return ren
 
-def build_fixture(b, profile, sources):
-    c = new_block(b)
-    pairs = [(ch['name'], b['values'][i]) for i, ch in enumerate(profile['channels'])]
-    home = constant(c, 'default_channels', pairs)
-    home.nodeX, home.nodeY = -1400, 600
-    blend = ports(c, sources, {'channels': home}).get('channels') or home
-    scale = c.create(mathCHOP, 'scale')
-    scale.par.torange2 = 255
-    scale.par.integer = 'round'
-    addr = c.create(renameCHOP, 'address')
-    addr.par.renamefrom = ' '.join(n for n, v in pairs)
-    addr.par.renameto = ' '.join('c%d' % (b['address'] + i) for i in range(len(pairs)))
-    chain(scale, addr)
-    blend.outputConnectors[0].connect(scale.inputConnectors[0])
-    finish(c, addr, 600)
-
-def build_light(b, profile, sources):
-    c = new_block(b)
-    channels = profile['channels']
-    names = [ch['name'] for ch in channels]
-    pos = profile.get('position') or []
-    feeds = []
-    for port, end in ports(c, sources).items():
-        if port == 'position':
-            aim = [(ch, b['values'][names.index(ch)]) for ch in pos]
-            end = position_switch(c, 'pos', end, aim, [[(ch, p['values'].get(ch, 0)) for ch in pos] for p in b['positions']], -400)
-        feeds.append(end)
-    finish(c, channel_chain(c, '', list(zip(names, b['values'])), feeds, 0))
-
-def build_group(b, profile, sources, masks, members):
-    c = new_block(b)
-    if not members:
-        return
-    channels = profile['channels']
-    names = [ch['name'] for ch in channels]
-    pos = profile.get('position') or []
-    defaults = light_defaults(c, channels, b['values'])
-    defaults['step'] = constant(c, 'nostep', [('step', 0)])
-    defaults['trigger'] = constant(c, 'notrigger', [('trigger', 0)])
-    if 'Dimmer' in names:
-        defaults['pattern'] = constant(c, 'dim_values', [('Dimmer', b['values'][names.index('Dimmer')])])
-        defaults['pattern'].nodeX, defaults['pattern'].nodeY = -600, 400
-    by_port = ports(c, sources, defaults, {'Dimmer': 'pattern'})
-    slots = None
-    floor = floor_of(c, b, by_port)
-    look = by_port.pop('look', None)
-    if look is not None:
-        colors = c.create(selectCHOP, 'look_colors')
-        colors.par.channames = 'Red Green Blue'
-        look_dim = c.create(selectCHOP, 'look_dimmer')
-        look_dim.par.channames = 'Dimmer'
-        colors.nodeX, look_dim.nodeX = -900, -900
-        colors.nodeY, look_dim.nodeY = 500, 400
-        look.outputConnectors[0].connect(colors.inputConnectors[0])
-        look.outputConnectors[0].connect(look_dim.inputConnectors[0])
-        by_port['look'] = colors
-        by_port['pattern'] = look_dim
-    if 'Dimmer' in names:
-        dim = by_port.get('pattern') or defaults['pattern']
-        slots = pattern_chain(c, by_port.get('step'), by_port.get('trigger'), masks, dim, 400, b['every'], floor)
-    ends = []
-    for i, m in enumerate(members):
-        p = 'm%d_' % (i + 1)
-        y = -i * 600
-        feeds = [end for port, end in by_port.items() if port in names or port in ('look', 'color')]
-        if slots is not None:
-            sel = c.create(selectCHOP, p + 'slot')
-            sel.par.channames = 'slot%d' % (i + 1)
-            dim = c.create(renameCHOP, p + 'dimmer')
-            dim.par.renamefrom = '*'
-            dim.par.renameto = 'Dimmer'
-            sel.nodeX, dim.nodeX = -600, -400
-            sel.nodeY = dim.nodeY = y - 300
-            slots.outputConnectors[0].connect(sel.inputConnectors[0])
-            sel.outputConnectors[0].connect(dim.inputConnectors[0])
-            feeds.append(dim)
-        if 'position' in by_port:
-            stored = [[(ch, q['members'].get(m['id'], {}).get(ch, 0)) for ch in pos] for q in b['positions']]
-            aim = [(ch, m['aim'].get(ch, 0.5)) for ch in pos]
-            feeds.append(position_switch(c, p + 'pos', by_port['position'], aim, stored, y - 400))
-        pairs = [(ch['name'], m['aim'].get(ch['name'], b['values'][k]) if ch['name'] in pos else b['values'][k]) for k, ch in enumerate(channels)]
-        last = channel_chain(c, p, pairs, feeds, y, by_port.get('nudge'), pos[0] if pos else None)
-        named = c.create(renameCHOP, p + 'named')
-        named.par.renamefrom = '*'
-        named.par.renameto = p + '*'
-        named.nodeX, named.nodeY = 600, y
-        last.outputConnectors[0].connect(named.inputConnectors[0])
-        ends.append(named)
-    merge = merge_into(c, ends, 'merge', 0)
-    merge.nodeX = 800
-    finish(c, merge, 1000)
-
+${BLOCKS.fixture.python}
+${BLOCKS.light.python}
+${BLOCKS.group.python}
 def build_selector(b, count, fades, sources):
     c = new_block(b)
     by_port = ports(c, sources)
@@ -704,52 +615,8 @@ def build_selector(b, count, fades, sources):
     out.nodeX = 3700
     outm.outputConnectors[0].connect(out.inputConnectors[0])
 
-def build_input(b, sources):
-    c = new_block(b)
-    ends = inputs(c, sources)
-    last = mix(c, 'in', ends, -300, 0) if b['type'] == 'signal' and len(ends) > 1 else merge_into(c, ends, 'merge', 0)
-    if last is None:
-        last = constant(c, 'nothing', [('out', 0)])
-    out = c.create(outCHOP, 'out1')
-    out.nodeX = 200
-    last.outputConnectors[0].connect(out.inputConnectors[0])
-
-build_output = build_input
-
-def build_manual(b, scenes, sources):
-    c = new_block(b)
-    by_port = ports(c, sources)
-    index = by_port.get('index')
-    out = c.create(outCHOP, 'out1')
-    if index is None:
-        const = constant(c, 'values', [('s_' + sid, 1 if k == b['active'] else 0) for k, sid in enumerate(scenes)])
-        out.nodeX = 200
-        const.outputConnectors[0].connect(out.inputConnectors[0])
-        return
-    hits = []
-    for k, sid in enumerate(scenes):
-        diff = c.create(mathCHOP, 'diff%d' % k)
-        diff.par.preoff = -k
-        sq = c.create(mathCHOP, 'square%d' % k)
-        sq.par.postop = 'square'
-        lim = c.create(limitCHOP, 'far%d' % k)
-        lim.par.type = 'clamp'
-        lim.par.min = 0
-        lim.par.max = 1
-        inv = c.create(mathCHOP, 'equal%d' % k)
-        inv.par.gain = -1
-        inv.par.postoff = 1
-        name = c.create(renameCHOP, 'scene%d' % k)
-        name.par.renamefrom = '*'
-        name.par.renameto = 's_' + sid
-        chain(diff, sq, lim, inv, name, y=-k * 150)
-        index.outputConnectors[0].connect(diff.inputConnectors[0])
-        hits.append(name)
-    merge = merge_into(c, hits, 'merge', 0)
-    merge.nodeX = 1000
-    out.nodeX = 1200
-    merge.outputConnectors[0].connect(out.inputConnectors[0])
-
+${BLOCKS.input.python}
+${BLOCKS.manual.python}
 ${BLOCKS.constant.python}
 def edge_counter(c, name, trigger, reset, x, y):
     cnt = c.create(countCHOP, name)

@@ -1,7 +1,6 @@
 import type { Bridge } from './bridge'
 import type { PortValues } from '../editor/live'
-import { INPUTS_ID, OUTPUTS_ID, membersOf, profileOf, scenesOf, SELECTOR_ID, type AudioSliceBlock, type Block, type Show, type StripBlock } from '../model/show'
-import { patternMasks } from '../model/catalog'
+import { INPUTS_ID, OUTPUTS_ID, membersOf, scenesOf, SELECTOR_ID, type AudioSliceBlock, type Block, type Show, type StripBlock } from '../model/show'
 import { selectorSources, sourcesOf } from '../model/patch'
 import { PORTS } from '../model/ports'
 import { tubeGeometry } from '../model/geometry'
@@ -67,16 +66,8 @@ probe.destroy()
     if (block.kind === 'scene' || block.kind === 'composite' || block.kind === 'cdj' || block.kind === 'box' || block.kind === 'tubeset') return null
     const sources = j(sourcesOf(show, block.id))
     const b = placed(show, block)
-    if (hasDef(block)) return `${defOf(block).builder ?? `build_${block.kind}`}(${[j(b), sources, ...(defOf(block).args?.(block, show, PORTS) ?? []).map(j)].join(', ')})`
-    if (block.kind === 'tube') return (`build_tube(${j(b)}, ${sources}, ${j(tubeGeometry(show, block))})`)
-    if (block.kind === 'fixture') return (`build_fixture(${j(b)}, ${j(profileOf(block))}, ${sources})`)
-    if (block.kind === 'light') return (`build_light(${j(b)}, ${j(profileOf(block))}, ${sources})`)
-    if (block.kind === 'manual') return (`build_manual(${j(b)}, ${j(scenesOf(show).map((s) => s.id))}, ${sources})`)
-    if (block.kind === 'group') {
-      const members = Array.from({ length: block.size }, (_, i) => ({ id: String(i), aim: block.aims[i] ?? {} }))
-      return (`build_group(${j(b)}, ${j(profileOf(block))}, ${sources}, ${j(patternMasks(block.mode, members.length))}, ${j(members)})`)
-    }
-    return (`build_${block.kind}(${j(b)}, ${sources})`)
+    if (hasDef(block)) return `${defOf(block).builder ?? `build_${block.kind}`}(${[j(b), ...(defOf(block).lead?.(block, show) ?? []).map(j), sources, ...(defOf(block).args?.(block, show, PORTS) ?? []).map(j)].join(', ')})`
+    return `build_tube(${j(b)}, ${sources}, ${j(tubeGeometry(show, block))})`
   }
 
   private selectorCode(show: Show) {

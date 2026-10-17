@@ -32,6 +32,14 @@ import { BoxPanel } from './BoxPanel'
 import { ArtnetPanel } from './ArtnetPanel'
 import { StripPanel } from './StripPanel'
 import { BoardPanel } from './BoardPanel'
+import { FixturePanel } from './FixturePanel'
+import { LightPanel } from './LightPanel'
+import { GroupPanel } from './GroupPanel'
+import { ManualPanel } from './ManualPanel'
+import { InputPanel } from './InputPanel'
+import { OutputPanel } from './OutputPanel'
+import { ScenePanel } from './ScenePanel'
+import { CompositePanel } from './CompositePanel'
 
-export const PANELS: { [K in DefKind]: (props: Props & { block: Extract<Block, { kind: K }>; ports: Ports; targets: string[] }) => ReactNode } = { timer: TimerPanel, combine: CombinePanel, constant: ConstantPanel, latch: LatchPanel, and: AndPanel, not: NotPanel, equals: EqualsPanel, counter: CounterPanel, steps: StepsPanel, level: LevelPanel, gate: GatePanel, fade: FadePanel, mix: MixPanel, hold: HoldPanel, drop: DropPanel, range: RangePanel, split: SplitPanel, sequence: SequencePanel, values: ValuesPanel, colors: ColorsPanel, pattern: PatternPanel, looks: LooksPanel, audio: AudioPanel, dmxin: DmxInPanel, blt: BltPanel, audioslice: AudioSlicePanel, cdj: CdjPanel, box: BoxPanel, artnet: ArtnetPanel, strip: StripPanel, board: BoardPanel }
+export const PANELS: { [K in DefKind]: (props: Props & { block: Extract<Block, { kind: K }>; ports: Ports; targets: string[] }) => ReactNode } = { timer: TimerPanel, combine: CombinePanel, constant: ConstantPanel, latch: LatchPanel, and: AndPanel, not: NotPanel, equals: EqualsPanel, counter: CounterPanel, steps: StepsPanel, level: LevelPanel, gate: GatePanel, fade: FadePanel, mix: MixPanel, hold: HoldPanel, drop: DropPanel, range: RangePanel, split: SplitPanel, sequence: SequencePanel, values: ValuesPanel, colors: ColorsPanel, pattern: PatternPanel, looks: LooksPanel, audio: AudioPanel, dmxin: DmxInPanel, blt: BltPanel, audioslice: AudioSlicePanel, cdj: CdjPanel, box: BoxPanel, artnet: ArtnetPanel, strip: StripPanel, board: BoardPanel, fixture: FixturePanel, light: LightPanel, group: GroupPanel, manual: ManualPanel, input: InputPanel, output: OutputPanel, scene: ScenePanel, composite: CompositePanel }
 export const panelOf = (kind: DefKind) => PANELS[kind] as (props: Props & { ports: Ports; targets: string[] }) => ReactNode

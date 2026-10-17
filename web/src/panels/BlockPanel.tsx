@@ -1,14 +1,11 @@
 import { Field } from './fields'
 import { PlacementEditor } from './Placement'
-import { scenesOf, type InputType, INPUT_TYPES } from '../model/show'
-import { fixturesOf } from '../model/patch'
+import { scenesOf } from '../model/show'
 import { ceilingAt, onWall } from '../model/units'
 import { inputPorts, PORTS } from '../model/ports'
 import type { Layout, Props } from './shared'
 import { TubeSetPanel } from './pixels'
-import { ScenePanel, InputPanel, ManualPanel } from './scene'
-import { GroupPanel, FixturePanel, LightPanel } from './lights'
-import { blockDef, hasDef } from '../blocks'
+import { blockDef, fixturesOf, hasDef } from '../blocks'
 import { panelOf } from '../blocks/panels'
 
 function PlacementFields({ show, layout, block }: Props & { layout: Layout }) {
@@ -68,32 +65,7 @@ function body(props: Props) {
     const Panel = panelOf(block.kind)
     return <Panel {...props} ports={PORTS} targets={fixturesOf(props.show, block.id).map((id) => props.show.blocks.find((b) => b.id === id)?.name ?? id)} />
   }
-  switch (block.kind) {
-    case 'fixture': return <FixturePanel {...props} block={block} />
-    case 'light': return <LightPanel {...props} block={block} />
-    case 'group': return <GroupPanel {...props} block={block} />
-    case 'tubeset': return <TubeSetPanel {...props} block={block} />
-    case 'scene': return <ScenePanel {...props} block={block} />
-    case 'input': return <InputPanel {...props} block={block} />
-    case 'output': return (
-      <>
-        <div className="par">
-          <label>Type</label>
-          <select value={block.type} onChange={(e) => props.onPatch({ type: e.target.value as InputType })}>
-            {INPUT_TYPES.filter((t) => t !== 'audio').map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </div>
-        <div className="help">Shows up as an output port on this composite's node. Whatever you wire in here comes out of that port. The name is the port label.</div>
-      </>
-    )
-    case 'composite': return (
-      <>
-        <div className="par"><label /><button onClick={() => props.onOpenScene(block.id)}>open</button></div>
-        <div className="help">Your own block. Double-click it (or open) to edit inside: Input blocks become its input ports, Output blocks its output ports, and transformers in between do the work. Composites can hold other composites. In TD it is a COMP of the same name.</div>
-      </>
-    )
-    case 'manual': return <ManualPanel {...props} block={block} />
-  }
+  if (block.kind === 'tubeset') return <TubeSetPanel {...props} block={block} />
 }
 
 export function BlockPanel(props: Props) {
