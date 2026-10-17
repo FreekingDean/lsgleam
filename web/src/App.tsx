@@ -19,6 +19,7 @@ import { ProfileEditor } from './views/ProfileEditor'
 import { BlockNode, RailNode, type FlowNode } from './editor/BlockNode'
 import { BoxNode, UnitNode, type UnitFlowNode } from './editor/UnitNode'
 import { BlockPanel } from './panels/BlockPanel'
+import { RigPanel } from './panels/RigPanel'
 import { MultiPanel } from './panels/MultiPanel'
 import { Palette } from './editor/Palette'
 import { PaletteView } from './views/PaletteView'
@@ -704,6 +705,7 @@ function Editor() {
             </div>
           </aside>
         )}
+        {tab === LAYOUT && !selected && multi.length <= 1 && <RigPanel show={show} onSchedule={() => setPage('schedule')} />}
         {selected && (
           <div className="panel-wrap" onMouseUp={saveValues} onTouchEnd={saveValues}>
             <BlockPanel show={show} block={selected} driven={driven} onPatch={patchSelected} onOpenScene={setTab} onMoveScene={reorderScene} onPatchOther={patchOther} onResetPattern={() => tdDo(() => td.current!.resetPattern(selected.id))} onDesign={changeDesign} layout={unit && { placement: unit.placement, flip: unit.flip, onPlace: (p, flip) => commit(placeUnit(showRef.current, unit.key, p, flip)) }} onValue={setValue} listAudioDevices={listAudioDevices} readValues={readValues} configureAudioSlice={configureAudioSlice} onOpenPalette={setPaletteId} />
