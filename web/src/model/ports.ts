@@ -1,9 +1,6 @@
 import { allProfiles } from './fixtures'
-import { NODE_H, type LightBlock, type GroupBlock, type InputBlock, type OutputBlock, type CombineBlock, type StripMode, type ColorStop, type Block, type Kind, type Wire, type Show, EMPTY_SHOW, ON_PORT, FIXTURE_PORT, SOURCE_KINDS, isLight, scenesOf, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, LOOK_CHANS, COLOR_PORT, RGB, LOOK_CHANNELS, NUDGE_PORT, profileOf, memberPort, type Rail, RAIL_SEP, membersOf, typed } from './show'
+import { NODE_H, type LightBlock, type GroupBlock, type InputBlock, type OutputBlock, type CombineBlock, type Block, type Kind, type Wire, type Show, EMPTY_SHOW, ON_PORT, FIXTURE_PORT, SOURCE_KINDS, isLight, scenesOf, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, LOOK_CHANS, COLOR_PORT, RGB, LOOK_CHANNELS, NUDGE_PORT, profileOf, memberPort, type Rail, RAIL_SEP, membersOf, typed } from './show'
 import { type Ports, blockDef, defOf, elementOf, hasDef } from '../blocks'
-
-const STRIP_USES: Record<StripMode, string[]> = { solid: ['color', 'dimmer'], band: ['color', 'dimmer', 'position', 'width', 'spread'], fill: ['color', 'dimmer', 'position', 'width', 'spread'], chase: ['color', 'dimmer', 'position', 'width', 'speed', 'spread'], ramp: ['dimmer', 'position', 'speed', 'spread', 'stop', 'at'] }
-export const stripParams = (b: { stops: ColorStop[] }): Port[] => [color(), typed('dimmer', 'signal'), typed('position', 'signal'), typed('width', 'signal'), typed('speed', 'signal', 'speed (laps/s)'), typed('spread', 'signal', 'spread across tubes'), ...b.stops.flatMap((_, k) => [typed(`stop${k}`, 'color', `stop ${k + 1} colour`), typed(`at${k}`, 'signal', `stop ${k + 1} spot`)])]
 
 const hasRgb = (b: LightBlock | GroupBlock) => profileOf(b).channels.some((ch) => ch.name === 'Red')
 const color = (): Port => ({ id: COLOR_PORT, label: 'color', type: 'color' })
@@ -81,14 +78,12 @@ function allInputPorts(b: Block, show?: Show): Port[] {
   if (hasDef(b)) return defOf(b).inputs(b, show, PORTS)
   switch (b.kind) {
     case 'tubeset':
-    case 'board':
     case 'input':
       return []
     case 'manual': return [typed('index', 'index', 'scene index')]
     case 'scene': return [typed(ON_PORT, 'signal'), ...innerInputs(b, show)]
     case 'composite': return innerInputs(b, show)
     case 'output': return [typed('value', b.type)]
-    case 'strip': return stripParams(b).filter((p) => STRIP_USES[b.mode].some((u) => p.id.match(new RegExp(`^${u}\\d*$`))))
     case 'fixture': return [{ ...typed(FIXTURE_PORT, 'fixture', b.name), profile: b.profile }]
     case 'tube': return [typed(FIXTURE_PORT, 'pixels', b.name)]
     case 'light': {
@@ -114,8 +109,6 @@ export function outputPorts(b: Block, show?: Show, seen = new Set<string>()): Po
     case 'group':
     case 'tube':
     case 'tubeset':
-    case 'board':
-    case 'strip':
       return []
     case 'scene': return (show?.blocks ?? []).filter((x) => x.scene === b.id).flatMap((x) => {
       if (x.kind === 'group') return Array.from({ length: x.size }, (_, i) => ({ ...typed(memberPort(x.id, i), 'fixture', `${x.name} ${i + 1}`), profile: x.profile }))

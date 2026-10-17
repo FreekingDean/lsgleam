@@ -2,18 +2,16 @@ import type { Bridge } from './bridge'
 import type { PortValues } from '../editor/live'
 import { INPUTS_ID, OUTPUTS_ID, membersOf, profileOf, scenesOf, SELECTOR_ID, type AudioSliceBlock, type Block, type Show, type StripBlock } from '../model/show'
 import { patternMasks } from '../model/catalog'
-import { boardPlan, selectorSources, sourcesOf } from '../model/patch'
+import { selectorSources, sourcesOf } from '../model/patch'
 import { PORTS } from '../model/ports'
-import { hexToRgb } from '../model/format'
 import { tubeGeometry } from '../model/geometry'
 import { j, PRELUDE } from './prelude'
-import { AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, audioSliceAlpha, audioSlicePath, defOf, hasDef } from '../blocks'
+import { AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, audioSliceAlpha, audioSlicePath, defOf, hasDef, stripConfig } from '../blocks'
 import { TINTS, showDir, inputsDir, outputsDir, spotOf, placed, railCode } from './tree'
 
 export type DmxValues = Record<string, number[]>
 
 export { colorTable, valueTable } from '../blocks'
-const stripConfig = (b: StripBlock) => ({ mode: b.mode, rgb: hexToRgb(b.color), dimmer: b.dimmer, position: b.position, width: b.width, speed: b.speed, spread: b.spread, stops: b.mode === 'ramp' ? b.stops.map((s) => [s.at, hexToRgb(s.color)]) : [] })
 
 export class Td {
   private bridge: Bridge
@@ -70,9 +68,7 @@ probe.destroy()
     const sources = j(sourcesOf(show, block.id))
     const b = placed(show, block)
     if (hasDef(block)) return `${defOf(block).builder ?? `build_${block.kind}`}(${[j(b), sources, ...(defOf(block).args?.(block, show, PORTS) ?? []).map(j)].join(', ')})`
-    if (block.kind === 'board') return (`build_board(${j(b)}, ${sources}, ${j(boardPlan(show, block).plan)})`)
     if (block.kind === 'tube') return (`build_tube(${j(b)}, ${sources}, ${j(tubeGeometry(show, block))})`)
-    if (block.kind === 'strip') return (`build_strip(${j(b)}, ${sources}, ${j(stripConfig(block))})`)
     if (block.kind === 'fixture') return (`build_fixture(${j(b)}, ${j(profileOf(block))}, ${sources})`)
     if (block.kind === 'light') return (`build_light(${j(b)}, ${j(profileOf(block))}, ${sources})`)
     if (block.kind === 'manual') return (`build_manual(${j(b)}, ${j(scenesOf(show).map((s) => s.id))}, ${sources})`)

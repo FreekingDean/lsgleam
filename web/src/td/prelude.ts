@@ -1,6 +1,4 @@
-import STRIP_CODE from './strip.py?raw'
 import TUBE_CODE from './tube.py?raw'
-import BOARD_CODE from './board.py?raw'
 import { BLOCKS } from '../blocks'
 
 export const j = (v: unknown) => `json.loads(${JSON.stringify(JSON.stringify(v))})`
@@ -792,36 +790,12 @@ def script(c, name, callbacks, ends, cfg, x=0, y=0):
     s.store('cfg', cfg)
     return s
 
-def build_strip(b, sources, cfg):
-    c = new_block(b)
-    ends = []
-    for k, (port, end) in enumerate(ports(c, sources).items()):
-        n = c.create(nullCHOP, 'p_' + port)
-        n.nodeX, n.nodeY = 0, -k * 100
-        end.outputConnectors[0].connect(n.inputConnectors[0])
-        ends.append(n)
-    finish(c, script(c, 'params', code(c, 'params_code', ${JSON.stringify(STRIP_CODE)}), ends, cfg, 200), 400)
-
+${BLOCKS.strip.python}
 def build_tube(b, sources, geo):
     c = new_block(b)
     ends = inputs(c, sources)
     cfg = dict(geo, n=b['leds'], sources=[{'mode': src.get('mode'), 'along': src.get('along'), 'scene': src['scene']} for src in sources])
     finish(c, script(c, 'pixels', code(c, 'pixels_code', ${JSON.stringify(TUBE_CODE)}), ends, cfg, 200), 400)
 
-def build_board(b, sources, plan):
-    c = new_block(b)
-    ends = inputs(c, sources)
-    callbacks = code(c, 'patch_code', ${JSON.stringify(BOARD_CODE)})
-    for k, (u, parts) in enumerate(plan):
-        patch = script(c, 'patch_u%d' % u, callbacks, ends, {'parts': parts}, 0, -k * 200)
-        dmx = c.create(dmxoutCHOP, 'dmxout_u%d' % u)
-        dmx.par.interface = 'artnet'
-        dmx.par.format = 'packetpersample'
-        dmx.par.universe = u
-        dmx.par.netaddress = b['ip']
-        dmx.par.active = b['active']
-        dmx.par.rate = 40
-        dmx.nodeX, dmx.nodeY = 200, -k * 200
-        patch.outputConnectors[0].connect(dmx.inputConnectors[0])
-
+${BLOCKS.board.python}
 ${BLOCKS.artnet.python}`

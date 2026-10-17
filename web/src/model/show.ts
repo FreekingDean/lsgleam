@@ -28,8 +28,10 @@ import type { AudioSliceBlock } from '../blocks/audioslice'
 import type { CdjBlock } from '../blocks/cdj'
 import type { BoxBlock } from '../blocks/box'
 import type { ArtnetBlock } from '../blocks/artnet'
+import type { StripBlock } from '../blocks/strip'
+import type { BoardBlock } from '../blocks/board'
 
-export type { TimerBlock, CombineBlock, ConstantBlock, LatchBlock, AndBlock, NotBlock, EqualsBlock, CounterBlock, StepsBlock, LevelBlock, GateBlock, FadeBlock, MixBlock, HoldBlock, DropBlock, RangeBlock, SplitBlock, SequenceBlock, ValuesBlock, ColorsBlock, PatternBlock, LooksBlock, AudioBlock, DmxInBlock, BltBlock, AudioSliceBlock, CdjBlock, BoxBlock, ArtnetBlock }
+export type { TimerBlock, CombineBlock, ConstantBlock, LatchBlock, AndBlock, NotBlock, EqualsBlock, CounterBlock, StepsBlock, LevelBlock, GateBlock, FadeBlock, MixBlock, HoldBlock, DropBlock, RangeBlock, SplitBlock, SequenceBlock, ValuesBlock, ColorsBlock, PatternBlock, LooksBlock, AudioBlock, DmxInBlock, BltBlock, AudioSliceBlock, CdjBlock, BoxBlock, ArtnetBlock, StripBlock, BoardBlock }
 
 export const NODE_W = 160
 export const NODE_H = 130
@@ -62,14 +64,12 @@ export type TubeBlock = Base & { kind: 'tube'; leds: number; length: number; pro
 export type DesignTube = { id: string; name: string; leds: number; length: number; protocol: string; path: Point[] }
 export type TubeDesign = { id: string; name: string; tubes: DesignTube[] }
 export type TubeSetBlock = Base & { kind: 'tubeset'; design: string }
-export type BoardBlock = Base & { kind: 'board'; protocol: string; ip: string; active: boolean; outputs: number; ledsPerOutput: number; ledsPerUniverse: number; startUniverse: number }
 export const PIXEL_PROTOCOLS = ['sk9822', 'apa102', 'ws2812', 'ws2811']
 export type StripMode = 'solid' | 'band' | 'fill' | 'chase' | 'ramp'
 export const STRIP_MODES: StripMode[] = ['solid', 'band', 'fill', 'chase', 'ramp']
 export type ColorStop = { at: number; color: string }
 export type StripAlong = 'tube' | 'height' | 'distance'
 export const STRIP_ALONG: Record<StripAlong, string> = { tube: 'each tube, from its start', height: 'height, across the whole design', distance: 'distance from the base' }
-export type StripBlock = Base & { kind: 'strip'; mode: StripMode; color: string; stops: ColorStop[]; spread: number; along: StripAlong; dimmer: number; position: number; width: number; speed: number }
 
 export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | FadeBlock | NotBlock | GateBlock | AudioBlock | DmxInBlock | BltBlock | AudioSliceBlock | LevelBlock | StepsBlock | DropBlock | HoldBlock | RangeBlock | SequenceBlock | LooksBlock | PatternBlock | FixtureBlock | LightBlock | GroupBlock | ArtnetBlock | SceneBlock | InputBlock | ManualBlock | EqualsBlock | ConstantBlock | LatchBlock | AndBlock | CounterBlock | TimerBlock | CombineBlock | SplitBlock | CdjBlock | BoxBlock | ColorsBlock | TubeBlock | TubeSetBlock | BoardBlock | StripBlock
 export type Kind = Block['kind']

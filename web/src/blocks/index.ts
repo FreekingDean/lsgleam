@@ -32,6 +32,8 @@ import { audioslice } from './audioslice'
 import { cdj } from './cdj'
 import { box } from './box'
 import { artnet } from './artnet'
+import { strip } from './strip'
+import { board } from './board'
 
 export { ELEMENT_TYPES, WIDE_TYPES, combineSlots, elementOf } from './combine'
 export { splitSource } from './split'
@@ -42,8 +44,10 @@ export { controllerPatch } from './dmxin'
 export { BLT_SIGNALS, BLT_DEFAULTS, bltDecks } from './blt'
 export { AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, AUDIOSLICE_SOURCES, AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_DEFAULTS, audioSlicePath, audioSliceAlpha } from './audioslice'
 export { chainOf } from './artnet'
+export { stripParams, stripConfig } from './strip'
+export { universesPerOutput, boardUniverses, outputUniverses, pixelChain, boardPlan } from './board'
 
-export const BLOCKS = { timer, combine, constant, latch, and, not, equals, counter, steps, level, gate, fade, mix, hold, drop, range, split, sequence, values, colors, pattern, looks, audio, dmxin, blt, audioslice, cdj, box, artnet }
+export const BLOCKS = { timer, combine, constant, latch, and, not, equals, counter, steps, level, gate, fade, mix, hold, drop, range, split, sequence, values, colors, pattern, looks, audio, dmxin, blt, audioslice, cdj, box, artnet, strip, board }
 export type DefKind = keyof typeof BLOCKS
 
 export const blockDef = (kind: Kind): BlockDef | undefined => (BLOCKS as Partial<Record<Kind, BlockDef>>)[kind]

@@ -11,7 +11,7 @@ export type FlowNode = Node<{ block: Block; inputs: Port[]; outputs: Port[]; pat
 export type RailFlowNode = Node<{ title: string; rails: Rail[]; side: 'in' | 'out' }, 'rail'>
 
 function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Port[]) {
-  if (hasDef(b)) return defOf(b).subtitle(b, outputs)
+  if (hasDef(b)) return defOf(b).subtitle(b, outputs, targets)
   switch (b.kind) {
     case 'fixture': return `${profileOf(b).label} · ${patch ? `U${patch.universe}` : 'unpatched'} @${b.address}`
     case 'light': return `${profileOf(b).label} → ${targets.join(', ') || 'nothing yet'}`
@@ -22,8 +22,6 @@ function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Por
     case 'composite': return 'double-click to edit'
     case 'manual': return 'buttons'
     case 'tube': return `${b.leds} LEDs`
-    case 'strip': return `${b.mode} → ${targets.join(', ') || 'nothing yet'}`
-    case 'board': return b.ip
   }
 }
 

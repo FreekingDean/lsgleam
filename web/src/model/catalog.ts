@@ -13,8 +13,6 @@ export const KIND_INFO: Partial<Record<Kind, string>> = {
   manual: 'Scene select: buttons, or an index that picks scene N',
   tube: 'An LED tube or strip: LED count, pixel protocol and a 3D shape',
   tubeset: 'LED tubes: one or more tubes in a shape (tree, burst, fan or your own), placed as one; each tube cables separately',
-  strip: 'Pixel output: an effect (solid, band, fill, chase, ramp) for every LED tube wired to it on the show tab',
-  board: 'Art-Net pixel controller: outputs drive cabled tubes, mapped onto universes',
 }
 
 export const TYPE_INFO: Record<string, string> = {

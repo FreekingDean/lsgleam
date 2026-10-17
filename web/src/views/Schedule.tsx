@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { FIXTURE_PORT, profileOf, type BoardBlock, type Show } from '../model/show'
 import { formatLength } from '../model/format'
-import { pixelAddress, pixelChain, tubePatch, unitPatch } from '../model/patch'
+import { pixelAddress, tubePatch, unitPatch } from '../model/patch'
+import { pixelChain } from '../blocks'
 import { roomAt, unitsOf } from '../model/units'
 import { download } from '../td/blt'
 
