@@ -142,7 +142,7 @@ export function placeLabels(labels: { at: XZ; r: number; w: number; h: number }[
       const n = Math.ceil(Math.hypot(bx - ax, by - ay) / 4)
       const dots = Array.from({ length: Math.max(0, n - 1) }, (_, k) => ({ x: ax + ((bx - ax) * (k + 1)) / n, y: ay + ((by - ay) * (k + 1)) / n, w: 0, h: 0 }))
       const tangled = leaders.filter((l) => crosses(l, c.leader)).length + (dots.some((d) => taken.some((t) => hit(d, t))) ? 1 : 0)
-      return c.ring + 60 * tangled + 30 * soft.filter((t) => hit(c.box, t)).length ** 0.5
+      return c.ring * 2 + 80 * tangled + 45 * soft.filter((t) => hit(c.box, t)).length ** 0.5
     }
     const free = candidates.filter((c) => inside(c.box, frame) && !taken.some((t) => hit(c.box, t)))
     const best = free.reduce<(typeof candidates)[number] | null>((m, c) => (m && cost(m) <= cost(c) ? m : c), null) ?? candidates[0]

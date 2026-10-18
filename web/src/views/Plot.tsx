@@ -8,8 +8,8 @@ import { endsOf, itemsOf, nearest, placeLabels, rectOf, roomsOf, runsOf, styles,
 const W = 1120
 const H = 740
 const FRAME: Box = { x: 16, y: 16, w: W - 32, h: H - 70 }
-const NAME = 9
-const INFO = 8
+const NAME = 10
+const INFO = 8.5
 const textW = (s: string, size: number) => s.length * size * 0.6
 const STEPS = [1, 2, 5, 10, 20, 50]
 
@@ -70,7 +70,7 @@ function PlanSvg({ room, items, ends, runs, style, order }: Plotted) {
     return { ...l, a: [l.a[0] + nx, l.a[1] + ny] as XZ, b: [l.b[0] + nx, l.b[1] + ny] as XZ }
   })
   const badges = shifted.filter((l) => l.first || l.cut).map((l) => {
-    const t = Math.min(0.85, 0.2 + l.n * 0.12)
+    const t = Math.hypot(l.b[0] - l.a[0], l.b[1] - l.a[1]) < 80 ? 0.5 : Math.min(0.85, 0.2 + l.n * 0.12)
     return { run: l.run, at: [l.a[0] + (l.b[0] - l.a[0]) * t, l.a[1] + (l.b[1] - l.a[1]) * t] as XZ }
   })
   const marks = mine.map((i) => ({ item: i, at: P(i.at) }))
@@ -101,7 +101,7 @@ function PlanSvg({ room, items, ends, runs, style, order }: Plotted) {
   const parts = step <= 2 ? step * 2 : 5
   const grid = rect ? { xs: Array.from({ length: Math.floor(rect.w) + 1 }, (_, i) => rect.x + i), zs: Array.from({ length: Math.floor(rect.d) + 1 }, (_, i) => rect.z + i) } : { xs: [], zs: [] }
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} fontFamily="Helvetica, Arial, sans-serif" style={{ background: '#fff' }}>
+    <svg xmlns="http://www.w3.org/2000/svg" width={W} height={H} viewBox={`0 0 ${W} ${H}`} fontFamily="Helvetica, Arial, sans-serif" style={{ background: '#fff' }}>
       <rect x={0.5} y={0.5} width={W - 1} height={H - 1} fill="#fff" stroke="#000" />
       {rect && rp && <g>
         {grid.xs.map((x) => <line key={`x${x}`} x1={P([x, rect.z])[0]} y1={rp.a[1]} x2={P([x, rect.z])[0]} y2={rp.b[1]} stroke="#ddd" strokeWidth={0.6} />)}
