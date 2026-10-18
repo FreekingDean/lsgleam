@@ -83,11 +83,12 @@ function slotsOf(fixture: OflFixture, key: string, ch: OflChannel): { slots: Slo
 }
 
 function strobeOf(ch: OflChannel): Encoding | null {
-  const caps = capsOf(ch).filter((c) => c.type === 'ShutterStrobe')
+  const all = capsOf(ch)
+  const caps = all.filter((c) => c.type === 'ShutterStrobe')
   const strobes = caps.filter((c) => c.shutterEffect === 'Strobe')
   if (!strobes.length) return null
   const s = strobes.reduce((a, b) => (b.dmxRange![1] - b.dmxRange![0] > a.dmxRange![1] - a.dmxRange![0] ? b : a))
-  const open = caps.find((c) => c.shutterEffect === 'Open')
+  const open = caps.find((c) => c.shutterEffect === 'Open') ?? all.find((c) => c.type === 'NoFunction')
   const [lo, hi] = [byte(ch, s.dmxRange![0]), byte(ch, s.dmxRange![1])]
   const backwards = speed(s.speedStart) > speed(s.speedEnd)
   const off = open ? byte(ch, open.dmxRange![0]) : lo
@@ -104,10 +105,12 @@ function classify(fixture: OflFixture, key: string, ch: OflChannel): Classified 
   const name = (ch.name ?? key).toLowerCase()
   if (only && SINGLE[only] && caps.length === 1) {
     const c = caps[0]
-    return { ...plain(SINGLE[only]), angle: degrees(c.angleEnd) - degrees(c.angleStart) }
+    const lit = only === 'Intensity' && ch.defaultValue === undefined ? { default: 1 } : {}
+    return { ...plain(SINGLE[only]), ...lit, angle: degrees(c.angleEnd) - degrees(c.angleStart) }
   }
   if (only === 'ColorIntensity' && caps.length === 1 && BY_COLOR[caps[0].color ?? '']) return plain(BY_COLOR[caps[0].color!])
   if (only === 'Generic' && caps.length === 1 && (name === 'hue' || name === 'saturation')) return plain(name)
+  if (only === 'Generic' && caps.length === 1 && (name === 'value' || name === 'brightness')) return plain('intensity')
   if (only === 'ShutterStrobe') {
     const encoding = strobeOf(ch)
     if (encoding) return { attribute: 'strobe', encoding, default: 0 }
@@ -214,7 +217,8 @@ export function unresolved(fixture: OflFixture) {
   return fixture.modes.flatMap((m) => channelKeys(fixture, m).filter((k): k is string => k !== null && !lookup(k)).map((k) => `${m.name}: unknown channel ${k}`))
 }
 
-export type Compiled = { label: string; attrs: Attr[]; modes: CompiledMode[]; sim: Sim; position?: string[]; color: boolean }
+export type Wheel = { key: string; colors: number[][] }
+export type Compiled = { label: string; attrs: Attr[]; modes: CompiledMode[]; sim: Sim; position?: string[]; color: boolean; wheel?: Wheel }
 
 export function compile(fixture: OflFixture): Compiled {
   const lookup = lookupTable(fixture)
@@ -271,6 +275,9 @@ export function compile(fixture: OflFixture): Compiled {
   })
   const engine = attrs.filter((a) => a.attribute !== 'hue' && a.attribute !== 'saturation')
   const position = engine.filter((a) => a.attribute === 'pan' || a.attribute === 'tilt').map((a) => a.key)
+  const mixes = RGB.every((a) => engine.some((x) => x.attribute === a))
+  const slots = modes.flatMap((m) => m.channels).find((ch) => ch.attribute === 'colorWheel')?.encoding
+  const wheel = slots?.type === 'wheel' && slots.slots.every((s) => s.color) ? { key: 'colorWheel', colors: slots.slots.map((s) => hexRgb(s.color!)) } : undefined
   const cats = fixture.categories ?? []
   const kind = position.length || cats.includes('Moving Head') || cats.includes('Scanner') ? 'head' : cats.includes('Pixel Bar') ? 'bar' : 'par'
   const lens = fixture.physical?.lens?.degreesMinMax
@@ -280,7 +287,8 @@ export function compile(fixture: OflFixture): Compiled {
     modes,
     sim: { kind, beam: lens ? (lens[0] + lens[1]) / 2 : kind === 'head' ? 20 : 72, pan: angles.pan || 540, tilt: angles.tilt || 270 },
     ...(position.length ? { position } : {}),
-    color: RGB.every((a) => engine.some((x) => x.attribute === a)),
+    color: mixes,
+    ...(wheel && !mixes ? { wheel } : {}),
   }
 }
 

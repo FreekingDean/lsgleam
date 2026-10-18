@@ -504,6 +504,13 @@ def light_defaults(c, pairs, prefix=''):
         d.nodeX, d.nodeY = -1400, 600 - k * 60
     return defaults
 
+def wheel_pick(c, name, rgb, wheel):
+    pick = constant(c, name + '_wheel', [(wheel['key'], 0)])
+    pick.nodeX, pick.nodeY = rgb.nodeX + 100, rgb.nodeY - 60
+    n = len(wheel['colors'])
+    pick.par.const0value.expr = "min(range(%d), key=lambda k: sum((op('%s')[a] - %r[k][i]) ** 2 for i, a in enumerate(('red', 'green', 'blue')))) / %d" % (n, rgb.name, wheel['colors'], max(1, n - 1))
+    return pick
+
 def as_attrs(c, name, end):
     ren = c.create(renameCHOP, name + '_attrs')
     ren.par.renamefrom = 'Red Green Blue Dimmer'

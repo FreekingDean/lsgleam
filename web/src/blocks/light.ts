@@ -6,7 +6,7 @@ import python from './light.py?raw'
 
 export type LightBlock = Base & { kind: 'light'; profile: string; values: Values; positions: Position[] }
 
-export const hasRgb = (b: LightBlock | GroupBlock) => profileOf(b).color
+export const hasRgb = (b: LightBlock | GroupBlock) => profileOf(b).color || !!profileOf(b).wheel
 export const color = (): Port => ({ id: COLOR_PORT, label: 'color', type: 'color' })
 export const look = (): Port => ({ id: LOOK_PORT, label: 'look', type: 'look', chans: LOOK_CHANS })
 
@@ -27,5 +27,5 @@ export const light: BlockDef<LightBlock> = {
   },
   outputs: () => [],
   subtitle: (b, _outputs, targets) => `${profileOf(b).label} → ${targets.join(', ') || 'nothing yet'}`,
-  lead: (b) => [valuePairs(profileOf(b), b.values), profileOf(b).position ?? []],
+  lead: (b) => [valuePairs(profileOf(b), b.values), profileOf(b).position ?? [], profileOf(b).wheel ?? null],
 }

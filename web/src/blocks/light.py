@@ -1,4 +1,4 @@
-def build_light(b, pairs, pos, sources):
+def build_light(b, pairs, pos, wheel, sources):
     c = new_block(b)
     values = dict(pairs)
     feeds = []
@@ -8,5 +8,7 @@ def build_light(b, pairs, pos, sources):
             end = position_switch(c, 'pos', end, aim, [[(ch, p['values'].get(ch, 0)) for ch in pos] for p in b['positions']], -400)
         if port in ('look', 'color'):
             end = as_attrs(c, port, end)
+            if wheel:
+                feeds.append(wheel_pick(c, port, end, wheel))
         feeds.append(end)
     finish(c, channel_chain(c, '', pairs, feeds, 0))

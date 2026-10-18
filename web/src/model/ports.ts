@@ -66,8 +66,9 @@ export function inputPorts(b: Block, show?: Show, tab?: string | null): Port[] {
 function alternatives(b: Block): [string[], string[]][] {
   if (!isLight(b)) return []
   const pos = profileOf(b).position ?? []
-  const brightness = b.kind === 'group' ? [...LOOK_ATTRS, PATTERN_PORT] : LOOK_ATTRS
-  return [[[LOOK_PORT], brightness], [[LOOK_PORT], [COLOR_PORT]], [[COLOR_PORT], RGB_ATTRS], ...(pos.length ? [[[POSITION_PORT], pos] as [string[], string[]]] : [])]
+  const colors = [...RGB_ATTRS, ...(profileOf(b).wheel ? [profileOf(b).wheel!.key] : [])]
+  const brightness = [...LOOK_ATTRS, ...colors, ...(b.kind === 'group' ? [PATTERN_PORT] : [])]
+  return [[[LOOK_PORT], brightness], [[LOOK_PORT], [COLOR_PORT]], [[COLOR_PORT], colors], ...(pos.length ? [[[POSITION_PORT], pos] as [string[], string[]]] : [])]
 }
 
 function allInputPorts(b: Block, show?: Show): Port[] {

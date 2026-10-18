@@ -1,4 +1,4 @@
-def build_group(b, pairs, pos, sources, masks, members):
+def build_group(b, pairs, pos, wheel, sources, masks, members):
     c = new_block(b)
     if not members:
         return
@@ -15,6 +15,8 @@ def build_group(b, pairs, pos, sources, masks, members):
     floor = floor_of(c, b, by_port)
     if 'color' in by_port:
         by_port['color'] = as_attrs(c, 'color', by_port['color'])
+        if wheel:
+            by_port['color_wheel'] = wheel_pick(c, 'color', by_port['color'], wheel)
     look = by_port.pop('look', None)
     if look is not None:
         colors = c.create(selectCHOP, 'look_colors')
@@ -26,6 +28,8 @@ def build_group(b, pairs, pos, sources, masks, members):
         look.outputConnectors[0].connect(colors.inputConnectors[0])
         look.outputConnectors[0].connect(look_dim.inputConnectors[0])
         by_port['look'] = as_attrs(c, 'look', colors)
+        if wheel:
+            by_port['look_wheel'] = wheel_pick(c, 'look', by_port['look'], wheel)
         by_port['pattern'] = look_dim
     if 'intensity' in names:
         dim = by_port.get('pattern') or defaults['pattern']
@@ -34,7 +38,7 @@ def build_group(b, pairs, pos, sources, masks, members):
     for i, m in enumerate(members):
         p = 'm%d_' % (i + 1)
         y = -i * 600
-        feeds = [end for port, end in by_port.items() if port in names or port in ('look', 'color')]
+        feeds = [end for port, end in by_port.items() if port in names or port in ('look', 'color', 'look_wheel', 'color_wheel')]
         if slots is not None:
             sel = c.create(selectCHOP, p + 'slot')
             sel.par.channames = 'slot%d' % (i + 1)

@@ -33,7 +33,7 @@ export const group: BlockDef<GroupBlock> = {
   },
   outputs: () => [],
   subtitle: (b, _outputs, targets) => `${b.mode} → ${targets.length}× ${profileOf(b).label}`,
-  lead: (b) => [valuePairs(profileOf(b), b.values), profileOf(b).position ?? []],
+  lead: (b) => [valuePairs(profileOf(b), b.values), profileOf(b).position ?? [], profileOf(b).wheel ?? null],
   args: (b) => {
     const members = Array.from({ length: b.size }, (_, i) => ({ id: String(i), aim: b.aims[i] ?? {} }))
     return [patternMasks(b.mode, members.length), members]
