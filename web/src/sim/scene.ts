@@ -7,6 +7,7 @@ import { Par, placementOf, type Light, type Spot } from './par'
 import { Head } from './head'
 import { Device } from './device'
 import { Tube } from './tube'
+import { decode } from '../model/ofl'
 
 const POOL = 8
 
@@ -97,7 +98,7 @@ export class SimScene {
   }
 
   sync(fixtures: SimFixture[], devices: SimDevice[], tubes: SimTube[]) {
-    const items: { key: string; placement: Placement; fixture?: SimFixture; tube?: SimTube; kind: string; size?: [number, number, number] }[] = [...tubes.map((t) => ({ key: t.key, placement: t.placement, tube: t, kind: `tube:${t.leds}:${JSON.stringify(t.path)}` })), ...fixtures.map((f) => ({ key: f.key, placement: f.placement, fixture: f, kind: f.profile.id })), ...devices.map((d) => ({ key: d.key, placement: d.placement, fixture: undefined, kind: d.size ? `box:${d.size.join(',')}` : d.kind, size: d.size }))]
+    const items: { key: string; placement: Placement; fixture?: SimFixture; tube?: SimTube; kind: string; size?: [number, number, number] }[] = [...tubes.map((t) => ({ key: t.key, placement: t.placement, tube: t, kind: `tube:${t.leds}:${JSON.stringify(t.path)}` })), ...fixtures.map((f) => ({ key: f.key, placement: f.placement, fixture: f, kind: `${f.profile.id}:${JSON.stringify(f.profile.sim)}` })), ...devices.map((d) => ({ key: d.key, placement: d.placement, fixture: undefined, kind: d.size ? `box:${d.size.join(',')}` : d.kind, size: d.size }))]
     const wanted = new Set(items.map((f) => f.key))
     for (const [key, { light }] of this.lights) if (!wanted.has(key)) {
       this.scene.remove(light.object)
@@ -118,7 +119,7 @@ export class SimScene {
         existing.light.dispose()
       }
       const sim = item.fixture?.profile.sim
-      const light = item.tube ? new Tube(item.tube.path, item.tube.leds, item.placement) : !sim ? new Device(item.kind as SimDevice['kind'], item.placement, item.size) : sim.kind === 'head' ? new Head(item.placement, sim.pan, sim.tilt) : new Par(item.placement)
+      const light = item.tube ? new Tube(item.tube.path, item.tube.leds, item.placement) : !sim ? new Device(item.kind as SimDevice['kind'], item.placement, item.size) : sim.kind === 'head' ? new Head(item.placement, sim) : new Par(item.placement, sim)
       this.scene.add(light.object)
       this.lights.set(item.key, { light, fixture: item.fixture, tube: item.tube, kind: item.kind })
     }
@@ -136,9 +137,7 @@ export class SimScene {
       }
       if (!fixture) continue
       const universe = fixture.universe === null ? undefined : dmx[`${fixture.node}:${fixture.universe}`]
-      const v: Record<string, number> = {}
-      fixture.profile.channels.forEach((ch, i) => { v[ch.name] = (universe?.[fixture.address - 1 + i] ?? 0) / 255 })
-      light.update(v)
+      light.update(decode(fixture.mode, fixture.mode.channels.map((_, i) => universe?.[fixture.address - 1 + i] ?? 0)))
     }
   }
 

@@ -1,0 +1,127 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OpenLightingProject/open-fixture-library/master/schemas/fixture.json",
+  "name": "Moving head 11ch",
+  "shortName": "mh11",
+  "categories": ["Moving Head", "Color Changer"],
+  "meta": {
+    "authors": ["lsgleam"],
+    "createDate": "2026-10-18",
+    "lastModifyDate": "2026-10-18"
+  },
+  "physical": {
+    "lens": {
+      "degreesMinMax": [20, 20]
+    }
+  },
+  "wheels": {
+    "Color wheel": {
+      "slots": [
+        { "type": "Color", "name": "White", "colors": ["#ffffff"] },
+        { "type": "Color", "name": "Red", "colors": ["#ff2020"] },
+        { "type": "Color", "name": "Orange", "colors": ["#ff8c00"] },
+        { "type": "Color", "name": "Yellow", "colors": ["#ffe000"] },
+        { "type": "Color", "name": "Green", "colors": ["#20c040"] },
+        { "type": "Color", "name": "Blue", "colors": ["#2060ff"] },
+        { "type": "Color", "name": "Magenta", "colors": ["#ff30c0"] },
+        { "type": "Color", "name": "Cyan", "colors": ["#30e0ff"] }
+      ]
+    },
+    "Gobo": {
+      "slots": [
+        { "type": "Open" },
+        { "type": "Gobo", "name": "Gobo 1" },
+        { "type": "Gobo", "name": "Gobo 2" },
+        { "type": "Gobo", "name": "Gobo 3" },
+        { "type": "Gobo", "name": "Gobo 4" },
+        { "type": "Gobo", "name": "Gobo 5" },
+        { "type": "Gobo", "name": "Gobo 6" },
+        { "type": "Gobo", "name": "Gobo 7" }
+      ]
+    }
+  },
+  "availableChannels": {
+    "Pan": {
+      "defaultValue": "50%",
+      "fineChannelAliases": ["Panfine"],
+      "capability": {
+        "type": "Pan",
+        "angleStart": "0deg",
+        "angleEnd": "540deg"
+      }
+    },
+    "Tilt": {
+      "defaultValue": "50%",
+      "fineChannelAliases": ["Tiltfine"],
+      "capability": {
+        "type": "Tilt",
+        "angleStart": "0deg",
+        "angleEnd": "270deg"
+      }
+    },
+    "Colorwheel": {
+      "name": "Color wheel",
+      "capabilities": [
+        { "dmxRange": [0, 35], "type": "WheelSlot", "slotNumber": 1 },
+        { "dmxRange": [36, 72], "type": "WheelSlot", "slotNumber": 2 },
+        { "dmxRange": [73, 108], "type": "WheelSlot", "slotNumber": 3 },
+        { "dmxRange": [109, 145], "type": "WheelSlot", "slotNumber": 4 },
+        { "dmxRange": [146, 181], "type": "WheelSlot", "slotNumber": 5 },
+        { "dmxRange": [182, 218], "type": "WheelSlot", "slotNumber": 6 },
+        { "dmxRange": [219, 254], "type": "WheelSlot", "slotNumber": 7 },
+        { "dmxRange": [255, 255], "type": "WheelSlot", "slotNumber": 8 }
+      ]
+    },
+    "Gobo": {
+      "capabilities": [
+        { "dmxRange": [0, 35], "type": "WheelSlot", "slotNumber": 1 },
+        { "dmxRange": [36, 72], "type": "WheelSlot", "slotNumber": 2 },
+        { "dmxRange": [73, 108], "type": "WheelSlot", "slotNumber": 3 },
+        { "dmxRange": [109, 145], "type": "WheelSlot", "slotNumber": 4 },
+        { "dmxRange": [146, 181], "type": "WheelSlot", "slotNumber": 5 },
+        { "dmxRange": [182, 218], "type": "WheelSlot", "slotNumber": 6 },
+        { "dmxRange": [219, 254], "type": "WheelSlot", "slotNumber": 7 },
+        { "dmxRange": [255, 255], "type": "WheelSlot", "slotNumber": 8 }
+      ]
+    },
+    "Strobe": {
+      "capability": {
+        "type": "ShutterStrobe",
+        "shutterEffect": "Strobe"
+      }
+    },
+    "Dimmer": {
+      "defaultValue": 255,
+      "capability": {
+        "type": "Intensity"
+      }
+    },
+    "Ptspeed": {
+      "name": "P/T speed",
+      "capability": {
+        "type": "PanTiltSpeed",
+        "speedStart": "fast",
+        "speedEnd": "slow"
+      }
+    },
+    "Automode": {
+      "name": "Auto mode",
+      "capability": {
+        "type": "Effect",
+        "effectName": "Auto mode"
+      }
+    },
+    "Reset": {
+      "name": "Reset / special",
+      "capability": {
+        "type": "Maintenance"
+      }
+    }
+  },
+  "modes": [
+    {
+      "name": "11-channel",
+      "shortName": "11ch",
+      "channels": ["Pan", "Panfine", "Tilt", "Tiltfine", "Colorwheel", "Gobo", "Strobe", "Dimmer", "Ptspeed", "Automode", "Reset"]
+    }
+  ]
+}

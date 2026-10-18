@@ -1,4 +1,6 @@
-import { FIXTURE_PORT, isLight, profileOf, type Show, type StripBlock, type TubeBlock } from '../model/show'
+import { FIXTURE_PORT, isLight, profileOf, type FixtureBlock, type LightBlock, type GroupBlock, type Show, type StripBlock, type TubeBlock } from '../model/show'
+import { valuePairs } from '../model/fixtures'
+import { encode } from '../model/ofl'
 import { hexToRgb } from '../model/format'
 import { simFixtures, simTubes } from '../model/units'
 import { tubeGeometry } from '../model/geometry'
@@ -41,6 +43,8 @@ function stripPixels(show: Show, s: StripBlock, t: TubeBlock): Rgb[] {
   })
 }
 
+const valuesOf = (b: FixtureBlock | LightBlock | GroupBlock) => Object.fromEntries(valuePairs(profileOf(b), b.values))
+
 export function previewDmx(show: Show, scene: string): DmxValues {
   const dmx: DmxValues = {}
   const universe = (key: string) => (dmx[key] ??= new Array(512).fill(0))
@@ -52,16 +56,13 @@ export function previewDmx(show: Show, scene: string): DmxValues {
     const [outId, member] = w ? w.fromPort.split(':') : []
     const out = show.blocks.find((b) => b.id === outId)
     const light = out && isLight(out) ? out : null
-    const lightChannels = light ? profileOf(light).channels.map((ch) => ch.name) : []
-    const aimed = light ? profileOf(light).position ?? [] : []
     const aims = light?.kind === 'group' && member !== undefined ? light.aims[member] ?? {} : {}
+    const aimed = light ? profileOf(light).position ?? [] : []
+    const values = { ...valuesOf(fixture), ...(light ? valuesOf(light) : {}), ...Object.fromEntries(aimed.flatMap((k) => (aims[k] === undefined ? [] : [[k, aims[k]]]))) }
     const u = universe(`${f.node}:${f.universe}`)
-    profileOf(fixture).channels.forEach((ch, i) => {
-      const k = lightChannels.indexOf(ch.name)
-      const aim = aimed.includes(ch.name) ? aims[ch.name] : undefined
-      const value = light && k >= 0 ? aim ?? light.values[k] : fixture.values[i]
+    encode(f.mode, values).forEach((v, i) => {
       const at = f.address - 1 + i
-      if (at < 512) u[at] = byte(value)
+      if (at < 512) u[at] = v
     })
   }
   for (const s of simTubes(show)) {

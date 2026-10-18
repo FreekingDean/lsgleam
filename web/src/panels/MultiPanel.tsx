@@ -12,7 +12,7 @@ type Props = {
   layout: boolean
   onPatch: (patches: [string, Partial<Block>][]) => void
   onPlace: (placements: [string, Placement, boolean | undefined][]) => void
-  onValue: (ids: string[], index: number, value: number) => void
+  onValue: (ids: string[], key: string, value: number) => void
 }
 
 const SKIP = new Set(['id', 'name', 'x', 'y', 'w', 'h', 'scene', 'kind', 'profile', 'address', 'port', 'apiPort', 'token', 'device', 'node', 'universe', 'active', 'flip'])
@@ -112,15 +112,16 @@ function Channels({ blocks, onValue }: { blocks: Block[]; onValue: Props['onValu
   return (
     <>
       <h3>Channels</h3>
-      {profile.channels.map((ch, i) => {
-        if (skip.includes(ch.name)) return null
-        const values = lights.map((l) => l.values[i] ?? 0)
+      {profile.attrs.map((ch) => {
+        const i = ch.key
+        if (skip.includes(i)) return null
+        const values = lights.map((l) => l.values[i] ?? ch.default)
         const mixed = !same(values)
         const ids = lights.map((l) => l.id)
         if (ch.options) {
           const last = ch.options.length - 1
           return (
-            <div className={`par${mixed ? ' mixed' : ''}`} key={ch.name}>
+            <div className={`par${mixed ? ' mixed' : ''}`} key={ch.key}>
               <label>{ch.label}</label>
               <select value={mixed ? '' : Math.round(values[0] * last)} onChange={(e) => e.target.value !== '' && onValue(ids, i, Number(e.target.value) / last)}>
                 {mixed && <option value="">mixed</option>}
@@ -130,7 +131,7 @@ function Channels({ blocks, onValue }: { blocks: Block[]; onValue: Props['onValu
           )
         }
         return (
-          <div className={`par${mixed ? ' mixed' : ''}`} key={ch.name}>
+          <div className={`par${mixed ? ' mixed' : ''}`} key={ch.key}>
             <label>{ch.label}</label>
             <div className="slider">
               <input type="range" min={0} max={1} step={0.001} value={mixed ? 0 : values[0]} onChange={(e) => onValue(ids, i, Number(e.target.value))} />

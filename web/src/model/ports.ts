@@ -1,5 +1,5 @@
 import { allProfiles } from './fixtures'
-import { NODE_H, type CombineBlock, type Block, type Kind, type Wire, type Show, FIXTURE_PORT, SOURCE_KINDS, isLight, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB, LOOK_CHANNELS, profileOf, type Rail, RAIL_SEP, membersOf, typed } from './show'
+import { NODE_H, type CombineBlock, type Block, type Kind, type Wire, type Show, FIXTURE_PORT, SOURCE_KINDS, isLight, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB_ATTRS, LOOK_ATTRS, profileOf, type Rail, RAIL_SEP, membersOf, typed } from './show'
 import { type Ports, blockDef, defOf, elementOf, hasDef } from '../blocks'
 
 const MULTI_INPUTS: Partial<Record<Kind, string[]>> = { gate: ['signal'], not: ['signal'], fade: ['signal'], range: ['signal'], mix: ['a', 'b'], and: ['a', 'b'] }
@@ -66,8 +66,9 @@ export function inputPorts(b: Block, show?: Show, tab?: string | null): Port[] {
 function alternatives(b: Block): [string[], string[]][] {
   if (!isLight(b)) return []
   const pos = profileOf(b).position ?? []
-  const brightness = b.kind === 'group' ? [...LOOK_CHANNELS, PATTERN_PORT] : LOOK_CHANNELS
-  return [[[LOOK_PORT], brightness], [[LOOK_PORT], [COLOR_PORT]], [[COLOR_PORT], RGB], ...(pos.length ? [[[POSITION_PORT], pos] as [string[], string[]]] : [])]
+  const colors = [...RGB_ATTRS, ...(profileOf(b).wheel ? [profileOf(b).wheel!.key] : [])]
+  const brightness = [...LOOK_ATTRS, ...colors, ...(b.kind === 'group' ? [PATTERN_PORT] : [])]
+  return [[[LOOK_PORT], brightness], [[LOOK_PORT], [COLOR_PORT]], [[COLOR_PORT], colors], ...(pos.length ? [[[POSITION_PORT], pos] as [string[], string[]]] : [])]
 }
 
 function allInputPorts(b: Block, show?: Show): Port[] {
