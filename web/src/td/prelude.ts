@@ -1,4 +1,3 @@
-import TUBE_CODE from './tube.py?raw'
 import { BLOCKS } from '../blocks'
 
 export const j = (v: unknown) => `json.loads(${JSON.stringify(JSON.stringify(v))})`
@@ -642,27 +641,59 @@ ${BLOCKS.split.python}
 ${BLOCKS.counter.python}
 ${BLOCKS.timer.python}
 ${BLOCKS.equals.python}
-def code(c, name, text):
-    d = c.create(textDAT, name)
-    d.text = text
-    d.nodeX, d.nodeY = -800, 400
-    return d
-
-def script(c, name, callbacks, ends, cfg, x=0, y=0):
-    s = c.create(scriptCHOP, name)
-    s.par.callbacks = callbacks
-    s.nodeX, s.nodeY = x, y
-    for e in ends:
-        e.outputConnectors[0].connect(s)
-    s.store('cfg', cfg)
-    return s
-
 ${BLOCKS.strip.python}
 def build_tube(b, sources, geo):
     c = new_block(b)
     ends = inputs(c, sources)
-    cfg = dict(geo, n=b['leds'], sources=[{'mode': src.get('mode'), 'along': src.get('along'), 'scene': src['scene']} for src in sources])
-    finish(c, script(c, 'pixels', code(c, 'pixels_code', ${JSON.stringify(TUBE_CODE)}), ends, cfg, 200), 400)
+    n = b['leds']
+    weights = next((e for src, e in zip(sources, ends) if src.get('mode') is None), None)
+    strips = [(src, e) for src, e in zip(sources, ends) if src.get('mode')]
+    if not strips:
+        dark = c.create(patternCHOP, 'dark')
+        dark.par.wavetype = 'const'
+        dark.par.amp = 0
+        dark.par.length = n
+        dark.par.channelname = 'Red Green Blue'
+        finish(c, dark, 200)
+        return
+    weight = lambda src: "op('%s')['w%d']" % (weights.name, src['scene']) if weights else '1'
+    share = geo['index'] / max(geo['count'], 1)
+    coords = c.create(tableDAT, 'coords')
+    coords.clear()
+    coords.appendRow(['tube', 'height', 'distance'])
+    coords.appendRows([[(i + 0.5) / n, geo['height'][i], geo['distance'][i]] for i in range(n)])
+    coords.nodeX, coords.nodeY = -600, 300
+    total = c.create(mathCHOP, 'sum')
+    total.par.chopop = 'add'
+    total.par.gain.expr = '1 / max(%s, 1)' % ' + '.join(weight(src) for src, e in strips)
+    total.nodeX = 400
+    for k, (src, end) in enumerate(strips):
+        along = src.get('along') or 'tube'
+        u = c.op('u_' + along)
+        if u is None:
+            u = c.create(dattoCHOP, 'u_' + along)
+            u.par.dat = coords
+            u.par.extractcols = 'bynames'
+            u.par.colnames = along
+            u.par.output = 'chanpercol'
+            u.par.firstrow = 'names'
+            u.par.firstcolumn = 'values'
+            u.nodeX, u.nodeY = -400, 300 - k * 100
+        lo, hi, cyclic = SHAPES[src['mode']]
+        at = "op('%s')['pos'] + op('%s')['spread'] * %r" % (end.name, end.name, share)
+        if src['mode'] == 'band':
+            at = '(%s) %% 1' % at
+        look = c.create(lookupCHOP, 'look%d' % (k + 1))
+        look.par.index1.expr = '%s + %r' % (at, lo)
+        look.par.index2.expr = '%s + %r' % (at, hi)
+        look.par.cyclic = 'yes' if cyclic else 'no'
+        u.outputConnectors[0].connect(look.inputConnectors[0])
+        end.outputConnectors[0].connect(look.inputConnectors[1])
+        mix = c.create(mathCHOP, 'mix%d' % (k + 1))
+        mix.par.gain.expr = weight(src)
+        chain(look, mix, y=-k * 150)
+        mix.outputConnectors[0].connect(total)
+    finish(c, select(c, 'rgb', total, 'Red Green Blue', 600, 0), 800)
 
 ${BLOCKS.board.python}
 ${BLOCKS.artnet.python}`
