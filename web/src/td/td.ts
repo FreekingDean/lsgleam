@@ -113,7 +113,7 @@ for k, pairs in enumerate(${j(table)}):
   }
 
   setStrip(block: StripBlock) {
-    return this.run<null>(`find(${JSON.stringify(block.id)}).op('params').store('cfg', ${j(stripConfig(block))})`)
+    return this.run<null>(`set_strip(find(${JSON.stringify(block.id)}), ${j(stripConfig(block))})`)
   }
 
   resetPattern(id: string) {
@@ -217,6 +217,10 @@ for c in (LS.op('layout').children if LS and LS.op('layout') else []):
         if not p.isCHOP:
             continue
         result[c.name + ':' + p.name[7:]] = p.numpyArray()[:, 0].round().astype(int).tolist() if p.numChans else []
+    d = c.op('dmxout')
+    if d:
+        for i, row in enumerate(d.numpyArray().round().astype(int).tolist()):
+            result['%s:%d' % (c.name, d.par.universe.eval() + i)] = row
 `)
   }
 

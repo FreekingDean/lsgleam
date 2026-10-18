@@ -2,7 +2,6 @@ import { type Base, type ColorStop, type Port, type StripAlong, type StripMode, 
 import { hexToRgb } from '../model/format'
 import type { BlockDef } from './types'
 import python from './strip.py?raw'
-import params from './strip_params.py?raw'
 
 export type StripBlock = Base & { kind: 'strip'; mode: StripMode; color: string; stops: ColorStop[]; spread: number; along: StripAlong; dimmer: number; position: number; width: number; speed: number }
 
@@ -15,7 +14,7 @@ export const strip: BlockDef<StripBlock> = {
   label: 'Pixel out (LED tubes)',
   info: 'Pixel output: an effect (solid, band, fill, chase, ramp) for every LED tube wired to it on the show tab',
   tab: 'Pixels',
-  python: python.replace('STRIP_CODE', JSON.stringify(params)),
+  python,
   create: (base, n) => ({ ...base, id: `px${n}`, name: `Pixels ${n}`, kind: 'strip', mode: 'band', color: '#ffffff', stops: [{ at: 0, color: '#ff2060' }, { at: 1, color: '#2060ff' }], spread: 0, along: 'tube', dimmer: 1, position: 0.5, width: 0.2, speed: 0.5 }),
   inputs: (b) => stripParams(b).filter((p) => STRIP_USES[b.mode].some((u) => p.id.match(new RegExp(`^${u}\\d*$`)))),
   outputs: () => [],

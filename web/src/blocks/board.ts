@@ -2,7 +2,6 @@ import type { Base, Show, TubeBlock } from '../model/show'
 import type { Source } from '../model/patch'
 import type { BlockDef } from './types'
 import python from './board.py?raw'
-import patch from './board_patch.py?raw'
 
 export type BoardBlock = Base & { kind: 'board'; protocol: string; ip: string; active: boolean; outputs: number; ledsPerOutput: number; ledsPerUniverse: number; startUniverse: number }
 
@@ -22,27 +21,23 @@ export function pixelChain(show: Show, board: string, output: number) {
 
 export function boardPlan(show: Show, board: BoardBlock) {
   const sources: Source[] = []
-  const plan: [number, [number, number, number, number][]][] = []
+  const slots: number[] = []
+  let base = 0
   for (let o = 1; o <= board.outputs; o++) {
-    const tubes: [number, number, TubeBlock][] = []
-    let offset = 0
-    for (const t of pixelChain(show, board.id, o)) {
-      tubes.push([sources.length, offset, t])
-      sources.push({ from: t.id, chan: null, port: t.id, scene: null })
-      offset += t.leds
-    }
-    outputUniverses(board, o).forEach((u, k) => {
-      const first = k * board.ledsPerUniverse
-      const last = Math.min(board.ledsPerOutput, first + board.ledsPerUniverse)
-      const parts = tubes.flatMap(([input, off, t]): [number, number, number, number][] => {
-        const from = Math.max(off, first)
-        const to = Math.min(off + t.leds, last)
-        return to > from ? [[input, from - off, to - from, (from - first) * 3]] : []
-      })
-      plan.push([u, parts])
+    const tubes = pixelChain(show, board.id, o)
+    const leds = Math.min(board.ledsPerOutput, tubes.reduce((n, t) => n + t.leds, 0))
+    outputUniverses(board, o).forEach((_, k) => {
+      for (let ch = 0; ch < 512; ch++) {
+        const led = k * board.ledsPerUniverse + Math.floor(ch / 3)
+        slots.push(Math.floor(ch / 3) < board.ledsPerUniverse && led < leds ? (base + led) * 3 + (ch % 3) : -1)
+      }
     })
+    for (const t of tubes) {
+      sources.push({ from: t.id, chan: null, port: t.id, scene: null })
+      base += t.leds
+    }
   }
-  return { sources, plan }
+  return { sources, slots }
 }
 
 export const board: BlockDef<BoardBlock> = {
@@ -50,10 +45,10 @@ export const board: BlockDef<BoardBlock> = {
   label: 'Pixel controller (Art-Net)',
   info: 'Art-Net pixel controller: outputs drive cabled tubes, mapped onto universes',
   tab: 'Pixels',
-  python: python.replace('BOARD_CODE', JSON.stringify(patch)),
+  python,
   create: (base, n) => ({ ...base, id: `board${n}`, name: `Pixel board ${n}`, kind: 'board', protocol: 'sk9822', ip: '192.168.1.50', active: true, outputs: 8, ledsPerOutput: 300, ledsPerUniverse: 150, startUniverse: 0 }),
   inputs: () => [],
   outputs: () => [],
   subtitle: (b) => b.ip,
-  args: (b, show) => [boardPlan(show, b).plan],
+  args: (b, show) => [boardPlan(show, b).slots],
 }
