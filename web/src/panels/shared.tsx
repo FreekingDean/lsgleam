@@ -16,7 +16,7 @@ export type Props = {
   onDesign: (design: TubeDesign) => void
   layout?: Layout
   onPatch: (patch: Partial<Block>) => void
-  onValue: (index: number, value: number, member?: string) => void
+  onValue: (key: string, value: number, member?: string) => void
   listAudioDevices: () => Promise<[string, string][]>
   readValues: (names: string[], member?: string) => Promise<Record<string, number>>
   configureAudioSlice: () => Promise<string>

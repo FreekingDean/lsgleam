@@ -12,7 +12,7 @@ import { ceilingAt, addCable, canCable, removeCables, unitsOf } from './model/un
 import { setDesign, placeUnit, copyBlocks, diffShows, pasteBlocks, moveScene, newBlock, patchBlock, removeBlocks, type Clip } from './model/edit'
 import { addWire, canWire, drivenPorts, removeWires } from './model/wiring'
 import { downstream, repatch } from './model/patch'
-import { FIXTURES, setCustomProfiles, type FixtureProfile } from './model/fixtures'
+import { FIXTURES, compiledOf, setCustomProfiles, type StoredProfile } from './model/fixtures'
 import { addComposite, addDesign, addPalette, setProfile, type ColorPalette } from './model/library'
 import { LibraryView } from './views/LibraryView'
 import { ProfileEditor } from './views/ProfileEditor'
@@ -59,7 +59,7 @@ function Editor() {
   const [tab, setTab] = useState<string | null>(null)
   const [paletteId, setPaletteId] = useState<string | null>(null)
   const [library, setLibrary] = useState(false)
-  const [editing, setEditing] = useState<FixtureProfile | null | undefined>(undefined)
+  const [editing, setEditing] = useState<StoredProfile | null | undefined>(undefined)
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const pickedRef = useRef(picked)
   pickedRef.current = picked
@@ -497,7 +497,7 @@ function Editor() {
     commit({ ...showRef.current, responses: { ...showRef.current.responses, [profile]: response } })
   }, [commit])
 
-  const saveProfile = useCallback((profile: FixtureProfile) => {
+  const saveProfile = useCallback((profile: StoredProfile) => {
     const next = setProfile(showRef.current, profile)
     commit(next, () => rebuild(next, next.blocks.filter((b) => hasProfile(b) && b.profile === profile.id).map((b) => b.id)))
   }, [commit, rebuild])
@@ -538,22 +538,22 @@ function Editor() {
     if ('block' in n.data && n.data.block.kind === 'colors') setPaletteId(n.id)
   }, [])
 
-  const setValueOf = useCallback((selectedId: string, index: number, value: number, member?: string) => {
+  const setValueOf = useCallback((selectedId: string, key: string, value: number, member?: string) => {
     const show = showRef.current
     const block = show.blocks.find((b) => b.id === selectedId)
     if (block?.kind !== 'fixture' && block?.kind !== 'light' && block?.kind !== 'group') return
-    const ch = profileOf(block).channels[index].name
+    const index = profileOf(block).attrs.findIndex((a) => a.key === key)
     if (block.kind === 'group' && member !== undefined) {
-      apply(patchBlock(show, selectedId, { aims: { ...block.aims, [member]: { ...block.aims[member], [ch]: value } } }))
-      if (connectedRef.current) td.current!.setValue(selectedId, index, value, [`m${Number(member) + 1}_`], ch).catch((e) => setError(e.message))
+      apply(patchBlock(show, selectedId, { aims: { ...block.aims, [member]: { ...block.aims[member], [key]: value } } }))
+      if (connectedRef.current) td.current!.setValue(selectedId, index, value, [`m${Number(member) + 1}_`], key).catch((e) => setError(e.message))
       return
     }
-    apply(patchBlock(show, selectedId, { values: block.values.map((v, i) => (i === index ? value : v)) }))
+    apply(patchBlock(show, selectedId, { values: { ...block.values, [key]: value } }))
     const prefixes = block.kind === 'group' ? Array.from({ length: block.size }, (_, i) => `m${i + 1}_`) : ['']
-    if (connectedRef.current) td.current!.setValue(selectedId, index, value, prefixes, ch).catch((e) => setError(e.message))
+    if (connectedRef.current) td.current!.setValue(selectedId, index, value, prefixes, key).catch((e) => setError(e.message))
   }, [apply])
 
-  const setValue = useCallback((index: number, value: number, member?: string) => { if (sel) setValueOf(sel, index, value, member) }, [sel, setValueOf])
+  const setValue = useCallback((key: string, value: number, member?: string) => { if (sel) setValueOf(sel, key, value, member) }, [sel, setValueOf])
 
   const patchMany = useCallback((patches: [string, Partial<Block>][]) => {
     let next = showRef.current
@@ -582,9 +582,8 @@ function Editor() {
     if (connectedRef.current) return td.current!.readValues(sel!, names, member === undefined ? '' : `m${Number(member) + 1}_`)
     const block = showRef.current.blocks.find((b) => b.id === sel)
     if (!block || !isLight(block)) return {}
-    const channels = profileOf(block).channels.map((ch) => ch.name)
     const aims = block.kind === 'group' && member !== undefined ? block.aims[member] ?? {} : {}
-    return Object.fromEntries(names.map((n) => [n, aims[n] ?? block.values[channels.indexOf(n)] ?? 0]))
+    return Object.fromEntries(names.map((n) => [n, aims[n] ?? block.values[n] ?? 0]))
   }, [sel])
 
   const placeSim = useCallback((key: string, p: Placement) => commit(placeUnit(showRef.current, key, p)), [commit])
@@ -656,7 +655,7 @@ function Editor() {
         {openPath.filter((o) => o.kind === 'composite').map((o) => <button key={o.id} className={`composite-tab${tab === o.id ? ' on' : ''}`} onClick={() => setTab(o.id)}>› {o.name}</button>)}
       </nav>
       <main hidden={page !== 'build'}>
-        <Palette onAdd={addAtCenter} tab={tab} composite={tabBlock?.kind === 'composite'} designs={show.designs ?? []} profiles={[...FIXTURES, ...(show.profiles ?? [])]} onNewProfile={() => setEditing(null)} />
+        <Palette onAdd={addAtCenter} tab={tab} composite={tabBlock?.kind === 'composite'} designs={show.designs ?? []} profiles={[...FIXTURES, ...(show.profiles ?? [])].map(compiledOf)} onNewProfile={() => setEditing(null)} />
         <ConnectContext value={canConnect}>
         <PickContext value={picks}>
         <FocusContext value={focus}>

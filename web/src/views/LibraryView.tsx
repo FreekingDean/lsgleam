@@ -1,18 +1,23 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { download } from '../td/blt'
-import type { FixtureProfile } from '../model/fixtures'
+import { compiledOf, type StoredProfile } from '../model/fixtures'
 import { buildLibrary, parseLibrary, rootOf, saveLibraries, savedLibraries, type ColorPalette, type Library, type Picks } from '../model/library'
 import type { Clip } from '../model/edit'
 import type { Show, TubeDesign } from '../model/show'
 
 type Props = {
   show: Show
-  onFixture: (profile: FixtureProfile) => void
+  onFixture: (profile: StoredProfile) => void
   onDesign: (design: TubeDesign) => void
   onPalette: (palette: ColorPalette) => void
   onComposite: (clip: Clip) => void
-  onEditProfile: (profile: FixtureProfile | null) => void
+  onEditProfile: (profile: StoredProfile | null) => void
   onClose: () => void
+}
+
+const profileDetail = (p: StoredProfile) => {
+  const c = compiledOf(p)
+  return `${c.modes.map((m) => m.channels.length).join('/')} ch · ${c.sim.kind === 'head' ? 'moving head' : c.sim.kind === 'bar' ? 'bar' : 'PAR'}`
 }
 
 const NO_PICKS: Picks = { fixtures: [], designs: [], palettes: [], composites: [] }
@@ -85,7 +90,7 @@ export function LibraryView({ show, onFixture, onDesign, onPalette, onComposite,
                 <button onClick={() => forget(lib)} title="remove from this browser">remove</button>
               </div>
               {!!lib.fixtures.length && <h4>Fixture profiles</h4>}
-              {lib.fixtures.map((f) => <Item key={f.id} label={f.label} detail={`${f.channels.length} ch · ${f.sim.kind === 'head' ? 'moving head' : 'PAR'}`} onUse={() => use(f.label, () => onFixture(f))} />)}
+              {lib.fixtures.map((f) => <Item key={f.id} label={f.fixture.name} detail={profileDetail(f)} onUse={() => use(f.fixture.name, () => onFixture(f))} />)}
               {!!lib.designs.length && <h4>Tube designs</h4>}
               {lib.designs.map((d) => <Item key={d.id} label={d.name} detail={`${d.tubes.length} tube${d.tubes.length === 1 ? '' : 's'}`} onUse={() => use(d.name, () => onDesign(d))} />)}
               {!!lib.palettes.length && <h4>Colour palettes</h4>}
@@ -105,14 +110,14 @@ export function LibraryView({ show, onFixture, onDesign, onPalette, onComposite,
           {note && <div className="help">{note}</div>}
           <hr />
           <h4>This show's fixture profiles</h4>
-          {(show.profiles ?? []).map((p) => <div key={p.id} className="library-item"><span>{p.label}</span><span className="library-detail">{p.id}</span><button onClick={() => onEditProfile(p)}>edit</button></div>)}
+          {(show.profiles ?? []).map((p) => <div key={p.id} className="library-item"><span>{p.fixture.name}</span><span className="library-detail">{p.id}</span><button onClick={() => onEditProfile(p)}>edit</button></div>)}
           <button onClick={() => onEditProfile(null)}>+ new fixture profile</button>
           <hr />
           <h4>Export a library</h4>
           <div className="par"><label>Name</label><input value={name} onChange={(e) => setName(e.target.value)} /></div>
           <div className="par"><label>Author</label><input value={author} placeholder="optional" onChange={(e) => setAuthor(e.target.value)} /></div>
           {!!show.profiles?.length && <h5>Fixture profiles</h5>}
-          {show.profiles?.map((p) => <Pick key={p.id} label={p.label} on={picks.fixtures.includes(p.id)} onChange={(on) => toggle('fixtures', p.id, on)} />)}
+          {show.profiles?.map((p) => <Pick key={p.id} label={p.fixture.name} on={picks.fixtures.includes(p.id)} onChange={(on) => toggle('fixtures', p.id, on)} />)}
           {!!show.designs?.length && <h5>Tube designs</h5>}
           {show.designs?.map((d) => <Pick key={d.id} label={d.name} on={picks.designs.includes(d.id)} onChange={(on) => toggle('designs', d.id, on)} />)}
           {!!colors.length && <h5>Colour palettes</h5>}

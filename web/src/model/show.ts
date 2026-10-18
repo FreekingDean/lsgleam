@@ -1,4 +1,4 @@
-import { findProfile, type FixtureProfile } from './fixtures'
+import { findProfile, modeOf, type StoredProfile } from './fixtures'
 import type { TimerBlock } from '../blocks/timer'
 import type { CombineBlock } from '../blocks/combine'
 import type { ConstantBlock } from '../blocks/constant'
@@ -75,7 +75,7 @@ export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | Fade
 export type Kind = Block['kind']
 export type Wire = { from: string; fromPort: string; to: string; port: string; scene?: string }
 export type Cable = { from: string; fromPort: string; to: string; port: string }
-export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; profiles?: FixtureProfile[]; responses?: Record<string, ColorResponse> }
+export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; profiles?: StoredProfile[]; responses?: Record<string, ColorResponse> }
 export type ColorResponse = { multiplier: [number, number, number]; gamma: number }
 export const NO_RESPONSE: ColorResponse = { multiplier: [1, 1, 1], gamma: 1 }
 
@@ -107,12 +107,15 @@ export const LOOK_PORT = 'look'
 export const LOOK_CHANS = 'Red Green Blue Dimmer'
 export const COLOR_PORT = 'color'
 export const RGB = ['Red', 'Green', 'Blue']
-export const LOOK_CHANNELS = ['Red', 'Green', 'Blue', 'Dimmer']
+export const RGB_ATTRS = ['red', 'green', 'blue']
+export const LOOK_ATTRS = [...RGB_ATTRS, 'intensity']
 export const NUDGE_PORT = 'nudge'
 
 export function profileOf(b: FixtureBlock | LightBlock | GroupBlock) {
   return findProfile(b.profile)
 }
+
+export const fixtureMode = (b: FixtureBlock) => modeOf(profileOf(b), b.mode)
 
 export const memberPort = (id: string, i: number) => `${id}:${i}`
 

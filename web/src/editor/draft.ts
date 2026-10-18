@@ -1,12 +1,12 @@
 import { railSpots } from '../td/spots'
 import { EMPTY_SHOW, type Show } from '../model/show'
-import { normalize } from '../model/migrate'
+import { migrateProfiles, normalize } from '../model/migrate'
 import { setCustomProfiles } from '../model/fixtures'
 
 export const withRails = (show: Show): Show => ({ ...show, rails: railSpots(show) })
 
 export function load(raw: Partial<Show>) {
-  setCustomProfiles(raw.profiles ?? [])
+  setCustomProfiles(migrateProfiles(raw.profiles ?? []))
   return withRails(normalize(raw))
 }
 

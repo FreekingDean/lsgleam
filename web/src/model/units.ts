@@ -1,5 +1,6 @@
 import type { FixtureProfile } from './fixtures'
-import { type Placement, type BoxBlock, type Point, type TubeBlock, type BoardBlock, type Block, type Kind, type Cable, type Show, VIRTUAL_KINDS, type Port, profileOf, membersOf } from './show'
+import type { CompiledMode } from './ofl'
+import { type Placement, type BoxBlock, type Point, type TubeBlock, type BoardBlock, type Block, type Kind, type Cable, type Show, VIRTUAL_KINDS, type Port, fixtureMode, profileOf, membersOf } from './show'
 import { audioInputs } from '../blocks'
 import { typed } from './show'
 import { unitPatch, tubePatch, pixelAddress } from './patch'
@@ -84,12 +85,12 @@ export function onWall(show: Show, p: Placement): Placement | null {
   return walls.sort((a, b) => a[0] - b[0])[0][1]
 }
 
-export type SimFixture = { key: string; name: string; profile: FixtureProfile; placement: Placement; address: number; node: string | null; universe: number | null }
+export type SimFixture = { key: string; name: string; profile: FixtureProfile; mode: CompiledMode; placement: Placement; address: number; node: string | null; universe: number | null }
 export type SimTube = { key: string; name: string; placement: Placement; path: Point[]; leds: number; addresses: [string, number][] | null; label: string }
 export type SimDevice = { key: string; name: string; kind: Kind; placement: Placement; size?: [number, number, number] }
 
 export function simFixtures(show: Show): SimFixture[] {
-  return unitsOf(show).flatMap((u) => u.block.kind === 'fixture' ? [{ key: u.key, name: u.name, profile: profileOf(u.block), placement: u.placement, address: u.block.address, node: unitPatch(show, u.key)?.node ?? null, universe: unitPatch(show, u.key)?.universe ?? null }] : [])
+  return unitsOf(show).flatMap((u) => u.block.kind === 'fixture' ? [{ key: u.key, name: u.name, profile: profileOf(u.block), mode: fixtureMode(u.block), placement: u.placement, address: u.block.address, node: unitPatch(show, u.key)?.node ?? null, universe: unitPatch(show, u.key)?.universe ?? null }] : [])
 }
 
 export function simTubes(show: Show): SimTube[] {

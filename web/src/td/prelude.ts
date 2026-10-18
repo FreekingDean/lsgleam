@@ -495,14 +495,22 @@ def channel_chain(c, prefix, pairs, feeds, y, nudge=None, nudge_channel=None):
         rep.outputConnectors[0].connect(math.inputConnectors[1])
     return clamp
 
-def light_defaults(c, channels, values, prefix=''):
+def light_defaults(c, pairs, prefix=''):
     defaults = {'nudge': constant(c, prefix + 'nonudge', [('nudge', 0.5)]), 'position': constant(c, prefix + 'noposition', [('position', -1)])}
-    for i, ch in enumerate(channels):
-        defaults[ch['name']] = constant(c, prefix + 'default_' + ch['name'], [(ch['name'], values[i])])
-    defaults['look'] = constant(c, prefix + 'default_look', [(ch['name'], values[i]) for i, ch in enumerate(channels) if ch['name'] in ('Red', 'Green', 'Blue', 'Dimmer')])
+    for name, v in pairs:
+        defaults[name] = constant(c, prefix + 'default_' + name, [(name, v)])
+    defaults['look'] = constant(c, prefix + 'default_look', [(name, v) for name, v in pairs if name in ('red', 'green', 'blue', 'intensity')])
     for k, d in enumerate(defaults.values()):
         d.nodeX, d.nodeY = -1400, 600 - k * 60
     return defaults
+
+def as_attrs(c, name, end):
+    ren = c.create(renameCHOP, name + '_attrs')
+    ren.par.renamefrom = 'Red Green Blue Dimmer'
+    ren.par.renameto = 'red green blue intensity'
+    ren.nodeX, ren.nodeY = end.nodeX + 100, end.nodeY
+    end.outputConnectors[0].connect(ren.inputConnectors[0])
+    return ren
 
 def finish(c, last, x=800):
     out = c.create(outCHOP, 'out1')
