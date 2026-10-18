@@ -3,12 +3,12 @@ import { profileOf, type BoxBlock, type Show } from '../model/show'
 import { formatLength } from '../model/format'
 import { download } from '../td/blt'
 import { compare, fixtureRows, num, range, summary, tubeRows } from './rows'
-import { endsOf, itemsOf, nearest, placeLabels, rectOf, roomsOf, runsOf, styles, type Box, type End, type Item, type Run, type XZ } from './plan'
+import { endsOf, itemsOf, rectOf, roomsOf, runsOf, styles, type Box, type End, type Item, type Run, type XZ } from './plan'
 
 const W = 1120
 const H = 768
 const FOOT = 46
-const ID = 14
+const ID = 8
 const KEY = 9
 const ROW = 10.5
 const INFO = 8.5
@@ -18,16 +18,20 @@ const STEPS = [1, 2, 5, 10, 20, 50]
 type Style = ReturnType<ReturnType<typeof styles>>
 type Plotted = { room: BoxBlock | null; items: Item[]; ends: Map<string, End>; runs: Run[]; style: (r: Run) => Style }
 
-function Glyph({ mark, x, y, dash }: { mark: Item['mark']; x: number; y: number; dash?: boolean }) {
-  if (mark === 'fixture') return <circle cx={x} cy={y} r={6} fill="#fff" stroke="#000" strokeWidth={1.8} strokeDasharray={dash ? '2 2' : undefined} />
+const sizeOf = (id: string) => Math.max(8, textW(id, ID) / 2 + 3)
+
+function Glyph({ mark, x, y, dash, id = '' }: { mark: Item['mark']; x: number; y: number; dash?: boolean; id?: string }) {
+  const r = id ? sizeOf(id) : 6
+  const label = <text x={x} y={y + ID * 0.35} fontSize={ID} fontWeight="bold" textAnchor="middle" fill={mark === 'device' ? '#fff' : '#000'}>{id}</text>
+  if (mark === 'fixture') return <g><circle cx={x} cy={y} r={r} fill="#fff" stroke="#000" strokeWidth={1.5} strokeDasharray={dash ? '2 2' : undefined} />{label}</g>
   if (mark === 'tubes') return <line x1={x - 6} y1={y + 4} x2={x + 6} y2={y - 4} stroke="#000" strokeWidth={4} strokeLinecap="round" />
-  return <rect x={x - 6} y={y - 6} width={12} height={12} fill="#000" />
+  return <g><rect x={x - r} y={y - r} width={r * 2} height={r * 2} fill="#000" />{label}</g>
 }
 
 function Mark({ item, at, k }: { item: Item; at: XZ; k: number }) {
   const [x, y] = at
-  if (item.mark === 'tubes') return <g>{item.tips.map(([t, tip]) => <line key={t} x1={x} y1={y} x2={x + (tip[0] - item.at[0]) * k} y2={y + (tip[1] - item.at[1]) * k} stroke="#000" strokeWidth={4} strokeLinecap="round" />)}<circle cx={x} cy={y} r={4} fill="#fff" stroke="#000" strokeWidth={1.5} /></g>
-  return <Glyph mark={item.mark} x={x} y={y} dash={!item.patched} />
+  if (item.mark === 'tubes') return <g>{item.tips.map(([t, tip]) => <line key={t} x1={x} y1={y} x2={x + (tip[0] - item.at[0]) * k} y2={y + (tip[1] - item.at[1]) * k} stroke="#000" strokeWidth={4} strokeLinecap="round" />)}<Glyph mark="fixture" x={x} y={y} id={item.id} /></g>
+  return <Glyph mark={item.mark} x={x} y={y} dash={!item.patched} id={item.id} />
 }
 
 const arrow = ([ax, ay]: XZ, [bx, by]: XZ, color: string) => {
@@ -95,20 +99,6 @@ function PlanSvg({ room, items, ends, runs, style }: Plotted) {
   }))
   const rp = rect && { a: P([rect.x, rect.z]), b: P([rect.x + rect.w, rect.z + rect.d]) }
   const title = room?.name ?? 'Layout'
-  const blocked: Box[] = [
-    ...marks.map(({ at }) => ({ x: at[0] - 8, y: at[1] - 8, w: 16, h: 16 })),
-    ...tips.map((t) => ({ x: t.x - 6, y: t.y - 6, w: 12, h: 12 })),
-    ...badges.map(({ at }) => ({ x: at[0] - 8, y: at[1] - 8, w: 16, h: 16 })),
-    ...(rp ? [{ x: (rp.a[0] + rp.b[0]) / 2 - 30, y: rp.a[1] - 26, w: 60, h: 16 }, { x: rp.a[0] - 26, y: (rp.a[1] + rp.b[1]) / 2 - 30, w: 16, h: 60 }] : []),
-  ]
-  const soft: Box[] = [
-    ...shifted.flatMap((l) => {
-      const n = Math.ceil(Math.hypot(l.b[0] - l.a[0], l.b[1] - l.a[1]) / 5)
-      return Array.from({ length: n + 1 }, (_, i) => ({ x: l.a[0] + ((l.b[0] - l.a[0]) * i) / n - 1.5, y: l.a[1] + ((l.b[1] - l.a[1]) * i) / n - 1.5, w: 3, h: 3 }))
-    }),
-    ...(rp ? [{ x: rp.a[0], y: rp.a[1] - 14, w: rp.b[0] - rp.a[0], h: 4 }, { x: rp.a[0] - 14, y: rp.a[1], w: 4, h: rp.b[1] - rp.a[1] }, ...[rp.a[0], rp.b[0]].map((x) => ({ x: x - 2, y: rp.a[1], w: 4, h: rp.b[1] - rp.a[1] })), ...[rp.a[1], rp.b[1]].map((y) => ({ x: rp.a[0], y: y - 2, w: rp.b[0] - rp.a[0], h: 4 }))] : []),
-  ]
-  const placed = placeLabels(marks.map(({ item, at }) => ({ at, r: 8, w: textW(item.id, ID) + 6, h: ID })), blocked, soft, frame)
   const step = STEPS.find((s) => s * k >= 90) ?? 100
   const parts = step <= 2 ? step * 2 : 5
   const grid = rect ? { xs: Array.from({ length: Math.floor(rect.w) + 1 }, (_, i) => rect.x + i), zs: Array.from({ length: Math.floor(rect.d) + 1 }, (_, i) => rect.z + i) } : { xs: [], zs: [] }
@@ -135,14 +125,6 @@ function PlanSvg({ room, items, ends, runs, style }: Plotted) {
       {marks.map(({ item, at }) => <Mark key={item.key} item={item} at={at} k={k} />)}
       {tips.map((t, i) => <text key={i} x={t.x} y={t.y + 3} fontSize={7} textAnchor="middle" fontWeight="bold">{t.label}</text>)}
       {badges.map(({ run, at }, i) => <g key={i}><circle cx={at[0]} cy={at[1]} r={7.5} fill="#fff" stroke={style(run).color} strokeWidth={2} /><text x={at[0]} y={at[1] + 3.5} fontSize={9} fontWeight="bold" textAnchor="middle">{run.n}</text></g>)}
-      {marks.map(({ item, at }, i) => {
-        const { box, ring } = placed[i]
-        const end = nearest(box, at)
-        return <g key={item.key}>
-          {ring > 0 && <line x1={at[0]} y1={at[1]} x2={end[0]} y2={end[1]} stroke="#000" strokeWidth={0.6} />}
-          <text x={box.x + 3} y={box.y + ID - 1} fontSize={ID} fontWeight="bold" stroke="#fff" strokeWidth={3} paintOrder="stroke">{item.id}</text>
-        </g>
-      })}
       {rows.length > 0 && <g>
         <line x1={kx - 14} y1={0} x2={kx - 14} y2={H - FOOT} stroke="#000" />
         <text x={kx} y={30} fontSize={12} fontWeight="bold">Types</text>
