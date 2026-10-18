@@ -25,6 +25,7 @@ import { Palette } from './editor/Palette'
 import { PaletteView } from './views/PaletteView'
 import { Simulator } from './sim/Simulator'
 import { Schedule } from './views/Schedule'
+import { Plot } from './views/Plot'
 import { download } from './td/blt'
 import { ConnectContext, FocusContext, PickContext, portKey, type PortKey } from './editor/connect'
 import { LiveContext, outputValue, record, type PortValues } from './editor/live'
@@ -54,7 +55,7 @@ function Editor() {
   const td = useRef<Td>(null)
   const showRef = useRef(show)
   const [debug, setDebug] = useState(false)
-  const [page, setPage] = useState<'build' | 'simulate' | 'schedule'>('build')
+  const [page, setPage] = useState<'build' | 'simulate' | 'schedule' | 'plot'>('build')
   const [tab, setTab] = useState<string | null>(null)
   const [paletteId, setPaletteId] = useState<string | null>(null)
   const [library, setLibrary] = useState(false)
@@ -622,6 +623,7 @@ function Editor() {
           <button className={page === 'build' ? 'on' : ''} onClick={() => setPage('build')}>build</button>
           <button className={page === 'simulate' ? 'on' : ''} onClick={() => setPage('simulate')}>simulate</button>
           <button className={page === 'schedule' ? 'on' : ''} onClick={() => setPage('schedule')}>schedule</button>
+          <button className={page === 'plot' ? 'on' : ''} onClick={() => setPage('plot')}>plot</button>
         </nav>
         <input className="url" value={url} onChange={(e) => setUrl(e.target.value)} />
         <button onClick={undo} disabled={!past.current.length} title="undo (⌘Z)">undo</button>
@@ -720,6 +722,9 @@ function Editor() {
       </main>
       <main hidden={page !== 'schedule'}>
         {page === 'schedule' && <Schedule show={show} onJump={jump} />}
+      </main>
+      <main hidden={page !== 'plot'}>
+        {page === 'plot' && <Plot show={show} />}
       </main>
     </div>
   )

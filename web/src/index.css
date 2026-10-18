@@ -273,6 +273,13 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .schedule tbody tr:hover { background: var(--panel); }
 .schedule tr.warn td { color: var(--accent); }
 .schedule .schedule-group td { padding-top: 12px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+.plot { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+.plot-plan svg { display: block; width: 100%; max-width: 1500px; height: auto; margin-bottom: 16px; }
+.plot-sheet { margin-top: 24px; }
+.plot .schedule-warnings { grid-column: 1 / -1; }
+.plot-sheet h3 { margin: 16px 0 8px; }
+.plot svg { vertical-align: middle; }
+.plot-done { display: inline-block; width: 14px; height: 14px; border: 1.5px solid var(--text); }
 
 @media print {
   @page { size: landscape; margin: 10mm; }
@@ -281,6 +288,11 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
   header, .schedule-tools, .schedule-title button { display: none; }
   .schedule { overflow: visible; padding: 0; }
   .schedule tr { break-inside: avoid; }
+  .plot-plan { break-after: page; }
+  .plot-plan svg { margin: 0; }
+  .plot-sheet { margin: 0; }
+  .plot-sheet + .plot-sheet { break-before: page; }
+  .plot-run { break-inside: avoid; }
 }
 .design-mode { margin-left: auto; color: var(--muted); font-size: 12px; border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; }
 .conflict { width: min(480px, 94vw); }
