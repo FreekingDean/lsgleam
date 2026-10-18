@@ -13,7 +13,7 @@ export type CompiledMode = { name: string; channels: ModeChannel[] }
 export type Attr = { key: string; attribute: Attribute; label: string; default: number; options?: string[] }
 export type Sim = { kind: 'par' | 'head' | 'bar'; beam: number; pan: number; tilt: number }
 
-export type OflCapability = { type: string; dmxRange?: [number, number]; color?: string; shutterEffect?: string; slotNumber?: number; wheel?: string; angleStart?: string; angleEnd?: string; speedStart?: string; speedEnd?: string; comment?: string }
+export type OflCapability = { type: string; dmxRange?: [number, number]; color?: string; shutterEffect?: string; slotNumber?: number; wheel?: string; angleStart?: string; angleEnd?: string; speedStart?: string; speedEnd?: string; comment?: string; switchChannels?: Record<string, string | null> }
 export type OflChannel = { name?: string; defaultValue?: number | string; fineChannelAliases?: string[]; dmxValueResolution?: string; capability?: OflCapability; capabilities?: OflCapability[] }
 export type OflSlot = { type: string; name?: string; colors?: string[] }
 export type OflInsert = { insert: 'matrixChannels'; repeatFor: string | string[]; channelOrder: 'perPixel' | 'perChannel'; templateChannels: (string | null)[] }
@@ -159,6 +159,9 @@ function lookupTable(fixture: OflFixture) {
     channel.fineChannelAliases?.forEach((alias, i) => table.set(alias, { key, channel, fine: i + 1 }))
   }
   for (const [key, channel] of Object.entries(fixture.availableChannels ?? {})) add(key, channel)
+  for (const channel of Object.values(fixture.availableChannels ?? {})) {
+    for (const cap of channel.capabilities ?? []) for (const alias of Object.keys(cap.switchChannels ?? {})) if (!table.has(alias)) add(alias, { capability: { type: 'Generic' } })
+  }
   return (key: string): Lookup | undefined => {
     const hit = table.get(key)
     if (hit) return hit

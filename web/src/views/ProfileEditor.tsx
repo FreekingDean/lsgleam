@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { StoredProfile } from '../model/fixtures'
 import { profileError } from '../model/library'
-import { ATTRIBUTES, attributeOf, channelFor, type Attribute, type OflChannel, type OflFixture, type OflSlot } from '../model/ofl'
+import { ATTRIBUTES, attributeOf, channelFor, type Attribute, type OflChannel, type OflFixture, type OflMode, type OflSlot } from '../model/ofl'
 
 type Props = { profile: StoredProfile | null; taken: string[]; onSave: (profile: StoredProfile) => void; onClose: () => void }
 
@@ -32,7 +32,8 @@ export function ProfileEditor({ profile: initial, taken, onSave, onClose }: Prop
   const channels = fixture.availableChannels ?? {}
   const keys = Object.keys(channels)
   const change = (patch: Partial<OflFixture>) => setFixture((f) => ({ ...f, ...patch }))
-  const modes = (f: (list: string[]) => string[]) => fixture.modes.map((m) => ({ ...m, channels: f(m.channels.filter((c): c is string => typeof c === 'string')) }))
+  const modes = (f: (c: string) => string[], extra: string[] = []): OflMode[] => fixture.modes.map((m) => ({ ...m, channels: [...m.channels.flatMap((c): OflMode['channels'] => (typeof c === 'string' ? f(c) : [c])), ...extra] }))
+  const matrix = fixture.modes.some((m) => m.channels.some((c) => c !== null && typeof c === 'object'))
   const setChannels = (next: Record<string, OflChannel>, patch: Partial<OflFixture> = {}) => change({ availableChannels: next, ...patch })
   const replace = (key: string, nextKey: string, ch: OflChannel, wheel?: OflSlot[]) => {
     const wheels = { ...fixture.wheels }
@@ -43,7 +44,7 @@ export function ProfileEditor({ profile: initial, taken, onSave, onClose }: Prop
     const fineNew = ch.fineChannelAliases?.[0]
     setChannels(next, {
       wheels,
-      modes: modes((list) => list.flatMap((c) => (c === key ? [nextKey, ...(fineNew && !fineOld ? [fineNew] : [])] : c === fineOld ? (fineNew ? [fineNew] : []) : [c]))),
+      modes: modes((c) => (c === key ? [nextKey, ...(fineNew && !fineOld ? [fineNew] : [])] : c === fineOld ? (fineNew ? [fineNew] : []) : [c])),
     })
   }
   const retype = (key: string, attribute: Attribute, slots = slotsOf(key), range = rangeOf(channels[key]) || (attribute === 'tilt' ? 270 : 540)) => {
@@ -63,13 +64,13 @@ export function ProfileEditor({ profile: initial, taken, onSave, onClose }: Prop
   }
   const remove = (key: string) => {
     const gone = [key, ...(channels[key].fineChannelAliases ?? [])]
-    setChannels(Object.fromEntries(keys.filter((k) => k !== key).map((k) => [k, channels[k]])), { modes: modes((list) => list.filter((c) => !gone.includes(c))) })
+    setChannels(Object.fromEntries(keys.filter((k) => k !== key).map((k) => [k, channels[k]])), { modes: modes((c) => (gone.includes(c) ? [] : [c])) })
   }
   const add = () => {
     let n = keys.length + 1
     while (keys.includes(`Channel ${n}`)) n++
     const key = `Channel ${n}`
-    setChannels({ ...channels, [key]: { capability: { type: 'Generic' } } }, { modes: modes((list) => [...list, key]) })
+    setChannels({ ...channels, [key]: { capability: { type: 'Generic' } } }, { modes: modes((c) => [c], [key]) })
   }
   const lens = fixture.physical?.lens?.degreesMinMax?.[1] ?? 40
   const saved: StoredProfile = { id, fixture }
@@ -121,7 +122,7 @@ export function ProfileEditor({ profile: initial, taken, onSave, onClose }: Prop
         {fixture.modes.map((m, i) => (
           <div key={i} className="par">
             <input className="mode-name" value={m.name} onChange={(e) => change({ modes: fixture.modes.map((x, k) => (k === i ? { ...x, name: e.target.value } : x)) })} />
-            <input key={m.channels.join('|')} defaultValue={m.channels.join(', ')} title="channel names in DMX order, comma separated" onBlur={(e) => change({ modes: fixture.modes.map((x, k) => (k === i ? { ...x, channels: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) } : x)) })} />
+            <input key={m.channels.join('|')} disabled={matrix} defaultValue={m.channels.map((c) => (c !== null && typeof c === 'object' ? `[${c.templateChannels.join(' / ')} per pixel]` : c)).join(', ')} title="channel names in DMX order, comma separated" onBlur={(e) => change({ modes: fixture.modes.map((x, k) => (k === i ? { ...x, channels: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) } : x)) })} />
             <button disabled={fixture.modes.length === 1} onClick={() => change({ modes: fixture.modes.filter((_, k) => k !== i) })} title="delete mode">×</button>
           </div>
         ))}

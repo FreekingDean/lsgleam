@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { download } from '../td/blt'
 import { compiledOf, type StoredProfile } from '../model/fixtures'
-import { buildLibrary, parseLibrary, rootOf, saveLibraries, savedLibraries, type ColorPalette, type Library, type Picks } from '../model/library'
+import { buildLibrary, parseLibrary, profileError, rootOf, saveLibraries, savedLibraries, type ColorPalette, type Library, type Picks } from '../model/library'
 import type { Clip } from '../model/edit'
 import type { Show, TubeDesign } from '../model/show'
 
@@ -38,6 +38,35 @@ function Item({ label, detail, onUse }: { label: ReactNode; detail: string; onUs
 
 function Pick({ label, on, onChange }: { label: string; on: boolean; onChange: (on: boolean) => void }) {
   return <label className="library-pick"><input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked)} /> {label}</label>
+}
+
+type OflIndex = { commit: string; manufacturers: Record<string, string>; fixtures: [string, string, string, string[], [string, number][]][] }
+
+function OpenFixtureLibrary({ onPick }: { onPick: (profile: StoredProfile) => void }) {
+  const [index, setIndex] = useState<OflIndex | null>(null)
+  const [query, setQuery] = useState('')
+  const [error, setError] = useState('')
+  const open = () => fetch('./ofl/index.json').then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status} ${r.statusText}`)))).then(setIndex).catch((e: Error) => setError(e.message))
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean)
+  const hits = index && words.length ? index.fixtures.filter(([man, , name, cats]) => words.every((w) => `${index.manufacturers[man] ?? man} ${name} ${cats.join(' ')}`.toLowerCase().includes(w))).slice(0, 40) : []
+  const pick = (man: string, key: string) => fetch(`./ofl/${man}/${key}.json`).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status} ${r.statusText}`)))).then((fixture) => {
+    const profile = { id: `${man}-${key}`, fixture }
+    const problem = profileError(profile)
+    if (problem) throw new Error(`${fixture.name}: ${problem}`)
+    onPick(profile)
+  }).catch((e: Error) => setError(e.message))
+  return (
+    <section className="library-lib">
+      <div className="library-title">
+        <h3>Open Fixture Library</h3>
+        {!index && <button onClick={open}>search</button>}
+      </div>
+      {index && <input className="ofl-search" value={query} placeholder={`search ${index.fixtures.length} fixtures: maker, model or type`} onChange={(e) => setQuery(e.target.value)} />}
+      {error && <div className="error">{error}</div>}
+      {hits.map(([man, key, name, , modes]) => <Item key={`${man}/${key}`} label={`${index!.manufacturers[man] ?? man} ${name}`} detail={modes.map(([, n]) => `${n} ch`).filter((x, i, all) => all.indexOf(x) === i).join(' / ')} onUse={() => pick(man, key)} />)}
+      {index && <div className="help">From open-fixture-library.org (MIT), pinned at {index.commit.slice(0, 7)}. Using a fixture copies its profile into this show.</div>}
+    </section>
+  )
 }
 
 export function LibraryView({ show, onFixture, onDesign, onPalette, onComposite, onEditProfile, onClose }: Props) {
@@ -83,6 +112,7 @@ export function LibraryView({ show, onFixture, onDesign, onPalette, onComposite,
       <div className="designer library">
         <div className="palette-main">
           {!libraries.length && <div className="help">No libraries yet. Import a .lsgleam.json file or a URL (a GitHub raw link or a gist) on the right; imported libraries stay in this browser for every show.</div>}
+          <OpenFixtureLibrary onPick={(p) => use(p.fixture.name, () => onFixture(p))} />
           {libraries.map((lib) => (
             <section key={lib.name} className="library-lib">
               <div className="library-title">
