@@ -29,7 +29,7 @@ import { Simulator } from './sim/Simulator'
 import { Schedule } from './views/Schedule'
 import { Plot } from './views/Plot'
 import { download } from './td/blt'
-import { ConnectContext, FocusContext, PickContext, portKey, type PortKey } from './editor/connect'
+import { ConnectContext, FocusContext, PatchContext, PickContext, portKey, type PortKey } from './editor/connect'
 import { LiveContext, outputValue, record, type PortValues } from './editor/live'
 import { type AnyNode, toNodes, toEdges, toCable, connectPairs, toWire, cabled, wireTargets } from './editor/graph'
 import { withRails, load, DRAFT_KEY, OFFLINE_KEY, readDraft, remember, offlineEdits } from './editor/draft'
@@ -670,6 +670,7 @@ function Editor() {
         <ConnectContext value={canConnect}>
         <PickContext value={picks}>
         <FocusContext value={focus}>
+        <PatchContext value={setPatchId}>
         <LiveContext value={live}>
         <ReactFlow
           nodes={nodes}
@@ -703,6 +704,7 @@ function Editor() {
           <MiniMap pannable zoomable />
         </ReactFlow>
         </LiveContext>
+        </PatchContext>
         </FocusContext>
         </PickContext>
         </ConnectContext>

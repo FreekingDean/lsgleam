@@ -23,7 +23,7 @@ export function ScenePanel({ show, block, onPatch, onOpenScene, onOpenPatch, onM
         <button onClick={() => onOpenScene(block.id)}>open scene</button>
         <button onClick={() => onOpenPatch(block.id)} title="patch this scene's outputs to fixtures in a grid">patch</button>
       </div>
-      <div className="help">Inputs declared inside the scene are ports on the left, its fixture and group outputs on the right; wire those to fixtures on the Outputs node. `on` is the scene's weight, 0–1, smoothed by fade in (as it rises) and fade out (as it falls): each fixture blends every scene driving it by weight, and whatever weight is left shows the fixture's own layout values. An unwired `on` takes whatever weight the others leave. Priority only breaks exact ties.</div>
+      <div className="help">Inputs declared inside the scene are ports on the left. Its fixture, group and strip outputs reach fixtures through the patch matrix: the badge under the node (or the patch button) opens it. `on` is the scene's weight, 0–1, smoothed by fade in (as it rises) and fade out (as it falls): each fixture blends every scene driving it by weight, and whatever weight is left shows the fixture's own layout values. An unwired `on` takes whatever weight the others leave. Priority only breaks exact ties.</div>
     </>
   )
 }

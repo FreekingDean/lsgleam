@@ -1,13 +1,13 @@
 import { Position, type NodeProps, type Node } from '@xyflow/react'
 import { useContext } from 'react'
 import { PickTitle, PortHandle, PortRow } from './PortHandle'
-import { FocusContext } from './connect'
+import { FocusContext, PatchContext } from './connect'
 import { TYPE_COLORS, portHint } from '../model/catalog'
 import { defOf, hasDef, kindInfo } from '../blocks'
 import { type Block, type Patch, type Port, type Rail } from '../model/show'
 import { LiveValue, useLive } from './live'
 
-export type FlowNode = Node<{ block: Block; inputs: Port[]; outputs: Port[]; patch: Patch | null; keys: Record<string, string | null>; targets: string[] }, 'block'>
+export type FlowNode = Node<{ block: Block; inputs: Port[]; outputs: Port[]; patch: Patch | null; keys: Record<string, string | null>; targets: string[]; patched?: number }, 'block'>
 export type RailFlowNode = Node<{ title: string; rails: Rail[]; side: 'in' | 'out' }, 'rail'>
 
 function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Port[]) {
@@ -19,6 +19,7 @@ export function BlockNode({ id, data, selected }: NodeProps<FlowNode>) {
   const { block, keys } = data
   const live = useLive()
   const focus = useContext(FocusContext)
+  const openPatch = useContext(PatchContext)
   const eye = block.kind === 'scene' || block.kind === 'composite'
   const sample = (portId: string) => {
     const key = keys[portId]
@@ -49,6 +50,7 @@ export function BlockNode({ id, data, selected }: NodeProps<FlowNode>) {
           ))}
         </div>
       </div>
+      {data.patched !== undefined && <button className="patch-badge nodrag" onClick={(e) => { e.stopPropagation(); openPatch(id) }} title="open the patch matrix: which fixtures this scene drives">→ {data.patched} {data.patched === 1 ? 'fixture' : 'fixtures'}</button>}
     </div>
   )
 }

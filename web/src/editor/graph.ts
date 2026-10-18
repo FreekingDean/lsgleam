@@ -1,6 +1,6 @@
 import type { Edge, Connection } from '@xyflow/react'
 import { RAIL_W, SCALE, flipY, railHeight, railSpots, unitSize } from '../td/spots'
-import { membersOf, type Cable, INPUTS_ID, LAYOUT, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, FIXTURE_PORT, type Rail, profileOf, visibleBlocks, visibleWires, type Block, type Show, type Wire } from '../model/show'
+import { membersOf, type Cable, INPUTS_ID, LAYOUT, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, FIXTURE_PORT, type Rail, profileOf, visibleBlocks, visibleWires, type Block, type Show, type Wire } from '../model/show'
 import { unitsOf, type Unit } from '../model/units'
 import { tubePatch, unitPatch, patchOf } from '../model/patch'
 import { boardUniverses, fixturesOf } from '../blocks'
@@ -38,8 +38,10 @@ function unitSub(show: Show, u: Unit) {
 function railNodes(show: Show): RailFlowNode[] {
   const spots = railSpots(show)
   const node = (id: string, title: string, rails: Rail[], side: 'in' | 'out'): RailFlowNode => ({ id, type: 'rail', position: spots[id], style: { width: RAIL_W, height: railHeight(rails) }, deletable: false, selectable: false, data: { title, rails, side } })
-  return [node(INPUTS_ID, 'Inputs', inputRail(show), 'in'), node(OUTPUTS_ID, 'Outputs', outputRail(show), 'out')]
+  return [node(INPUTS_ID, 'Inputs', inputRail(show), 'in'), ...(visibleWires(show, null).some((w) => isFixture(show, w.to) && !isScene(show, w.from)) ? [node(OUTPUTS_ID, 'Outputs', outputRail(show), 'out')] : [])]
 }
+
+const patchCount = (show: Show, scene: string) => new Set(show.wires.filter((w) => w.from === scene && w.port === FIXTURE_PORT && !w.scene).map((w) => w.to)).size
 
 export function toNodes(show: Show, prev: AnyNode[], tab: string | null): AnyNode[] {
   const selected = new Set(prev.filter((n) => n.selected).map((n) => n.id))
@@ -58,14 +60,18 @@ export function toNodes(show: Show, prev: AnyNode[], tab: string | null): AnyNod
     } as AnyNode
   })
   const blocks = visibleBlocks(show, tab)
-  const nodes: AnyNode[] = blocks.map((b) => ({
-    id: b.id,
-    type: 'block',
-    position: { x: b.x, y: flipY(b.y, b.h) },
-    style: { width: b.w, height: b.h },
-    selected: selected.has(b.id),
-    data: { block: b, keys: liveKeys(show, b), inputs: inputPorts(b, show, tab), outputs: outputPorts(b, show), patch: patchOf(show, b.id), targets: fixturesOf(show, b.id, true).map((id) => show.blocks.find((x) => x.id === id)?.name ?? id) },
-  }))
+  const nodes: AnyNode[] = blocks.map((b) => {
+    const director = tab === null && b.kind === 'scene'
+    const inputs = inputPorts(b, show, tab)
+    return {
+      id: b.id,
+      type: 'block',
+      position: { x: b.x, y: flipY(b.y, b.h) },
+      style: { width: b.w, height: director ? Math.max(NODE_H, 84 + inputs.length * 16) : b.h },
+      selected: selected.has(b.id),
+      data: { block: b, keys: liveKeys(show, b), inputs, outputs: director ? [] : outputPorts(b, show), patch: patchOf(show, b.id), targets: fixturesOf(show, b.id, true).map((id) => show.blocks.find((x) => x.id === id)?.name ?? id), ...(director ? { patched: patchCount(show, b.id) } : {}) },
+    }
+  })
   return tab === null ? [...railNodes(show), ...nodes] : nodes
 }
 
@@ -78,6 +84,7 @@ function liveKeys(show: Show, b: Block) {
 
 const isSource = (show: Show, id: string) => SOURCE_KINDS.includes(show.blocks.find((b) => b.id === id)?.kind ?? 'scene')
 const isFixture = (show: Show, id: string) => show.blocks.some((b) => b.id === id && (b.kind === 'fixture' || b.kind === 'tube'))
+const isScene = (show: Show, id: string) => show.blocks.some((b) => b.id === id && b.kind === 'scene')
 
 export function toEdges(show: Show, tab: string | null): Edge[] {
   if (tab === LAYOUT) return show.cables.map((c) => ({
@@ -90,7 +97,7 @@ export function toEdges(show: Show, tab: string | null): Edge[] {
     zIndex: 1,
     style: { stroke: TYPE_COLORS[unitsOf(show).find((u) => u.key === c.from)?.outputs.find((p) => p.id === c.fromPort)?.type ?? ''] },
   }))
-  return visibleWires(show, tab).map((w) => {
+  return visibleWires(show, tab).filter((w) => tab !== null || !(isScene(show, w.from) && isFixture(show, w.to))).map((w) => {
     const rail = tab === null && isSource(show, w.from)
     const out = tab === null && isFixture(show, w.to)
     return {
