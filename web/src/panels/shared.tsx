@@ -21,6 +21,7 @@ export type Props = {
   readValues: (names: string[], member?: string) => Promise<Record<string, number>>
   configureAudioSlice: () => Promise<string>
   onOpenPalette: (id: string) => void
+  onOpenPatch: (id: string) => void
 }
 
 export function Protocol({ value, onChange }: { value: 'artnet' | 'sacn'; onChange: (v: 'artnet' | 'sacn') => void }) {

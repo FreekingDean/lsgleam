@@ -20,7 +20,7 @@ header {
   display: flex; gap: 8px; align-items: center;
   padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--border);
 }
-header input, header button, .panel input, .panel select, .panel button, .palette-view input, .palette-view select, .palette-view button {
+header input, header button, .panel input, .panel select, .panel button, .palette-view input, .palette-view select, .palette-view button, .patch-view select, .patch-view button {
   background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font: inherit;
 }
 header .url { width: 180px; }
@@ -229,7 +229,7 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
   background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font: inherit;
 }
 .library button, .library .file-button, .dialog button, .palette-new { cursor: pointer; }
-.library button:disabled, .dialog button:disabled { opacity: 0.4; cursor: default; }
+.library button:disabled, .dialog button:disabled, .patch-view button:disabled { opacity: 0.4; cursor: default; }
 .library button.on, .dialog button.on { border-color: var(--accent); }
 .library h4, .library h5, .dialog h4 { margin: 12px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .library h5 { margin: 8px 0 4px; font-size: 10px; }
@@ -297,3 +297,25 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .design-mode { margin-left: auto; color: var(--muted); font-size: 12px; border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; }
 .conflict { width: min(480px, 94vw); }
 .conflict-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+.patch-main { overflow: auto; min-width: 0; }
+.patch-grid { border-collapse: separate; border-spacing: 0; font-size: 11px; user-select: none; }
+.patch-grid th { background: var(--panel); font-weight: normal; white-space: nowrap; }
+.patch-grid thead th { position: sticky; z-index: 2; color: var(--muted); padding: 2px 4px; border-bottom: 1px solid var(--border); }
+.patch-grid thead tr:first-child th { top: 0; height: 18px; }
+.patch-grid thead tr:last-child th { top: 23px; }
+.patch-grid .patch-corner { left: 0; z-index: 3; text-align: left; vertical-align: bottom; }
+.patch-grid .patch-block { max-width: 120px; overflow: hidden; text-overflow: ellipsis; border-left: 1px solid var(--border); color: var(--text); }
+.patch-member { min-width: 22px; text-align: center; font-variant-numeric: tabular-nums; }
+.patch-section th { position: sticky; left: 0; text-align: left; padding: 8px 6px 2px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.patch-target { position: sticky; left: 0; z-index: 1; padding: 0 8px 0 6px; height: 20px; text-align: left; cursor: pointer; border-right: 1px solid var(--border); }
+.patch-target span { display: inline-block; vertical-align: middle; }
+.patch-id { width: 34px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.patch-name { width: 150px; overflow: hidden; text-overflow: ellipsis; }
+.patch-info { width: 64px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+.patch-grid .picked .patch-target { background: #3a3220; }
+.patch-cell { width: 22px; height: 20px; padding: 0; border-bottom: 1px solid #2e2e34; border-left: 1px solid #2e2e34; cursor: pointer; text-align: center; }
+.patch-cell:hover { background: #34343c; }
+.patch-cell.on::after { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); vertical-align: middle; }
+.patch-cell.off { cursor: default; background: repeating-linear-gradient(45deg, transparent 0 3px, #2a2a30 3px 5px); }
+.patch-grid tbody tr:hover .patch-target { color: var(--accent); }

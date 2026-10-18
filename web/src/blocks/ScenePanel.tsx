@@ -3,7 +3,7 @@ import { scenesOf } from '../model/show'
 import type { Props } from '../panels/shared'
 import type { SceneBlock } from './scene'
 
-export function ScenePanel({ show, block, onPatch, onOpenScene, onMoveScene }: Props & { block: SceneBlock }) {
+export function ScenePanel({ show, block, onPatch, onOpenScene, onOpenPatch, onMoveScene }: Props & { block: SceneBlock }) {
   const scenes = scenesOf(show)
   const i = scenes.findIndex((s) => s.id === block.id)
   return (
@@ -21,6 +21,7 @@ export function ScenePanel({ show, block, onPatch, onOpenScene, onMoveScene }: P
       <div className="par">
         <label />
         <button onClick={() => onOpenScene(block.id)}>open scene</button>
+        <button onClick={() => onOpenPatch(block.id)} title="patch this scene's outputs to fixtures in a grid">patch</button>
       </div>
       <div className="help">Inputs declared inside the scene are ports on the left, its fixture and group outputs on the right; wire those to fixtures on the Outputs node. `on` is the scene's weight, 0–1, smoothed by fade in (as it rises) and fade out (as it falls): each fixture blends every scene driving it by weight, and whatever weight is left shows the fixture's own layout values. An unwired `on` takes whatever weight the others leave. Priority only breaks exact ties.</div>
     </>

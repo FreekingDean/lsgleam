@@ -23,6 +23,8 @@ import { RigPanel } from './panels/RigPanel'
 import { MultiPanel } from './panels/MultiPanel'
 import { Palette } from './editor/Palette'
 import { PaletteView } from './views/PaletteView'
+import { PatchView } from './views/PatchView'
+import { changedWires } from './views/scenePatch'
 import { Simulator } from './sim/Simulator'
 import { Schedule } from './views/Schedule'
 import { Plot } from './views/Plot'
@@ -58,6 +60,7 @@ function Editor() {
   const [page, setPage] = useState<'build' | 'simulate' | 'schedule' | 'plot'>('build')
   const [tab, setTab] = useState<string | null>(null)
   const [paletteId, setPaletteId] = useState<string | null>(null)
+  const [patchId, setPatchId] = useState<string | null>(null)
   const [library, setLibrary] = useState(false)
   const [editing, setEditing] = useState<FixtureProfile | null | undefined>(undefined)
   const [picked, setPicked] = useState<Set<string>>(new Set())
@@ -492,6 +495,12 @@ function Editor() {
   const patchSelected = useCallback((patch: Partial<Block>) => { if (sel) patchById(sel, patch) }, [sel, patchById])
 
   const closePalette = useCallback(() => setPaletteId(null), [])
+  const closePatch = useCallback(() => setPatchId(null), [])
+
+  const rewire = useCallback((next: Show) => {
+    const wires = changedWires(showRef.current, next)
+    if (wires.length) commit(next, () => rebuild(next, wireTargets(next, wires)))
+  }, [commit, rebuild])
 
   const setResponse = useCallback((profile: string, response: ColorResponse) => {
     commit({ ...showRef.current, responses: { ...showRef.current.responses, [profile]: response } })
@@ -604,6 +613,7 @@ function Editor() {
   const unit = tab === LAYOUT ? unitsOf(show).find((u) => u.key === selectedId) : undefined
   const tabBlock = show.blocks.find((b) => b.id === tab)
   const paletteBlock = show.blocks.find((b) => b.id === paletteId)
+  const patchScene = show.blocks.find((b) => b.id === patchId && b.kind === 'scene')
   const focused = new Set(tab === LAYOUT ? [] : multi)
   const shownEdges = edges.map((e) => {
     const lit = hovered !== null && ((e.target === OUTPUTS_ID && e.targetHandle === hovered) || (e.source === INPUTS_ID && e.sourceHandle === hovered))
@@ -710,10 +720,11 @@ function Editor() {
         {tab === LAYOUT && !selected && multi.length <= 1 && <RigPanel show={show} onSchedule={() => setPage('schedule')} />}
         {selected && (
           <div className="panel-wrap" onMouseUp={saveValues} onTouchEnd={saveValues}>
-            <BlockPanel show={show} block={selected} driven={driven} onPatch={patchSelected} onOpenScene={setTab} onMoveScene={reorderScene} onPatchOther={patchOther} onResetPattern={() => tdDo(() => td.current!.resetPattern(selected.id))} onDesign={changeDesign} layout={unit && { placement: unit.placement, flip: unit.flip, onPlace: (p, flip) => commit(placeUnit(showRef.current, unit.key, p, flip)) }} onValue={setValue} listAudioDevices={listAudioDevices} readValues={readValues} configureAudioSlice={configureAudioSlice} onOpenPalette={setPaletteId} />
+            <BlockPanel show={show} block={selected} driven={driven} onPatch={patchSelected} onOpenScene={setTab} onMoveScene={reorderScene} onPatchOther={patchOther} onResetPattern={() => tdDo(() => td.current!.resetPattern(selected.id))} onDesign={changeDesign} layout={unit && { placement: unit.placement, flip: unit.flip, onPlace: (p, flip) => commit(placeUnit(showRef.current, unit.key, p, flip)) }} onValue={setValue} listAudioDevices={listAudioDevices} readValues={readValues} configureAudioSlice={configureAudioSlice} onOpenPalette={setPaletteId} onOpenPatch={setPatchId} />
           </div>
         )}
         {paletteBlock?.kind === 'colors' && <PaletteView show={show} block={paletteBlock} onPatch={(patch) => patchById(paletteBlock.id, patch)} onResponse={setResponse} onClose={closePalette} />}
+        {patchScene && <PatchView show={show} scene={patchScene.id} onScene={setPatchId} onChange={rewire} onClose={closePatch} />}
         {library && <LibraryView show={show} onFixture={saveProfile} onDesign={(d) => commit(addDesign(showRef.current, d))} onPalette={placePalette} onComposite={placeComposite} onEditProfile={setEditing} onClose={closeLibrary} />}
         {editing !== undefined && <ProfileEditor profile={editing} taken={(show.profiles ?? []).map((p) => p.id)} onSave={saveProfile} onClose={closeEditor} />}
       </main>
