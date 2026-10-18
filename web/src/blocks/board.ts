@@ -19,25 +19,26 @@ export function pixelChain(show: Show, board: string, output: number) {
   return tubes
 }
 
+const ledCount = (tubes: TubeBlock[]) => tubes.reduce((n, t) => n + t.leds, 0)
+
 export function boardPlan(show: Show, board: BoardBlock) {
-  const sources: Source[] = []
+  const chains = Array.from({ length: board.outputs }, (_, o) => pixelChain(show, board.id, o + 1))
+  const total = ledCount(chains.flat())
   const slots: number[] = []
   let base = 0
-  for (let o = 1; o <= board.outputs; o++) {
-    const tubes = pixelChain(show, board.id, o)
-    const leds = Math.min(board.ledsPerOutput, tubes.reduce((n, t) => n + t.leds, 0))
-    outputUniverses(board, o).forEach((_, k) => {
+  chains.forEach((tubes, o) => {
+    const leds = Math.min(board.ledsPerOutput, ledCount(tubes))
+    outputUniverses(board, o + 1).forEach((_, k) => {
       for (let ch = 0; ch < 512; ch++) {
-        const led = k * board.ledsPerUniverse + Math.floor(ch / 3)
-        slots.push(Math.floor(ch / 3) < board.ledsPerUniverse && led < leds ? (base + led) * 3 + (ch % 3) : -1)
+        const pixel = Math.floor(ch / 3)
+        const led = k * board.ledsPerUniverse + pixel
+        slots.push(pixel < board.ledsPerUniverse && led < leds ? (ch % 3) * total + base + led : -1)
       }
     })
-    for (const t of tubes) {
-      sources.push({ from: t.id, chan: null, port: t.id, scene: null })
-      base += t.leds
-    }
-  }
-  return { sources, slots }
+    base += ledCount(tubes)
+  })
+  const sources: Source[] = chains.flat().map((t) => ({ from: t.id, chan: null, port: t.id, scene: null }))
+  return { sources, slots, bytes: total * 3 }
 }
 
 export const board: BlockDef<BoardBlock> = {
@@ -50,5 +51,8 @@ export const board: BlockDef<BoardBlock> = {
   inputs: () => [],
   outputs: () => [],
   subtitle: (b) => b.ip,
-  args: (b, show) => [boardPlan(show, b).slots],
+  args: (b, show) => {
+    const { slots, bytes } = boardPlan(show, b)
+    return [slots, bytes]
+  },
 }

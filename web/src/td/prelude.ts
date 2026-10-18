@@ -648,15 +648,25 @@ def build_tube(b, sources, geo):
     n = b['leds']
     weights = next((e for src, e in zip(sources, ends) if src.get('mode') is None), None)
     strips = [(src, e) for src, e in zip(sources, ends) if src.get('mode')]
+    if not strips:
+        dark = c.create(patternCHOP, 'dark')
+        dark.par.wavetype = 'const'
+        dark.par.amp = 0
+        dark.par.length = n
+        dark.par.channelname = 'Red Green Blue'
+        finish(c, dark, 200)
+        return
     weight = lambda src: "op('%s')['w%d']" % (weights.name, src['scene']) if weights else '1'
-    total = ' + '.join(weight(src) for src, e in strips)
     share = geo['index'] / max(geo['count'], 1)
     coords = c.create(tableDAT, 'coords')
     coords.clear()
     coords.appendRow(['tube', 'height', 'distance'])
     coords.appendRows([[(i + 0.5) / n, geo['height'][i], geo['distance'][i]] for i in range(n)])
     coords.nodeX, coords.nodeY = -600, 300
-    parts = []
+    total = c.create(mathCHOP, 'sum')
+    total.par.chopop = 'add'
+    total.par.gain.expr = '1 / max(%s, 1)' % ' + '.join(weight(src) for src, e in strips)
+    total.nodeX = 400
     for k, (src, end) in enumerate(strips):
         along = src.get('along') or 'tube'
         u = c.op('u_' + along)
@@ -668,7 +678,7 @@ def build_tube(b, sources, geo):
             u.par.output = 'chanpercol'
             u.par.firstrow = 'names'
             u.par.firstcolumn = 'values'
-            u.nodeX, u.nodeY = -400, 300 - len(parts) * 100
+            u.nodeX, u.nodeY = -400, 300 - k * 100
         lo, hi, cyclic = SHAPES[src['mode']]
         at = "op('%s')['pos'] + op('%s')['spread'] * %r" % (end.name, end.name, share)
         if src['mode'] == 'band':
@@ -677,29 +687,13 @@ def build_tube(b, sources, geo):
         look.par.index1.expr = '%s + %r' % (at, lo)
         look.par.index2.expr = '%s + %r' % (at, hi)
         look.par.cyclic = 'yes' if cyclic else 'no'
-        look.par.left = 'hold'
-        look.par.right = 'hold'
         u.outputConnectors[0].connect(look.inputConnectors[0])
         end.outputConnectors[0].connect(look.inputConnectors[1])
         mix = c.create(mathCHOP, 'mix%d' % (k + 1))
-        mix.par.gain.expr = '%s / max(%s, 1)' % (weight(src), total)
+        mix.par.gain.expr = weight(src)
         chain(look, mix, y=-k * 150)
-        parts.append(mix)
-    if not parts:
-        dark = c.create(patternCHOP, 'dark')
-        dark.par.wavetype = 'const'
-        dark.par.amp = 0
-        dark.par.length = n
-        dark.par.channelname = 'Red Green Blue'
-        parts = [dark]
-    last = parts[0]
-    if len(parts) > 1:
-        last = c.create(mathCHOP, 'sum')
-        last.par.chopop = 'add'
-        last.nodeX = 400
-        for p in parts:
-            p.outputConnectors[0].connect(last)
-    finish(c, select(c, 'rgb', last, 'Red Green Blue', 600, 0), 800)
+        mix.outputConnectors[0].connect(total)
+    finish(c, select(c, 'rgb', total, 'Red Green Blue', 600, 0), 800)
 
 ${BLOCKS.board.python}
 ${BLOCKS.artnet.python}`

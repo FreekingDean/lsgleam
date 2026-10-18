@@ -1,15 +1,13 @@
-def build_board(b, sources, slots):
+def build_board(b, sources, slots, size):
     c = new_block(b)
     ends = inputs(c, sources)
     if ends:
         join = c.create(joinCHOP, 'chain')
         for e in ends:
             e.outputConnectors[0].connect(join)
-        pixels = c.create(shuffleCHOP, 'pixels')
-        pixels.par.method = 'swap'
         stream = c.create(shuffleCHOP, 'stream')
         stream.par.method = 'seqall'
-        chain(join, pixels, stream, y=200)
+        chain(join, stream, y=200)
     else:
         stream = constant(c, 'stream', [('dark', 0)])
     pad = c.create(extendCHOP, 'pad')
@@ -26,10 +24,8 @@ def build_board(b, sources, slots):
     index.par.firstcolumn = 'values'
     gather = c.create(lookupCHOP, 'gather')
     gather.par.index1 = 0
-    gather.par.index2.expr = "max(op('stream').numSamples - 1, 1)"
+    gather.par.index2 = max(size - 1, 1)
     gather.par.cyclic = 'no'
-    gather.par.left = 'default'
-    gather.par.right = 'hold'
     universes = c.create(shuffleCHOP, 'universes')
     universes.par.method = 'splitn'
     universes.par.nval = 512
