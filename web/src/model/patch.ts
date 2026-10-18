@@ -1,4 +1,4 @@
-import { type Patch, type BoardBlock, type StripMode, type StripAlong, type Wire, type Show, SELECTOR_ID, SCENE_PORT, ON_PORT, FIXTURE_PORT, CHANNELS_PORT, isLight, scenesOf, profileOf } from './show'
+import { type Patch, type BoardBlock, type StripMode, type StripAlong, type Wire, type Show, SELECTOR_ID, SCENE_PORT, ON_PORT, FIXTURE_PORT, CHANNELS_PORT, isLight, scenesOf, fixtureMode } from './show'
 import { outputPorts, portOf } from './ports'
 import { blockDef, boardPlan, chainOf, universesPerOutput } from '../blocks'
 
@@ -124,7 +124,7 @@ export function repatch(show: Show): Show {
         const b = show.blocks.find((x) => x.id === key)
         if (b?.kind !== 'fixture') continue
         addresses.set(key, next)
-        next += profileOf(b).channels.length
+        next += fixtureMode(b).channels.length
       }
     }
   }

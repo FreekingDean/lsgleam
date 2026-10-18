@@ -1,5 +1,7 @@
 import { syncSets } from './edit'
-import { type Point, type TubeBlock, type TubeDesign, EMPTY_SHOW, FIXTURE_PORT, memberPort, NODE_H, NODE_W, profileOf, scenesOf, type Aims, type Block, type Cable, type ColorResponse, type FixtureBlock, type GroupBlock, type Kind, type Patch, type Placement, type Position, type Scene, type Show, type Wire } from './show'
+import { FIXTURES, compiledOf, type StoredProfile, type Values } from './fixtures'
+import type { ModeChannel, OflCapability, OflChannel, OflFixture, OflSlot } from './ofl'
+import { type Point, type TubeBlock, type TubeDesign, EMPTY_SHOW, FIXTURE_PORT, memberPort, NODE_H, NODE_W, scenesOf, type Aims, type Block, type Cable, type ColorResponse, type FixtureBlock, type GroupBlock, type LightBlock, hasProfile, type Kind, type Patch, type Placement, type Position, type Scene, type Show, type Wire } from './show'
 import { blockHeight, hasInput, inputPorts, outputPorts } from './ports'
 import { pathLength } from './geometry'
 import { pruneCables } from './units'
@@ -79,7 +81,7 @@ function controllers(show: Show): Show {
   return { ...show, cables, blocks: blocks.map((b) => (b.kind === 'artnet' ? { ...b, inputs: [...new Set([...b.inputs, ...inputs(b.id)])] } : b)) }
 }
 
-function lift(show: Show): Show {
+function lift(show: Show, names: Record<string, string[]>): Show {
   const old = show.blocks.filter((b) => b.kind === 'fixture' || (b.kind === 'group' && !b.scene))
   const legacyWire = (w: Wire) => w.port !== FIXTURE_PORT && old.some((l) => l.id === w.to)
   const groups = old.filter((b): b is LegacyGroup => b.kind === 'group')
@@ -89,11 +91,11 @@ function lift(show: Show): Show {
   let cables = show.cables
   const split = new Map<string, string[]>()
   for (const g of groups) {
-    const profile = profileOf(g)
+    const channels = names[g.profile] ?? []
     split.set(g.id, (g.members ?? []).map((m, i) => {
       const id = `fix${n++}`
       const key = `${g.id}:${i}`
-      blocks.push({ id, kind: 'fixture', name: `${g.name} ${m.name}`, profile: g.profile, address: m.address, values: profile.channels.map((ch, k) => m.aim[ch.name] ?? g.values[k]), x: g.x, y: g.y, w: NODE_W, h: NODE_H, ...(m.sim ? { sim: m.sim } : {}), ...(m.flip ? { flip: m.flip } : {}) })
+      blocks.push({ id, kind: 'fixture', name: `${g.name} ${m.name}`, profile: g.profile, address: m.address, values: channels.map((ch, k) => m.aim[ch] ?? (g.values as unknown as number[])[k]), x: g.x, y: g.y, w: NODE_W, h: NODE_H, ...(m.sim ? { sim: m.sim } : {}), ...(m.flip ? { flip: m.flip } : {}) } as unknown as Block)
       cables = cables.map((c) => ({ ...c, from: c.from === key ? id : c.from, to: c.to === key ? id : c.to }))
       return id
     }))
@@ -177,8 +179,109 @@ function multiplierOf({ multiplier, gamma = 1, strength, compensate }: OldRespon
   return { multiplier: compensate && strength ? strength.map((s) => Math.min(...strength) / s) as ColorResponse['multiplier'] : [1, 1, 1], gamma }
 }
 
+type LegacyChannel = { name: string; label: string; default: number; options?: string[] }
+export type LegacyProfile = { id: string; label: string; channels: LegacyChannel[]; position?: string[]; sim: { kind: 'par' } | { kind: 'head'; pan: number; tilt: number } }
+
+const BUILT_IN: Record<string, string[]> = {
+  par7: ['Dimmer', 'Red', 'Green', 'Blue', 'Strobe', 'Automode', 'Speed'],
+  mh11: ['Pan', 'Panfine', 'Tilt', 'Tiltfine', 'Colorwheel', 'Gobo', 'Strobe', 'Dimmer', 'Ptspeed', 'Automode', 'Reset'],
+}
+const COLOR_CHANNELS: Record<string, string> = { Red: 'Red', Green: 'Green', Blue: 'Blue', White: 'White', Amber: 'Amber', Uv: 'UV', UV: 'UV', Cyan: 'Cyan', Magenta: 'Magenta', Yellow: 'Yellow' }
+const NAMED: Record<string, OflCapability> = { Dimmer: { type: 'Intensity' }, Strobe: { type: 'ShutterStrobe', shutterEffect: 'Strobe' }, Ptspeed: { type: 'PanTiltSpeed' }, Zoom: { type: 'Zoom' }, Focus: { type: 'Focus' }, Hue: { type: 'Generic' }, Saturation: { type: 'Generic' } }
+
+export const isLegacy = (p: unknown): p is LegacyProfile => !!p && typeof p === 'object' && Array.isArray((p as LegacyProfile).channels)
+
+export function legacyFixture(p: LegacyProfile): OflFixture {
+  const head = p.sim.kind === 'head' ? p.sim : null
+  const names = p.channels.map((c) => c.name)
+  const fineOf = (n: string) => (/fine$/i.test(n) && names.includes(n.slice(0, -4)) ? n.slice(0, -4) : null)
+  const wheels: Record<string, { slots: OflSlot[] }> = {}
+  const channels: Record<string, OflChannel> = {}
+  for (const c of p.channels) {
+    if (fineOf(c.name)) continue
+    const fine = names.filter((n) => fineOf(n) === c.name)
+    const base: OflChannel = { name: NAMED[c.name]?.type === 'Generic' ? c.name : c.label, defaultValue: `${c.default * 100}%`, ...(fine.length ? { fineChannelAliases: fine } : {}) }
+    const wheel = c.options && /colou?r|gobo/i.test(c.name) ? (/gobo/i.test(c.name) ? 'Gobo' : 'Color') : null
+    if (c.options && wheel) {
+      const n = c.options.length
+      const starts = c.options.map((_, k) => Math.round((255 * k) / Math.max(1, n - 1)))
+      wheels[base.name!] = { slots: c.options.map((name, k) => (wheel === 'Gobo' && k === 0 ? { type: 'Open' } : { type: wheel, name })) }
+      channels[c.name] = { ...base, capabilities: starts.map((from, k): OflCapability => ({ dmxRange: [from, k === n - 1 ? 255 : starts[k + 1] - 1], type: 'WheelSlot', slotNumber: k + 1 })) }
+      continue
+    }
+    const color = COLOR_CHANNELS[c.name]
+    const angle = c.name === 'Pan' ? head?.pan ?? 540 : c.name === 'Tilt' ? head?.tilt ?? 270 : null
+    channels[c.name] = { ...base, capability: color ? { type: 'ColorIntensity', color } : angle ? { type: c.name, angleStart: '0deg', angleEnd: `${angle}deg` } : NAMED[c.name] ?? { type: 'Generic' } }
+  }
+  return {
+    name: p.label,
+    categories: head ? ['Moving Head'] : ['Color Changer'],
+    physical: { lens: { degreesMinMax: head ? [20, 20] : [72, 72] } },
+    ...(Object.keys(wheels).length ? { wheels } : {}),
+    availableChannels: channels,
+    modes: [{ name: `${names.length}-channel`, channels: names }],
+  }
+}
+
+export const migrateProfiles = (raw: unknown[]): StoredProfile[] => raw.map((p) => (isLegacy(p) ? { id: p.id, fixture: legacyFixture(p) } : p as StoredProfile))
+
+const legacyNames = (raw: unknown[]): Record<string, string[]> => ({ ...BUILT_IN, ...Object.fromEntries(raw.filter(isLegacy).map((p) => [p.id, p.channels.map((c) => c.name)])) })
+
+const partOf = (ch: ModeChannel) => ('part' in ch.encoding ? ch.encoding.part : undefined)
+
+function attributes(show: Show, names: Record<string, string[]>, profiles: StoredProfile[]): Show {
+  const legacy = show.blocks.filter((b): b is FixtureBlock | LightBlock | GroupBlock => hasProfile(b) && Array.isArray(b.values))
+  if (!legacy.length) return show
+  const compiled = (id: string) => {
+    const p = [...FIXTURES, ...profiles].find((x) => x.id === id)
+    return p && compiledOf(p)
+  }
+  const channelsOf = (id: string) => new Map((names[id] ?? []).map((n, i) => [n, compiled(id)?.modes[0].channels[i]]))
+  const keyed = (id: string, v: Values) => {
+    const chans = channelsOf(id)
+    return Object.fromEntries(Object.entries(v).flatMap(([n, x]) => {
+      const ch = chans.get(n)
+      return ch && (ch.encoding.type === 'fixed' || partOf(ch) === 'fine') ? [] : [[ch?.key ?? n, x]]
+    }))
+  }
+  const valuesOf = (id: string, arr: number[]) => {
+    const chans = channelsOf(id)
+    const out: Values = {}
+    const fine: Values = {}
+    ;(names[id] ?? []).forEach((n, i) => {
+      const ch = chans.get(n)
+      if (!ch || ch.encoding.type === 'fixed' || arr[i] === undefined) return
+      if (partOf(ch) === 'fine') fine[ch.key] = arr[i]
+      else out[ch.key] = arr[i]
+    })
+    for (const [k, f] of Object.entries(fine)) if (f > 0 && out[k] !== undefined) out[k] = (Math.round(out[k] * 255) * 256 + Math.round(f * 255)) / 65535
+    return out
+  }
+  const blocks = show.blocks.map((b): Block => {
+    if (!hasProfile(b) || !legacy.includes(b)) return b
+    const arr = b.values as unknown as number[]
+    const values = valuesOf(b.profile, arr)
+    if (b.kind === 'fixture') {
+      const modes = compiled(b.profile)?.modes ?? []
+      return { ...b, values, mode: (modes.find((m) => m.channels.length === arr.length) ?? modes[0])?.name ?? '' }
+    }
+    const hidden = b.hidden ? { hidden: b.hidden.map((h) => channelsOf(b.profile).get(h)?.key ?? h) } : {}
+    if (b.kind === 'light') return { ...b, ...hidden, values, positions: (b.positions ?? []).map((p) => ({ ...p, values: keyed(b.profile, p.values) })) }
+    const members = (m: Aims) => Object.fromEntries(Object.entries(m ?? {}).map(([k, a]) => [k, keyed(b.profile, a)]))
+    return { ...b, ...hidden, values, aims: members(b.aims), positions: (b.positions ?? []).map((p) => ({ ...p, members: members(p.members) })) }
+  })
+  const wires = show.wires.map((w) => {
+    const to = legacy.find((b) => b.id === w.to)
+    const key = to && to.kind !== 'fixture' ? channelsOf(to.profile).get(w.port)?.key : undefined
+    return key ? { ...w, port: key } : w
+  })
+  return { ...show, blocks, wires }
+}
+
 export function normalize(raw: Partial<Show>): Show {
-  const migrated = explode(lift(controllers(migrate({ ...EMPTY_SHOW, ...raw } as Legacy))))
+  const profiles = migrateProfiles(raw.profiles ?? [])
+  const names = legacyNames(raw.profiles ?? [])
+  const migrated = attributes(explode(lift(controllers(migrate({ ...EMPTY_SHOW, ...raw } as Legacy)), names)), names, profiles)
   const blocks = migrated.blocks.map((b) => {
     const sized = { ...b, w: b.w ?? NODE_W }
     if (sized.kind === 'light' || sized.kind === 'group') sized.positions = sized.positions ?? []
@@ -204,7 +307,7 @@ export function normalize(raw: Partial<Show>): Show {
     if (sized.kind === 'audioslice') Object.assign(sized, { apiPort: sized.apiPort ?? 8722, token: sized.token ?? '', smoothing: sized.smoothing ?? 0 })
     return sized
   })
-  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(raw.profiles?.length ? { profiles: raw.profiles } : {}), ...(raw.responses ? { responses: Object.fromEntries(Object.entries(raw.responses).map(([id, r]) => [id, multiplierOf(r)])) } : {}), designs: raw.designs ?? [] })
+  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(profiles.length ? { profiles } : {}), ...(raw.responses ? { responses: Object.fromEntries(Object.entries(raw.responses).map(([id, r]) => [id, multiplierOf(r)])) } : {}), designs: raw.designs ?? [] })
   const used = new Map<string, number>()
   const cables = draft.cables.map((c) => {
     if (c.port !== 'in' || draft.blocks.find((b) => b.id === c.to)?.kind !== 'audio') return c

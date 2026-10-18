@@ -1,8 +1,8 @@
 import * as THREE from 'three'
 import type { Placement } from '../model/show'
+import type { Sim } from '../model/ofl'
 
 const MAX_INTENSITY = 22
-const BEAM_ANGLE = Math.PI / 5
 const BEAM_OPACITY = 0.3
 const BEAM_LENGTH = 8
 
@@ -48,23 +48,25 @@ export class Par implements Light {
   private body = new THREE.MeshStandardMaterial({ color: 0x202028, metalness: 0.5, roughness: 0.5, emissive: 0x000000 })
   private lens = new THREE.MeshBasicMaterial({ color: 0x000000 })
   private beam: THREE.MeshBasicMaterial
-  spot = spot(this.object, BEAM_ANGLE)
+  spot: Spot
   private color = new THREE.Color()
 
-  constructor(p: Placement) {
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 0.22, 24), this.body)
+  constructor(p: Placement, sim: Sim) {
+    const angle = (sim.beam / 2) * (Math.PI / 180)
+    this.spot = spot(this.object, angle)
+    const body = new THREE.Mesh(sim.kind === 'bar' ? new THREE.BoxGeometry(1, 0.12, 0.14) : new THREE.CylinderGeometry(0.12, 0.16, 0.22, 24), this.body)
     const lens = new THREE.Mesh(new THREE.CircleGeometry(0.12, 24), this.lens)
     lens.position.y = -0.112
     lens.rotation.x = -Math.PI / 2
-    const b = beam(BEAM_LENGTH * Math.tan(BEAM_ANGLE), BEAM_LENGTH)
+    const b = beam(BEAM_LENGTH * Math.tan(angle), BEAM_LENGTH)
     this.beam = b.mat
     this.object.add(body, lens, b.mesh)
     place(this.object, p)
   }
 
   update(v: Record<string, number>) {
-    const dim = v.Dimmer ?? 1
-    this.color.setRGB(v.Red ?? 0, v.Green ?? 0, v.Blue ?? 0, THREE.SRGBColorSpace)
+    const dim = v.intensity ?? 1
+    this.color.setRGB(v.red ?? 0, v.green ?? 0, v.blue ?? 0, THREE.SRGBColorSpace)
     this.spot.color.copy(this.color)
     this.spot.intensity = dim * MAX_INTENSITY
     this.lens.color.copy(this.color).multiplyScalar(Math.min(1, dim * 1.4))

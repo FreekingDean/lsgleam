@@ -1,0 +1,70 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OpenLightingProject/open-fixture-library/master/schemas/fixture.json",
+  "name": "PAR 7ch",
+  "shortName": "par7",
+  "categories": ["Color Changer"],
+  "meta": {
+    "authors": ["lsgleam"],
+    "createDate": "2026-10-18",
+    "lastModifyDate": "2026-10-18"
+  },
+  "physical": {
+    "lens": {
+      "degreesMinMax": [72, 72]
+    }
+  },
+  "availableChannels": {
+    "Dimmer": {
+      "defaultValue": 255,
+      "capability": {
+        "type": "Intensity"
+      }
+    },
+    "Red": {
+      "capability": {
+        "type": "ColorIntensity",
+        "color": "Red"
+      }
+    },
+    "Green": {
+      "capability": {
+        "type": "ColorIntensity",
+        "color": "Green"
+      }
+    },
+    "Blue": {
+      "capability": {
+        "type": "ColorIntensity",
+        "color": "Blue"
+      }
+    },
+    "Strobe": {
+      "capability": {
+        "type": "ShutterStrobe",
+        "shutterEffect": "Strobe"
+      }
+    },
+    "Automode": {
+      "name": "Auto mode",
+      "capability": {
+        "type": "Effect",
+        "effectName": "Auto mode"
+      }
+    },
+    "Speed": {
+      "name": "Effect speed",
+      "capability": {
+        "type": "EffectSpeed",
+        "speedStart": "slow",
+        "speedEnd": "fast"
+      }
+    }
+  },
+  "modes": [
+    {
+      "name": "7-channel",
+      "shortName": "7ch",
+      "channels": ["Dimmer", "Red", "Green", "Blue", "Strobe", "Automode", "Speed"]
+    }
+  ]
+}

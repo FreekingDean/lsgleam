@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { membersOf, profileOf, type BoxBlock, type Kind, type Placement, type Point, type Show } from '../model/show'
+import { fixtureMode, membersOf, profileOf, type BoxBlock, type Kind, type Placement, type Point, type Show } from '../model/show'
 import { unitsOf } from '../model/units'
 import { tubePatch, unitPatch } from '../model/patch'
 import { chainOf, outputUniverses, pixelChain } from '../blocks'
@@ -58,7 +58,7 @@ function infoOf(show: Show, key: string, ids: Map<string, string>, order: Map<st
   const b = show.blocks.find((x) => x.id === key)
   if (b?.kind === 'fixture') {
     const patch = unitPatch(show, b.id)
-    return `${patch ? `U${patch.universe}.${b.address}` : 'unpatched'} · ${profileOf(b).channels.length} ch${order.has(key) ? ` · ${order.get(key)}` : ''}`
+    return `${patch ? `U${patch.universe}.${b.address}` : 'unpatched'} · ${fixtureMode(b).channels.length} ch${order.has(key) ? ` · ${order.get(key)}` : ''}`
   }
   if (b?.kind === 'tubeset') {
     const tubes = membersOf(show, b.id)

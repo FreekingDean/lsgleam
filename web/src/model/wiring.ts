@@ -1,4 +1,4 @@
-import { type Block, type Wire, type Show, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB, LOOK_CHANNELS, profileOf } from './show'
+import { type Block, type Wire, type Show, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB_ATTRS, LOOK_ATTRS, profileOf } from './show'
 import { pruneWires, inputPorts, outputPorts, blockHeight } from './ports'
 import { ELEMENT_TYPES, blockDef } from '../blocks'
 
@@ -10,9 +10,10 @@ export function drivenPorts(show: Show, id: string, tab: string | null) {
 }
 
 function exclusions(b: Block): [string, string[]][] {
-  if (b.kind === 'light') return [[LOOK_PORT, [...LOOK_CHANNELS, COLOR_PORT]], [COLOR_PORT, RGB], [POSITION_PORT, profileOf(b).position ?? []]]
-  if (b.kind === 'group') return [[LOOK_PORT, [...LOOK_CHANNELS, COLOR_PORT]], [COLOR_PORT, RGB], [POSITION_PORT, profileOf(b).position ?? []], [PATTERN_PORT, ['Dimmer']]]
-  return []
+  if (b.kind !== 'light' && b.kind !== 'group') return []
+  const colors = [...RGB_ATTRS, ...(profileOf(b).wheel ? [profileOf(b).wheel!.key] : [])]
+  const common: [string, string[]][] = [[LOOK_PORT, [...LOOK_ATTRS, ...colors, COLOR_PORT]], [COLOR_PORT, colors], [POSITION_PORT, profileOf(b).position ?? []]]
+  return b.kind === 'group' ? [...common, [PATTERN_PORT, ['intensity']]] : common
 }
 
 export function canWire(show: Show, from: string, fromPort: string, to: string, port: string, tab: string | null) {

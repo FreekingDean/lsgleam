@@ -1,4 +1,4 @@
-import { profileOf, type Kind, type Show } from '../model/show'
+import { fixtureMode, profileOf, type Kind, type Show } from '../model/show'
 import { formatLength } from '../model/format'
 import { unitsOf } from '../model/units'
 
@@ -17,7 +17,7 @@ export function RigPanel({ show, onSchedule }: { show: Show; onSchedule: () => v
       <div className="pars">
         <h3>Fixtures · {fixtures.length}</h3>
         {tally(fixtures.map((f) => profileOf(f).label)).map(([name, n]) => <div key={name} className="help">{n} × {name}</div>)}
-        <div className="help">{fixtures.reduce((sum, f) => sum + profileOf(f).channels.length, 0)} DMX channels</div>
+        <div className="help">{fixtures.reduce((sum, f) => sum + fixtureMode(f).channels.length, 0)} DMX channels</div>
         <h3>LED tubes · {tubes.length}</h3>
         <div className="help">{tubes.reduce((sum, t) => sum + t.leds, 0)} LEDs · {formatLength(tubes.reduce((sum, t) => sum + t.length, 0))}</div>
         <h3>Devices · {devices.reduce((sum, [, n]) => sum + n, 0)}</h3>

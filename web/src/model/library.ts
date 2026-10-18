@@ -1,15 +1,16 @@
-import { FIXTURES, setCustomProfiles, type Channel, type FixtureProfile } from './fixtures'
+import { FIXTURES, compiledOf, setCustomProfiles, type StoredProfile } from './fixtures'
+import { compile, unresolved } from './ofl'
+import { isLegacy, legacyFixture } from './migrate'
 import { normalize } from './migrate'
 import { LAYOUT_KINDS, PIXEL_PROTOCOLS, hasProfile, type Block, type ColorRow, type Show, type TubeDesign } from './show'
 import { copyBlocks, newBlock, pasteBlocks, patchBlock, type Clip } from './edit'
 
 export type ColorPalette = { name: string; steps: number; rows: ColorRow[] }
-export type Library = { format: 'lsgleam-library'; version: 1; name: string; author?: string; fixtures: FixtureProfile[]; designs: TubeDesign[]; palettes: ColorPalette[]; composites: Clip[] }
+export type Library = { format: 'lsgleam-library'; version: 1; name: string; author?: string; fixtures: StoredProfile[]; designs: TubeDesign[]; palettes: ColorPalette[]; composites: Clip[] }
 export type Picks = { fixtures: string[]; designs: string[]; palettes: string[]; composites: string[] }
 
 const STORE = 'libraries'
 const PROFILE_ID = /^[a-z0-9][a-z0-9_-]*$/i
-export const CHANNEL_NAME = /^[A-Z][A-Za-z0-9]*$/
 const HEX = /^#[0-9a-f]{6}$/i
 
 function fail(message: string): never {
@@ -21,30 +22,32 @@ const isText = (v: unknown): v is string => typeof v === 'string' && v.trim() !=
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
 const listOf = (v: unknown, what: string): unknown[] => (Array.isArray(v) ? v : fail(`${what} must be a list`))
 
-export function profileError(p: FixtureProfile): string | null {
+export function profileError(p: StoredProfile): string | null {
   if (!PROFILE_ID.test(p.id ?? '')) return 'id: letters, digits, - and _ only'
   if (FIXTURES.some((f) => f.id === p.id)) return `id "${p.id}" is a built-in profile`
-  if (!isText(p.label)) return 'needs a label'
-  if (!Array.isArray(p.channels) || !p.channels.length) return 'needs at least one channel'
-  for (const [i, ch] of p.channels.entries()) {
-    if (!CHANNEL_NAME.test(ch.name ?? '')) return `channel ${i + 1}: name must start with a capital letter, then letters and digits (e.g. Dimmer, Red, Panfine)`
-    if (p.channels.findIndex((c) => c.name === ch.name) !== i) return `channel ${i + 1}: ${ch.name} is used twice`
-    if (typeof ch.label !== 'string') return `channel ${i + 1}: needs a label`
-    if (!isNum(ch.default) || ch.default < 0 || ch.default > 1) return `channel ${i + 1}: default must be 0–1`
-    if (ch.options !== undefined && (!Array.isArray(ch.options) || !ch.options.every(isText))) return `channel ${i + 1}: options must be names`
+  const f = p.fixture
+  if (!isObj(f) || !isText(f.name)) return 'needs a name'
+  if (!Array.isArray(f.modes) || !f.modes.length) return 'needs at least one mode'
+  try {
+    const compiled = compile(f)
+    for (const [i, m] of compiled.modes.entries()) {
+      if (!isText(m.name) || compiled.modes.findIndex((x) => x.name === m.name) !== i) return `mode ${i + 1}: needs a unique name`
+      if (!m.channels.length) return `${m.name}: needs at least one channel`
+    }
+    const missing = unresolved(f)
+    if (missing.length) return missing[0]
+  } catch (e) {
+    return `not a valid Open Fixture Library fixture: ${(e as Error).message}`
   }
-  if (p.position !== undefined && (!Array.isArray(p.position) || !p.position.every((n) => p.channels.some((c) => c.name === n)))) return 'position channels must be channels of this profile'
-  if (!isObj(p.sim) || !(p.sim.kind === 'par' || (p.sim.kind === 'head' && isNum(p.sim.pan) && isNum(p.sim.tilt) && p.sim.pan > 0 && p.sim.tilt > 0))) return 'sim must be a par, or a head with pan and tilt ranges'
   return null
 }
 
-function parseProfile(raw: unknown, what: string): FixtureProfile {
+function parseProfile(raw: unknown, what: string): StoredProfile {
   if (!isObj(raw)) fail(`${what} is not an object`)
-  const p = raw as FixtureProfile
+  const p = isLegacy(raw) ? { id: raw.id, fixture: legacyFixture(raw) } : raw as StoredProfile
   const error = profileError(p)
   if (error) fail(`${what} (${String(p.id)}): ${error}`)
-  const channels: Channel[] = p.channels.map((c) => ({ name: c.name, label: c.label, default: c.default, ...(c.options ? { options: c.options } : {}) }))
-  return { id: p.id, label: p.label, channels, ...(p.position?.length ? { position: p.position } : {}), sim: p.sim }
+  return { id: p.id, fixture: p.fixture }
 }
 
 function parseDesign(raw: unknown, what: string): TubeDesign {
@@ -129,13 +132,16 @@ export function buildLibrary(show: Show, name: string, author: string, picks: Pi
   }
 }
 
-export function setProfile(show: Show, profile: FixtureProfile): Show {
+export function setProfile(show: Show, profile: StoredProfile): Show {
   const old = show.profiles?.find((p) => p.id === profile.id)
   const profiles = old ? show.profiles!.map((p) => (p === old ? profile : p)) : [...(show.profiles ?? []), profile]
   setCustomProfiles(profiles)
-  const value = (values: number[], ch: Channel) => values[old?.channels.findIndex((c) => c.name === ch.name) ?? -1] ?? ch.default
+  const next = compiledOf(profile)
   const users = show.blocks.filter(hasProfile).filter((b) => b.profile === profile.id)
-  return users.reduce<Show>((s, b) => patchBlock(s, b.id, { values: profile.channels.map((ch) => value(b.values, ch)) }), { ...show, profiles })
+  return users.reduce<Show>((s, b) => {
+    const values = Object.fromEntries(next.attrs.map((a) => [a.key, b.values[a.key] ?? a.default]))
+    return patchBlock(s, b.id, b.kind === 'fixture' ? { values, mode: next.modes.some((m) => m.name === b.mode) ? b.mode : next.modes[0].name } : { values })
+  }, { ...show, profiles })
 }
 
 export const addDesign = (show: Show, design: TubeDesign): Show => ({ ...show, nextId: show.nextId + 1, designs: [...(show.designs ?? []), { ...design, id: `design${show.nextId}` }] })
