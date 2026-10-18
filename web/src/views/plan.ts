@@ -1,13 +1,13 @@
 import * as THREE from 'three'
-import { VIRTUAL_KINDS, membersOf, profileOf, type BoxBlock, type Placement, type Point, type Show } from '../model/show'
+import { membersOf, profileOf, type BoxBlock, type Kind, type Placement, type Point, type Show } from '../model/show'
 import { unitsOf } from '../model/units'
-import { unitPatch } from '../model/patch'
+import { tubePatch, unitPatch } from '../model/patch'
 import { chainOf, outputUniverses, pixelChain } from '../blocks'
-import { num } from './rows'
+import { range, tubeRows } from './rows'
 
 export type XZ = [number, number]
-export type Mark = 'par' | 'head' | 'tubes' | 'device'
-export type Item = { key: string; name: string; mark: Mark; at: XZ; turn: number; aim: XZ | null; height: number; room: string | null; info: string; tips: [string, XZ][]; patched: boolean }
+export type Mark = 'fixture' | 'tubes' | 'device'
+export type Item = { key: string; id: string; name: string; type: string; mark: Mark; at: XZ; height: number; room: string | null; info: string; tips: [string, XZ][]; patched: boolean }
 export type End = { name: string; in: XZ; out: XZ; room: string | null }
 export type Run = { n: number; type: 'dmx' | 'pixel' | 'other'; title: string; universes: number[]; stops: string[] }
 export type Box = { x: number; y: number; w: number; h: number }
@@ -15,18 +15,28 @@ export type Box = { x: number; y: number; w: number; h: number }
 const COLORS = ['#d62728', '#1f77b4', '#2ca02c', '#9467bd', '#ff7f0e', '#17becf', '#8c564b', '#e377c2']
 const DASHES = ['', '10 4', '3 3', '12 3 3 3', '6 6', '12 3 3 3 3 3']
 
-export const abbrev = (label: string, channels: number) => `${label.split(/\s+/).filter((w) => !/\d/.test(w)).map((w) => (w === w.toUpperCase() ? w : w[0].toUpperCase())).join('')}${channels}`
+const DEVICES: Partial<Record<Kind, string>> = { tubeset: 'Tube set', board: 'Pixel board', artnet: 'Art-Net node', dmxin: 'DMX controller', cdj: 'CDJ', audio: 'Audio interface' }
+
+export const orderOf = (runs: Run[]) => new Map(runs.flatMap((r) => (r.type === 'other' ? [] : r.stops.slice(1).map((key, i): [string, string] => [key, `${r.n}.${i + 1}`]))))
+
+function lettersOf(types: string[]) {
+  const used = new Set<string>()
+  return new Map(types.map((t) => {
+    const words = t.toUpperCase().split(/[^A-Z0-9]+/).filter((w) => /^[A-Z]/.test(w))
+    const rest = [...words.join('').slice(1)]
+    const letter = [...words.map((w) => w[0]), ...rest, ...rest.map((c) => words[0][0] + c)].find((c) => !used.has(c)) ?? t
+    used.add(letter)
+    return [t, letter]
+  }))
+}
+
+const span = (ns: number[]) => (ns.length > 1 && ns.at(-1)! - ns[0] === ns.length - 1 ? range(ns[0], ns.at(-1)!) : ns.join(','))
 
 const euler = (p: Placement) => new THREE.Euler(...(p.rotation.map((d) => (d * Math.PI) / 180) as [number, number, number]))
 
 const project = (p: Placement, at: Point): XZ => {
   const v = new THREE.Vector3(...at).applyEuler(euler(p))
   return [p.position[0] + v.x, p.position[2] + v.z]
-}
-
-function aimOf(p: Placement): XZ | null {
-  const v = new THREE.Vector3(0, -1, 0).applyEuler(euler(p))
-  return Math.hypot(v.x, v.z) > 0.15 ? [v.x, v.z] : null
 }
 
 export const roomsOf = (show: Show) => show.blocks.filter((b): b is BoxBlock => b.kind === 'box')
@@ -44,33 +54,53 @@ export function nearestRoom(show: Show, [x, z]: XZ) {
   return roomsOf(show).sort((a, b) => away(a) - away(b))[0]?.id ?? null
 }
 
-function deviceInfo(show: Show, key: string) {
+function infoOf(show: Show, key: string, ids: Map<string, string>, order: Map<string, string>) {
   const b = show.blocks.find((x) => x.id === key)
-  if (b?.kind === 'artnet') return `${b.protocol} ${b.ip} · U${b.universes.join(',')}`
-  if (b?.kind === 'board') return `${b.protocol} ${b.ip} · ${b.outputs} outs`
-  if (b?.kind === 'dmxin') return `DMX controller · ${b.channels} ch`
-  if (b?.kind === 'cdj') return `CDJ player ${b.player}`
-  if (b?.kind === 'audio') return b.device || 'audio interface'
-  return b?.kind ?? ''
+  if (b?.kind === 'fixture') {
+    const patch = unitPatch(show, b.id)
+    return `${patch ? `U${patch.universe}.${b.address}` : 'unpatched'} · ${profileOf(b).channels.length} ch${order.has(key) ? ` · ${order.get(key)}` : ''}`
+  }
+  if (b?.kind === 'tubeset') {
+    const tubes = membersOf(show, b.id)
+    const patches = tubes.flatMap((t) => tubePatch(show, t.id) ?? [])
+    const boards = [...new Set(patches.map((p) => p.board))].map((id) => `${ids.get(id) ?? '?'} out ${span([...new Set(patches.filter((p) => p.board === id).map((p) => p.output))].sort((x, y) => x - y))}`)
+    const universes = [...new Set(tubeRows(show).filter((r) => r.jump === b.id).flatMap((r) => r.spans.map(([u]) => u)))].sort((x, y) => x - y)
+    return `${boards.join(', ') || 'no pixel cable'}${universes.length ? ` · U${span(universes)}` : ''}`
+  }
+  if (b?.kind === 'artnet') return `${b.ip} · U${b.universes.join(',')}`
+  if (b?.kind === 'board') return `${b.ip} · ${b.outputs} outs`
+  if (b?.kind === 'dmxin') return `${b.channels} ch`
+  if (b?.kind === 'cdj') return `player ${b.player}`
+  if (b?.kind === 'audio') return b.device || 'audio in'
+  return ''
 }
 
 export function itemsOf(show: Show): Item[] {
-  return unitsOf(show).flatMap((u): Item[] => {
+  const runs = runsOf(show)
+  const owner = (key: string) => {
+    const b = show.blocks.find((x) => x.id === key)
+    return b?.kind === 'tube' && b.set ? b.set : key
+  }
+  const rigged = runs.flatMap((r) => r.stops.map(owner))
+  const rank = (key: string) => (rigged.includes(key) ? rigged.indexOf(key) : rigged.length)
+  const placed = unitsOf(show).flatMap((u): Omit<Item, 'id' | 'info'>[] => {
     const b = u.block
     const at: XZ = [u.placement.position[0], u.placement.position[2]]
-    const base = { key: u.key, name: u.name, at, turn: u.placement.rotation[1], aim: null, height: u.placement.position[1], room: nearestRoom(show, at), tips: [], patched: true }
-    if (b.kind === 'box' || b.kind === 'tube' || VIRTUAL_KINDS.includes(b.kind)) return []
-    if (b.kind === 'fixture') {
-      const p = profileOf(b)
-      const patch = unitPatch(show, b.id)
-      return [{ ...base, mark: p.sim.kind === 'head' ? 'head' : 'par', aim: aimOf(u.placement), info: `${abbrev(p.label, p.channels.length)} · ${patch ? `U${patch.universe}.${b.address}` : 'unpatched'} · h${num(base.height)}m`, patched: !!patch }]
-    }
-    if (b.kind === 'tubeset') {
-      const tubes = membersOf(show, b.id)
-      return [{ ...base, mark: 'tubes', info: `${tubes.length} tubes · ${tubes.reduce((n, t) => n + t.leds, 0)} LEDs · h${num(base.height)}m`, tips: tubes.map((t): [string, XZ] => [t.name.slice(b.name.length + 1), project(u.placement, t.path.at(-1)!)]) }]
-    }
-    return [{ ...base, mark: 'device', info: deviceInfo(show, u.key) }]
+    const base = { key: u.key, name: u.name, at, height: u.placement.position[1], room: nearestRoom(show, at), tips: [], patched: true }
+    if (b.kind === 'fixture') return [{ ...base, type: profileOf(b).label, mark: 'fixture', patched: !!unitPatch(show, b.id) }]
+    if (b.kind === 'tubeset') return [{ ...base, type: DEVICES.tubeset!, mark: 'tubes', tips: membersOf(show, b.id).map((t): [string, XZ] => [t.name.slice(b.name.length + 1), project(u.placement, t.path.at(-1)!)]) }]
+    const type = DEVICES[b.kind]
+    return type ? [{ ...base, type, mark: 'device' }] : []
   })
+  const types = [...new Set(placed.filter((i) => i.mark === 'fixture').map((i) => i.type)), ...Object.values(DEVICES).filter((t) => placed.some((i) => i.type === t))]
+  const letters = lettersOf(types)
+  const count = new Map<string, number>()
+  const ids = new Map([...placed].sort((a, b) => rank(a.key) - rank(b.key)).map((i): [string, string] => {
+    count.set(i.type, (count.get(i.type) ?? 0) + 1)
+    return [i.key, `${letters.get(i.type)}${count.get(i.type)}`]
+  }))
+  const order = orderOf(runs)
+  return placed.map((i) => ({ ...i, id: ids.get(i.key)!, info: infoOf(show, i.key, ids, order) }))
 }
 
 export function endsOf(show: Show): Map<string, End> {

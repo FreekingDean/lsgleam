@@ -2,29 +2,32 @@ import { useRef, useState } from 'react'
 import { profileOf, type BoxBlock, type Show } from '../model/show'
 import { formatLength } from '../model/format'
 import { download } from '../td/blt'
-import { fixtureRows, num, range, summary, tubeRows } from './rows'
+import { compare, fixtureRows, num, range, summary, tubeRows } from './rows'
 import { endsOf, itemsOf, nearest, placeLabels, rectOf, roomsOf, runsOf, styles, type Box, type End, type Item, type Run, type XZ } from './plan'
 
 const W = 1120
-const H = 740
-const FRAME: Box = { x: 16, y: 16, w: W - 32, h: H - 70 }
-const NAME = 10
+const H = 768
+const FOOT = 46
+const ID = 14
+const KEY = 9
+const ROW = 10.5
 const INFO = 8.5
 const textW = (s: string, size: number) => s.length * size * 0.6
 const STEPS = [1, 2, 5, 10, 20, 50]
 
 type Style = ReturnType<ReturnType<typeof styles>>
-type Plotted = { room: BoxBlock | null; items: Item[]; ends: Map<string, End>; runs: Run[]; style: (r: Run) => Style; order: Map<string, string> }
+type Plotted = { room: BoxBlock | null; items: Item[]; ends: Map<string, End>; runs: Run[]; style: (r: Run) => Style }
+
+function Glyph({ mark, x, y, dash }: { mark: Item['mark']; x: number; y: number; dash?: boolean }) {
+  if (mark === 'fixture') return <circle cx={x} cy={y} r={6} fill="#fff" stroke="#000" strokeWidth={1.8} strokeDasharray={dash ? '2 2' : undefined} />
+  if (mark === 'tubes') return <line x1={x - 6} y1={y + 4} x2={x + 6} y2={y - 4} stroke="#000" strokeWidth={4} strokeLinecap="round" />
+  return <rect x={x - 6} y={y - 6} width={12} height={12} fill="#000" />
+}
 
 function Mark({ item, at, k }: { item: Item; at: XZ; k: number }) {
   const [x, y] = at
-  const dash = item.patched ? undefined : '2 2'
-  const turn = `rotate(${-item.turn} ${x} ${y})`
-  const aim = item.aim && <line x1={x} y1={y} x2={x + item.aim[0] * 16} y2={y + item.aim[1] * 16} stroke="#000" strokeWidth={1.2} />
-  if (item.mark === 'par') return <g>{aim}<circle cx={x} cy={y} r={6} fill="#fff" stroke="#000" strokeWidth={1.5} strokeDasharray={dash} /><circle cx={x} cy={y} r={2} fill="#000" /></g>
-  if (item.mark === 'head') return <g transform={turn}>{aim}<rect x={x - 7} y={y - 7} width={14} height={14} fill="#fff" stroke="#000" strokeWidth={1.5} strokeDasharray={dash} /><circle cx={x} cy={y} r={4} fill="#000" /><path d={`M${x - 3} ${y + 7}L${x} ${y + 10}L${x + 3} ${y + 7}Z`} fill="#000" /></g>
   if (item.mark === 'tubes') return <g>{item.tips.map(([t, tip]) => <line key={t} x1={x} y1={y} x2={x + (tip[0] - item.at[0]) * k} y2={y + (tip[1] - item.at[1]) * k} stroke="#000" strokeWidth={4} strokeLinecap="round" />)}<circle cx={x} cy={y} r={4} fill="#fff" stroke="#000" strokeWidth={1.5} /></g>
-  return <rect x={x - 6} y={y - 6} width={12} height={12} fill="#000" transform={turn} />
+  return <Glyph mark={item.mark} x={x} y={y} dash={!item.patched} />
 }
 
 const arrow = ([ax, ay]: XZ, [bx, by]: XZ, color: string) => {
@@ -33,9 +36,19 @@ const arrow = ([ax, ay]: XZ, [bx, by]: XZ, color: string) => {
   return <path d={`M${mx + 5} ${my}L${mx - 4} ${my - 4}L${mx - 4} ${my + 4}Z`} fill={color} transform={`rotate(${a} ${mx} ${my})`} />
 }
 
-function PlanSvg({ room, items, ends, runs, style, order }: Plotted) {
+function PlanSvg({ room, items, ends, runs, style }: Plotted) {
   const rect = room && rectOf(room)
   const mine = items.filter((i) => !room || i.room === room.id)
+  const types = [...new Map(mine.map((i) => [i.type, i])).values()].map((i) => ({ letter: i.id.replace(/\d+$/, ''), type: i.type, mark: i.mark, n: mine.filter((m) => m.type === i.type).length })).sort((a, b) => compare(a.letter, b.letter))
+  const rows = [...mine].sort((a, b) => compare(a.id, b.id))
+  const top = 46 + types.length * 15 + 18
+  const cols = Math.max(1, Math.ceil(rows.length / Math.floor((H - FOOT - 12 - top - 14) / ROW)))
+  const per = Math.ceil(rows.length / cols)
+  const idW = Math.max(0, ...rows.map((r) => textW(r.id, KEY))) + 6
+  const colW = idW + Math.max(0, ...rows.map((r) => textW(r.info, KEY))) + 14
+  const keyW = rows.length ? Math.max(150, cols * colW, ...types.map((t) => 44 + textW(`${t.type} × ${t.n}`, KEY + 1))) : 0
+  const kx = W - 16 - keyW
+  const frame: Box = { x: 16, y: 16, w: kx - 44, h: H - FOOT - 24 }
   const here = (e: End | undefined) => !!e && (!room || e.room === room.id)
   const segments = runs.flatMap((r) => r.stops.slice(1).flatMap((key, i) => {
     const a = ends.get(r.stops[i])
@@ -47,9 +60,9 @@ function PlanSvg({ room, items, ends, runs, style, order }: Plotted) {
   if (!pts.length) pts.push([0, 0])
   const [x0, x1] = [Math.min(...pts.map((p) => p[0])) - 0.8, Math.max(...pts.map((p) => p[0])) + 0.8]
   const [z0, z1] = [Math.min(...pts.map((p) => p[1])) - 0.8, Math.max(...pts.map((p) => p[1])) + 0.8]
-  const k = Math.min((FRAME.w - 60) / (x1 - x0), (FRAME.h - 60) / (z1 - z0))
-  const ox = FRAME.x + (FRAME.w - (x1 - x0) * k) / 2
-  const oy = FRAME.y + (FRAME.h - (z1 - z0) * k) / 2
+  const k = Math.min((frame.w - 60) / (x1 - x0), (frame.h - 60) / (z1 - z0))
+  const ox = frame.x + (frame.w - (x1 - x0) * k) / 2
+  const oy = frame.y + (frame.h - (z1 - z0) * k) / 2
   const P = ([x, z]: XZ): XZ => [ox + (x - x0) * k, oy + (z - z0) * k]
   const bundles = new Map<string, number>()
   const lines = segments.map((s) => {
@@ -95,8 +108,7 @@ function PlanSvg({ room, items, ends, runs, style, order }: Plotted) {
     }),
     ...(rp ? [{ x: rp.a[0], y: rp.a[1] - 14, w: rp.b[0] - rp.a[0], h: 4 }, { x: rp.a[0] - 14, y: rp.a[1], w: 4, h: rp.b[1] - rp.a[1] }, ...[rp.a[0], rp.b[0]].map((x) => ({ x: x - 2, y: rp.a[1], w: 4, h: rp.b[1] - rp.a[1] })), ...[rp.a[1], rp.b[1]].map((y) => ({ x: rp.a[0], y: y - 2, w: rp.b[0] - rp.a[0], h: 4 }))] : []),
   ]
-  const texts = marks.map(({ item }) => [`${item.name}${order.has(item.key) ? `  ${order.get(item.key)}` : ''}`, item.info])
-  const placed = placeLabels(marks.map(({ at }, i) => ({ at, r: 8, w: Math.max(textW(texts[i][0], NAME), textW(texts[i][1], INFO)) + 4, h: NAME + INFO + 5 })), blocked, soft, FRAME)
+  const placed = placeLabels(marks.map(({ item, at }) => ({ at, r: 8, w: textW(item.id, ID) + 6, h: ID })), blocked, soft, frame)
   const step = STEPS.find((s) => s * k >= 90) ?? 100
   const parts = step <= 2 ? step * 2 : 5
   const grid = rect ? { xs: Array.from({ length: Math.floor(rect.w) + 1 }, (_, i) => rect.x + i), zs: Array.from({ length: Math.floor(rect.d) + 1 }, (_, i) => rect.z + i) } : { xs: [], zs: [] }
@@ -127,12 +139,30 @@ function PlanSvg({ room, items, ends, runs, style, order }: Plotted) {
         const { box, ring } = placed[i]
         const end = nearest(box, at)
         return <g key={item.key}>
-          {ring > 0 && <line x1={at[0]} y1={at[1]} x2={end[0]} y2={end[1]} stroke="#000" strokeWidth={0.5} />}
-          <text x={box.x + 2} y={box.y + NAME} fontSize={NAME} fontWeight="bold" stroke="#fff" strokeWidth={2.5} paintOrder="stroke">{texts[i][0]}</text>
-          <text x={box.x + 2} y={box.y + NAME + INFO + 2} fontSize={INFO} stroke="#fff" strokeWidth={2.5} paintOrder="stroke">{texts[i][1]}</text>
+          {ring > 0 && <line x1={at[0]} y1={at[1]} x2={end[0]} y2={end[1]} stroke="#000" strokeWidth={0.6} />}
+          <text x={box.x + 3} y={box.y + ID - 1} fontSize={ID} fontWeight="bold" stroke="#fff" strokeWidth={3} paintOrder="stroke">{item.id}</text>
         </g>
       })}
-      <g transform={`translate(0 ${H - 46})`}>
+      {rows.length > 0 && <g>
+        <line x1={kx - 14} y1={0} x2={kx - 14} y2={H - FOOT} stroke="#000" />
+        <text x={kx} y={30} fontSize={12} fontWeight="bold">Types</text>
+        {types.map((t, i) => <g key={t.type}>
+          <Glyph mark={t.mark} x={kx + 7} y={46 + i * 15 - 4} />
+          <text x={kx + 20} y={46 + i * 15} fontSize={12} fontWeight="bold">{t.letter}</text>
+          <text x={kx + 44} y={46 + i * 15} fontSize={KEY + 1}>{t.type} × {t.n}</text>
+        </g>)}
+        <text x={kx} y={top} fontSize={12} fontWeight="bold">Channels</text>
+        <text x={kx} y={top + 13} fontSize={KEY - 1} fill="#555">universe.address · channels · run.order</text>
+        {rows.map((r, i) => {
+          const x = kx + Math.floor(i / per) * colW
+          const y = top + 14 + ROW + (i % per) * ROW
+          return <g key={r.key}>
+            <text x={x} y={y} fontSize={KEY} fontWeight="bold">{r.id}</text>
+            <text x={x + idW} y={y} fontSize={KEY}>{r.info}</text>
+          </g>
+        })}
+      </g>}
+      <g transform={`translate(0 ${H - FOOT})`}>
         <line x1={0} y1={0} x2={W} y2={0} stroke="#000" />
         <text x={16} y={20} fontSize={14} fontWeight="bold">Lighting plot · {title}</text>
         <text x={16} y={36} fontSize={9}>{rect ? `${num(rect.w)} × ${num(rect.d)} m, ${num(rect.h)} m high · ` : ''}top-down, as on the layout tab · grid 1 m</text>
@@ -141,8 +171,8 @@ function PlanSvg({ room, items, ends, runs, style, order }: Plotted) {
           <text x={0} y={18} fontSize={9}>0</text>
           <text x={step * k} y={18} fontSize={9} textAnchor="middle">{step} m</text>
         </g>
-        <text x={W - 16} y={20} fontSize={9} textAnchor="end">○ PAR · ■ moving head (▾ front) · ✱ LED tubes (numbers at tube tips) · ■ device</text>
-        <text x={W - 16} y={36} fontSize={9} textAnchor="end">labels: name  run.order · type · U universe.address · hang height · ① run number, ▶ cable direction</text>
+        <text x={W - 16} y={20} fontSize={9} textAnchor="end">○ fixture · ■ device · ━ LED tube set (tube numbers at the tips) · dashed outline: unpatched</text>
+        <text x={W - 16} y={36} fontSize={9} textAnchor="end">ID = type letter + number in rigging order · ① cable run number · ▶ cable direction</text>
       </g>
     </svg>
   )
@@ -164,7 +194,6 @@ export function Plot({ show }: { show: Show }) {
   const ends = endsOf(show)
   const runs = runsOf(show)
   const style = styles(runs)
-  const order = new Map(runs.flatMap((r) => (r.type === 'other' ? [] : r.stops.slice(1).map((key, i): [string, string] => [key, `${r.n}.${i + 1}`]))))
   const shown = rooms.length ? rooms.filter((r) => scope === 'all' || r.id === scope) : [null]
   const inScope = (key: string) => scope === 'all' || ends.get(key)?.room === scope
   const scoped = runs.filter((r) => r.stops.some(inScope))
@@ -172,6 +201,10 @@ export function Plot({ show }: { show: Show }) {
   const tubes = tubeRows(show)
   const s = summary(show, fixtures, tubes)
   const block = (key: string) => show.blocks.find((b) => b.id === key)
+  const idOf = (key: string) => {
+    const b = block(key)
+    return items.find((i) => i.key === (b?.kind === 'tube' ? b.set : key))?.id ?? ''
+  }
   const at = (key: string) => {
     const b = block(key)
     const u = items.find((i) => i.key === (b?.kind === 'tube' ? b.set : key))
@@ -186,33 +219,33 @@ export function Plot({ show }: { show: Show }) {
         <button onClick={save}>download SVG</button>
       </div>
       <div ref={ref}>
-        {shown.map((room) => <div key={room?.id ?? 'layout'} className="plot-plan"><PlanSvg room={room} items={items} ends={ends} runs={runs} style={style} order={order} /></div>)}
+        {shown.map((room) => <div key={room?.id ?? 'layout'} className="plot-plan"><PlanSvg room={room} items={items} ends={ends} runs={runs} style={style} /></div>)}
       </div>
       <section className="plot-sheet">
         <h2>Legend and checks</h2>
         <div className="schedule-summary">
-          <div><h4>Symbols</h4><div>○ PAR (centre dot)</div><div>□ moving head, ▾ marks its front</div><div>✱ LED tube set, tube numbers at the tips</div><div>■ device (node, board, controller, audio)</div><div>dashed outline: not patched</div><div>tick from a symbol: where it points</div><div>label “1.13”: run 1, 13th on the cable</div></div>
+          <div><h4>Symbols</h4><div>○ fixture</div><div>■ device (node, board, controller, audio)</div><div>━ LED tube set, tube numbers at the tips</div><div>dashed outline: not patched</div><div>ID “P3”: type letter, 3rd in rigging order</div><div>“1.13”: run 1, 13th on the cable</div></div>
           <div><h4>Fixtures</h4>{s.types.map(([t, n]) => <div key={t}>{n} × {t}</div>)}<div>{tubes.length} LED tubes</div></div>
           <div className="schedule-universes"><h4>Universes</h4><div>{s.universes.map((u) => <div key={u}>{u}</div>)}</div></div>
           <div className="schedule-warnings"><h4>Warnings</h4>{s.warnings.length ? s.warnings.map((w) => <div key={w}>{w}</div>) : <div>none</div>}</div>
         </div>
         <h3>Cable runs</h3>
         <table>
-          <thead><tr><th>Run</th><th>Line</th><th>Cable</th><th>From</th><th>Universes</th><th>Stops</th></tr></thead>
-          <tbody>{scoped.map((r) => <tr key={r.n}><td>{r.n}</td><td><Swatch s={style(r)} /></td><td>{r.type}</td><td>{r.title}</td><td>{r.universes.map((u) => `U${u}`).join(', ')}</td><td>{r.stops.length - 1}</td></tr>)}</tbody>
+          <thead><tr><th>Run</th><th>Line</th><th>Cable</th><th>ID</th><th>From</th><th>Universes</th><th>Stops</th></tr></thead>
+          <tbody>{scoped.map((r) => <tr key={r.n}><td>{r.n}</td><td><Swatch s={style(r)} /></td><td>{r.type}</td><td><b>{idOf(r.stops[0])}</b></td><td>{r.title}</td><td>{r.universes.map((u) => `U${u}`).join(', ')}</td><td>{r.stops.length - 1}</td></tr>)}</tbody>
         </table>
       </section>
       {scoped.filter((r) => r.type === 'dmx').map((r) => {
         const node = block(r.stops[0])
         return (
           <section key={r.n} className="plot-sheet">
-            <h2><Swatch s={style(r)} /> Run {r.n} · DMX · {r.title}{node?.kind === 'artnet' ? ` · ${node.protocol} ${node.ip}` : ''}</h2>
+            <h2><Swatch s={style(r)} /> Run {r.n} · DMX · {idOf(r.stops[0])} {r.title}{node?.kind === 'artnet' ? ` · ${node.protocol} ${node.ip}` : ''}</h2>
             <table>
-              <thead><tr><th>#</th><th>Fixture</th><th>Type</th><th>Channels</th><th>Universe</th><th>Start address</th><th>Position x, z · height (m)</th><th>Room</th><th>Done</th></tr></thead>
+              <thead><tr><th>#</th><th>ID</th><th>Fixture</th><th>Type</th><th>Channels</th><th>Universe</th><th>Start address</th><th>Position x, z · height (m)</th><th>Room</th><th>Done</th></tr></thead>
               <tbody>{r.stops.slice(1).map((key, i) => {
                 const b = block(key)
                 const f = fixtures.find((x) => x.id === key)
-                return <tr key={key} className={f?.warn ? 'warn' : ''}><td>{i + 1}</td><td>{b?.name ?? key}</td><td>{b?.kind === 'fixture' ? profileOf(b).label : b?.kind}</td><td>{f ? `${f.channels} ch (${range(f.address, f.address + f.channels - 1)})` : ''}</td><td>{f?.universe ?? ''}</td><td><b>{f?.address ?? ''}</b></td><td>{at(key)}</td><td>{f?.room}</td><td><Done /></td></tr>
+                return <tr key={key} className={f?.warn ? 'warn' : ''}><td>{i + 1}</td><td><b>{idOf(key)}</b></td><td>{b?.name ?? key}</td><td>{b?.kind === 'fixture' ? profileOf(b).label : b?.kind}</td><td>{f ? `${f.channels} ch (${range(f.address, f.address + f.channels - 1)})` : ''}</td><td>{f?.universe ?? ''}</td><td><b>{f?.address ?? ''}</b></td><td>{at(key)}</td><td>{f?.room}</td><td><Done /></td></tr>
               })}</tbody>
             </table>
           </section>
@@ -225,12 +258,12 @@ export function Plot({ show }: { show: Show }) {
             const board = block(r.stops[0])
             return (
               <div key={r.n} className="plot-run">
-                <h3><Swatch s={style(r)} /> Run {r.n} · {r.title}{board?.kind === 'board' ? ` · ${board.protocol} ${board.ip}` : ''} · U{r.universes.join(', U')}</h3>
+                <h3><Swatch s={style(r)} /> Run {r.n} · {idOf(r.stops[0])} {r.title}{board?.kind === 'board' ? ` · ${board.protocol} ${board.ip}` : ''} · U{r.universes.join(', U')}</h3>
                 <table>
-                  <thead><tr><th>#</th><th>Tube set</th><th>Tube</th><th>LEDs</th><th>Length</th><th>LEDs on output</th><th>Universe / addresses</th><th>Position x, z · height (m)</th><th>Done</th></tr></thead>
+                  <thead><tr><th>#</th><th>ID</th><th>Tube set</th><th>Tube</th><th>LEDs</th><th>Length</th><th>LEDs on output</th><th>Universe / addresses</th><th>Position x, z · height (m)</th><th>Done</th></tr></thead>
                   <tbody>{r.stops.slice(1).map((key, i) => {
                     const t = tubes.find((x) => x.id === key)
-                    return <tr key={key}><td>{i + 1}</td><td>{t?.set}</td><td>{t?.name}</td><td>{t?.leds}</td><td>{t ? formatLength(t.length) : ''}</td><td>{t ? range(t.offset + 1, t.offset + t.leds) : ''}</td><td>{t?.spans.map(([u, [a, b]]) => `U${u} ${range(a, b)}`).join(', ')}</td><td>{at(key)}</td><td><Done /></td></tr>
+                    return <tr key={key}><td>{i + 1}</td><td><b>{idOf(key)}</b></td><td>{t?.set}</td><td>{t?.name}</td><td>{t?.leds}</td><td>{t ? formatLength(t.length) : ''}</td><td>{t ? range(t.offset + 1, t.offset + t.leds) : ''}</td><td>{t?.spans.map(([u, [a, b]]) => `U${u} ${range(a, b)}`).join(', ')}</td><td>{at(key)}</td><td><Done /></td></tr>
                   })}</tbody>
                 </table>
               </div>
@@ -242,10 +275,10 @@ export function Plot({ show }: { show: Show }) {
         <section className="plot-sheet">
           <h2>Other cables</h2>
           <table>
-            <thead><tr><th>Run</th><th>From</th><th>To</th><th>Done</th></tr></thead>
+            <thead><tr><th>Run</th><th>From ID</th><th>From</th><th>To ID</th><th>To</th><th>Done</th></tr></thead>
             <tbody>{scoped.filter((r) => r.type === 'other').map((r) => {
               const c = show.cables.find((x) => x.from === r.stops[0] && x.to === r.stops[1])
-              return <tr key={r.n}><td>{r.n}</td><td>{block(r.stops[0])?.name} · {c?.fromPort} ({at(r.stops[0])})</td><td>{block(r.stops[1])?.name} · {c?.port} ({at(r.stops[1])})</td><td><Done /></td></tr>
+              return <tr key={r.n}><td>{r.n}</td><td><b>{idOf(r.stops[0])}</b></td><td>{block(r.stops[0])?.name} · {c?.fromPort} ({at(r.stops[0])})</td><td><b>{idOf(r.stops[1])}</b></td><td>{block(r.stops[1])?.name} · {c?.port} ({at(r.stops[1])})</td><td><Done /></td></tr>
             })}</tbody>
           </table>
         </section>
