@@ -1,4 +1,5 @@
 import { NumField } from '../panels/fields'
+import { SceneRooms } from '../panels/SceneRooms'
 import { scenesOf } from '../model/show'
 import type { Props } from '../panels/shared'
 import type { SceneBlock } from './scene'
@@ -18,6 +19,7 @@ export function ScenePanel({ show, block, onPatch, onOpenScene, onOpenPatch, onM
       </div>
       <NumField label="Fade in (s)" value={block.fadeIn} onCommit={(v) => onPatch({ fadeIn: Math.max(0, v) })} />
       <NumField label="Fade out (s)" value={block.fadeOut} onCommit={(v) => onPatch({ fadeOut: Math.max(0, v) })} />
+      <SceneRooms show={show} block={block} onPatch={onPatch} />
       <div className="par">
         <label />
         <button onClick={() => onOpenScene(block.id)}>open scene</button>

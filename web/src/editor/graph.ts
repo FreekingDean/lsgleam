@@ -1,17 +1,19 @@
 import type { Edge, Connection } from '@xyflow/react'
 import { RAIL_W, SCALE, flipY, railHeight, railSpots, unitSize } from '../td/spots'
-import { membersOf, type Cable, INPUTS_ID, LAYOUT, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, FIXTURE_PORT, type Rail, profileOf, visibleBlocks, visibleWires, type Block, type Show, type Wire } from '../model/show'
-import { unitsOf, type Unit } from '../model/units'
+import { membersOf, type Cable, INPUTS_ID, LAYOUT, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, FIXTURE_PORT, type Rail, type SceneBlock, profileOf, scenesOf, visibleBlocks, visibleWires, type Block, type Show, type Wire } from '../model/show'
+import { roomsOf, unitsOf, type Unit } from '../model/units'
 import { tubePatch, unitPatch, patchOf } from '../model/patch'
 import { boardUniverses, fixturesOf } from '../blocks'
 import { TYPE_COLORS } from '../model/catalog'
 import { inputRail, outputRail, inputPorts, outputPorts, portOf } from '../model/ports'
-import type { FlowNode, RailFlowNode } from './BlockNode'
+import type { FlowNode, RailFlowNode, ZoneFlowNode } from './BlockNode'
 import type { BoxFlowNode, UnitFlowNode } from './UnitNode'
 import { portKey } from './connect'
 import { liveKey } from './live'
 
-export type AnyNode = FlowNode | UnitFlowNode | BoxFlowNode | RailFlowNode
+export type AnyNode = FlowNode | UnitFlowNode | BoxFlowNode | RailFlowNode | ZoneFlowNode
+
+export const DIRECTOR_ID = '__director'
 
 function unitSub(show: Show, u: Unit) {
   const b = u.block
@@ -52,6 +54,38 @@ const railTab = (show: Show, tab: string | null) => tab === null || isScene(show
 
 const patchCount = (show: Show, scene: string) => new Set(show.wires.filter((w) => w.from === scene && w.port === FIXTURE_PORT && !w.scene).map((w) => w.to)).size
 
+function roomNames(show: Show, b: SceneBlock) {
+  const rooms = roomsOf(show)
+  if (rooms.length < 2) return undefined
+  const picked = rooms.filter((r) => b.rooms?.includes(r.id))
+  return picked.length ? picked.map((r) => r.name).join(', ') : 'all rooms'
+}
+
+export const directorHeight = (show: Show, b: Block) => Math.max(NODE_H, 84 + inputPorts(b, show, null).length * 16)
+
+const ZONE_PAD = 40
+
+function zoneNode(show: Show): ZoneFlowNode[] {
+  const scenes = scenesOf(show)
+  if (!scenes.length) return []
+  const left = Math.min(...scenes.map((b) => b.x)) - ZONE_PAD
+  const top = Math.min(...scenes.map((b) => flipY(b.y, b.h))) - ZONE_PAD - 30
+  const right = Math.max(...scenes.map((b) => b.x + b.w)) + ZONE_PAD
+  const bottom = Math.max(...scenes.map((b) => flipY(b.y, b.h) + directorHeight(show, b))) + ZONE_PAD
+  return [{ id: DIRECTOR_ID, type: 'zone', position: { x: left, y: top }, style: { width: right - left, height: bottom - top }, zIndex: -1, deletable: false, selectable: false, draggable: false, data: { title: 'Scenes', rooms: roomsOf(show).length > 1 } }]
+}
+
+export function alignScenes(show: Show): [string, number, number][] {
+  const others = visibleBlocks(show, null).filter((b) => b.kind !== 'scene')
+  const x = others.length ? Math.max(...others.map((b) => b.x + b.w)) + 240 : 0
+  let top = Math.min(0, ...others.map((b) => flipY(b.y, b.h)))
+  return scenesOf(show).map((b) => {
+    const y = flipY(top, b.h)
+    top += directorHeight(show, b) + 40
+    return [b.id, x, y]
+  })
+}
+
 export function toNodes(show: Show, prev: AnyNode[], tab: string | null): AnyNode[] {
   const selected = new Set(prev.filter((n) => n.selected).map((n) => n.id))
   if (tab === LAYOUT) return unitsOf(show).filter((u) => !(u.block.kind === 'tube' && u.block.set)).map((u) => {
@@ -76,12 +110,12 @@ export function toNodes(show: Show, prev: AnyNode[], tab: string | null): AnyNod
       id: b.id,
       type: 'block',
       position: { x: b.x, y: flipY(b.y, b.h) },
-      style: { width: b.w, height: director ? Math.max(NODE_H, 84 + inputs.length * 16) : b.h },
+      style: { width: b.w, height: director ? directorHeight(show, b) : b.h },
       selected: selected.has(b.id),
-      data: { block: b, keys: liveKeys(show, b), inputs, outputs: director ? [] : outputPorts(b, show), patch: patchOf(show, b.id), targets: fixturesOf(show, b.id, true).map((id) => show.blocks.find((x) => x.id === id)?.name ?? id), ...(director ? { patched: patchCount(show, b.id) } : {}) },
+      data: { block: b, keys: liveKeys(show, b), inputs, outputs: director ? [] : outputPorts(b, show), patch: patchOf(show, b.id), targets: fixturesOf(show, b.id, true).map((id) => show.blocks.find((x) => x.id === id)?.name ?? id), ...(director ? { patched: patchCount(show, b.id), rooms: b.kind === 'scene' ? roomNames(show, b) : undefined } : {}) },
     }
   })
-  if (tab === null) return [...railNodes(show), ...nodes]
+  if (tab === null) return [...zoneNode(show), ...railNodes(show), ...nodes]
   return isScene(show, tab) ? [sceneRail(show, tab), ...nodes] : nodes
 }
 

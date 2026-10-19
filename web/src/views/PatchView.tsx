@@ -8,7 +8,7 @@ type Drag = { port: string; on: boolean; rows: string[] }
 const blocksOf = (drivers: Driver[]) => [...new Set(drivers.map((d) => d.block))].map((block) => drivers.filter((d) => d.block === block))
 
 export function PatchView({ show, scene, onScene, onChange, onClose }: Props) {
-  const targets = useMemo(() => targetsOf(show), [show])
+  const targets = useMemo(() => targetsOf(show, scene), [show, scene])
   const drivers = useMemo(() => driversOf(show, scene), [show, scene])
   const ok = useMemo(() => options(show, scene, targets, drivers), [show, scene, targets, drivers])
   const current = useMemo(() => patched(show, scene), [show, scene])
@@ -65,7 +65,7 @@ export function PatchView({ show, scene, onScene, onChange, onClose }: Props) {
   const copy = () => {
     const r = copyPatch(show, source, scene)
     if (r.show !== show) onChange(r.show)
-    setNote([r.missing.length ? `No match here for ${r.missing.join(', ')}.` : '', r.refused.length ? `Could not patch ${r.refused.join(', ')}.` : ''].join(' ').trim() || 'Copied every patch.')
+    setNote([r.missing.length ? `No match here for ${r.missing.join(', ')}.` : '', r.refused.length ? `Could not patch ${r.refused.join(', ')}.` : '', r.outside ? `Skipped ${r.outside} outside this scene's rooms.` : ''].join(' ').trim() || 'Copied every patch.')
   }
 
   return (

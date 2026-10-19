@@ -10,13 +10,13 @@ import { SCALE, STEP, flipY, metres, unitSize } from './td/spots'
 import { isLight, ownersOf, type Cable, type TubeDesign, INPUTS_ID, LAYOUT, LAYOUT_KINDS, NODE_H, OUTPUTS_ID, SELECTOR_ID, hasProfile, profileOf, scenesOf, type Block, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './model/show'
 import { ceilingAt, addCable, canCable, removeCables, unitsOf } from './model/units'
 import { setDesign, placeUnit, copyBlocks, diffShows, pasteBlocks, moveScene, newBlock, patchBlock, removeBlocks, type Clip } from './model/edit'
-import { addWire, canWire, drivenPorts, removeWires } from './model/wiring'
+import { addWire, canWire, drivenPorts, outOfRooms, removeWires } from './model/wiring'
 import { downstream, repatch } from './model/patch'
 import { FIXTURES, compiledOf, setCustomProfiles, type StoredProfile } from './model/fixtures'
 import { addComposite, addDesign, addPalette, setProfile, type ColorPalette } from './model/library'
 import { LibraryView } from './views/LibraryView'
 import { ProfileEditor } from './views/ProfileEditor'
-import { BlockNode, RailNode, type FlowNode } from './editor/BlockNode'
+import { BlockNode, RailNode, ZoneNode, type FlowNode } from './editor/BlockNode'
 import { BoxNode, UnitNode, type UnitFlowNode } from './editor/UnitNode'
 import { BlockPanel } from './panels/BlockPanel'
 import { RigPanel } from './panels/RigPanel'
@@ -29,12 +29,12 @@ import { Simulator } from './sim/Simulator'
 import { Schedule } from './views/Schedule'
 import { Plot } from './views/Plot'
 import { download } from './td/blt'
-import { ConnectContext, FocusContext, PatchContext, PickContext, portKey, type PortKey } from './editor/connect'
+import { ConnectContext, DirectorContext, FocusContext, PickContext, portKey, type PortKey } from './editor/connect'
 import { LiveContext, outputValue, record, type PortValues } from './editor/live'
-import { type AnyNode, toNodes, toEdges, toCable, connectPairs, toWire, cabled, wireTargets } from './editor/graph'
+import { type AnyNode, alignScenes, toNodes, toEdges, toCable, connectPairs, toWire, cabled, wireTargets } from './editor/graph'
 import { withRails, load, DRAFT_KEY, OFFLINE_KEY, readDraft, remember, offlineEdits } from './editor/draft'
 
-const NODE_TYPES = { block: BlockNode, unit: UnitNode, box: BoxNode, rail: RailNode }
+const NODE_TYPES = { block: BlockNode, unit: UnitNode, box: BoxNode, rail: RailNode, zone: ZoneNode }
 const GRID = 20
 
 const snap = (v: number) => Math.round(v / GRID) * GRID
@@ -330,7 +330,7 @@ function Editor() {
       if (e.key === 'z' && e.shiftKey) { redo(); e.preventDefault(); return }
       if (e.key === 'z') { undo(); e.preventDefault(); return }
       if (e.key === 'y') { redo(); e.preventDefault(); return }
-      if (e.key === 'a') { setNodes((ns) => ns.map((n) => ({ ...n, selected: n.type !== 'rail' }))); e.preventDefault(); return }
+      if (e.key === 'a') { setNodes((ns) => ns.map((n) => ({ ...n, selected: n.type !== 'rail' && n.type !== 'zone' }))); e.preventDefault(); return }
       if (tabRef.current === LAYOUT) {
         if (e.key === 'c') clipboard.current = copyBlocks(showRef.current, selectedIds.current)
         if (e.key === 'v' && clipboard.current) {
@@ -474,6 +474,12 @@ function Editor() {
       commitDiff(next)
       return
     }
+    if (block.kind === 'scene' && 'rooms' in patch) {
+      const gone = outOfRooms(next, block.id)
+      const pruned = removeWires(next, gone)
+      commit(pruned, gone.length ? () => rebuild(pruned, wireTargets(next, gone)) : undefined)
+      return
+    }
     if (block.kind === 'strip' && prev?.kind === 'strip' && Object.keys(patch).every((k) => ['color', 'dimmer', 'position', 'width', 'speed', 'spread', 'stops'].includes(k)) && block.stops.length === prev.stops.length) {
       commit(next, () => td.current!.setStrip(block))
       return
@@ -494,6 +500,16 @@ function Editor() {
   }, [commit, commitDiff, rebuild])
 
   const patchSelected = useCallback((patch: Partial<Block>) => { if (sel) patchById(sel, patch) }, [sel, patchById])
+
+  const alignDirector = useCallback(() => {
+    let next = showRef.current
+    const moved = alignScenes(next)
+    for (const [id, x, y] of moved) next = patchBlock(next, id, { x, y })
+    commit(next, async () => {
+      for (const [id, x, y] of moved) await td.current!.move(id, x, y)
+    })
+  }, [commit])
+  const director = useMemo(() => ({ patch: setPatchId, align: alignDirector }), [alignDirector])
 
   const closePalette = useCallback(() => setPaletteId(null), [])
   const closePatch = useCallback(() => setPatchId(null), [])
@@ -670,7 +686,7 @@ function Editor() {
         <ConnectContext value={canConnect}>
         <PickContext value={picks}>
         <FocusContext value={focus}>
-        <PatchContext value={setPatchId}>
+        <DirectorContext value={director}>
         <LiveContext value={live}>
         <ReactFlow
           nodes={nodes}
@@ -704,7 +720,7 @@ function Editor() {
           <MiniMap pannable zoomable />
         </ReactFlow>
         </LiveContext>
-        </PatchContext>
+        </DirectorContext>
         </FocusContext>
         </PickContext>
         </ConnectContext>
