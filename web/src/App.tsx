@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import {
-  ReactFlow, Background, BackgroundVariant, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, ReactFlowProvider,
+  ReactFlow, Background, BackgroundVariant, Controls, MiniMap, Panel, useNodesState, useEdgesState, useReactFlow, ReactFlowProvider,
   type Edge, type Connection, type OnSelectionChangeParams, type NodeChange,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { Bridge } from './td/bridge'
 import { Td, colorTable, valueTable } from './td/td'
 import { SCALE, STEP, flipY, metres, unitSize } from './td/spots'
-import { isLight, ownersOf, type Cable, type TubeDesign, INPUTS_ID, LAYOUT, LAYOUT_KINDS, NODE_H, OUTPUTS_ID, SELECTOR_ID, hasProfile, profileOf, scenesOf, type Block, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './model/show'
+import { isLight, ownersOf, type Cable, type TubeDesign, INPUTS_ID, LAYOUT, LAYOUT_KINDS, NODE_H, OUTPUTS_ID, SELECTOR_ID, hasProfile, profileOf, scenesOf, type Block, type ColorResponse, type FloorPlan, type PaletteItem, type Placement, type Show, type Wire } from './model/show'
 import { ceilingAt, addCable, canCable, removeCables, unitsOf } from './model/units'
 import { setDesign, placeUnit, copyBlocks, diffShows, pasteBlocks, moveScene, newBlock, patchBlock, removeBlocks, type Clip } from './model/edit'
 import { addWire, canWire, drivenPorts, outOfRooms, removeWires } from './model/wiring'
@@ -31,7 +31,12 @@ import { Plot } from './views/Plot'
 import { download } from './td/blt'
 import { ConnectContext, DirectorContext, FocusContext, PickContext, portKey, type PortKey } from './editor/connect'
 import { LiveContext, outputValue, record, type PortValues } from './editor/live'
-import { type AnyNode, alignScenes, toNodes, toEdges, toCable, connectPairs, toWire, cabled, wireTargets } from './editor/graph'
+import { type AnyNode, type FloorView, alignScenes, toNodes, toEdges, toCable, connectPairs, toWire, cabled, wireTargets } from './editor/graph'
+import { CalibrateBar, FloorPlanLayer, PlanImport } from './editor/FloorPlan'
+import type { PlanImage } from './editor/planImage'
+import { calibrate, movePlan, newPlan, type Calib } from './model/floorplan'
+import { floorOf, floorsOf, withPlan } from './model/floors'
+import { FloorsPanel } from './panels/FloorsPanel'
 import { withRails, load, DRAFT_KEY, OFFLINE_KEY, readDraft, remember, offlineEdits } from './editor/draft'
 
 const NODE_TYPES = { block: BlockNode, unit: UnitNode, box: BoxNode, rail: RailNode, zone: ZoneNode }
@@ -64,6 +69,11 @@ function Editor() {
   const [library, setLibrary] = useState(false)
   const [editing, setEditing] = useState<StoredProfile | null | undefined>(undefined)
   const [picked, setPicked] = useState<Set<string>>(new Set())
+  const [planFile, setPlanFile] = useState<File | null>(null)
+  const [floorView, setFloorView] = useState<{ floor: string; all: boolean }>(() => { try { return { floor: '', all: false, ...JSON.parse(localStorage.getItem('layoutFloor') ?? '{}') } } catch { return { floor: '', all: false } } })
+  const floorRef = useRef(floorView)
+  const viewOf = useCallback((s: Show): FloorView => ({ id: floorOf(s, floorRef.current.floor).id, all: floorRef.current.all }), [])
+  const [calib, setCalib] = useState<Calib | null>(null)
   const pickedRef = useRef(picked)
   pickedRef.current = picked
   const togglePorts = useCallback((ports: PortKey[]) => setPicked((prev) => {
@@ -83,7 +93,10 @@ function Editor() {
     return next
   }), [])
   const focus = useMemo(() => ({ hidden: hiddenNodes, toggleHidden, hover: setHovered }), [hiddenNodes, toggleHidden])
-  useEffect(() => setPicked(new Set()), [tab])
+  useEffect(() => {
+    setPicked(new Set())
+    setCalib(null)
+  }, [tab])
   const tabRef = useRef(tab)
   tabRef.current = tab
   const [tick, setTick] = useState(0)
@@ -103,17 +116,19 @@ function Editor() {
     setCustomProfiles(next.profiles ?? [])
     showRef.current = next
     setShow(next)
-    setNodes((prev) => toNodes(next, prev, tabRef.current))
+    setNodes((prev) => toNodes(next, prev, tabRef.current, viewOf(next)))
     setEdges(toEdges(next, tabRef.current))
-  }, [setNodes, setEdges])
+  }, [setNodes, setEdges, viewOf])
 
   useEffect(() => {
+    floorRef.current = floorView
+    try { localStorage.setItem('layoutFloor', JSON.stringify(floorView)) } catch { /* private mode */ }
     setSelectedId(null)
-    setNodes((prev) => toNodes(showRef.current, prev, tab))
+    setNodes((prev) => toNodes(showRef.current, prev, tab, viewOf(showRef.current)))
     setEdges(toEdges(showRef.current, tab))
     const t = setTimeout(() => fitView({ padding: 0.1 }), 60)
     return () => clearTimeout(t)
-  }, [tab, setNodes, setEdges, fitView])
+  }, [tab, floorView, setNodes, setEdges, fitView, viewOf])
 
   const tdDo = useCallback(async (work: () => Promise<unknown>) => {
     if (!connectedRef.current) return
@@ -289,7 +304,8 @@ function Editor() {
     if (tab === LAYOUT) {
       const [made, block] = newBlock(showRef.current, item, -600, -showRef.current.nextId * 40, null)
       const hung = block.kind === 'fixture' || block.kind === 'tube' || block.kind === 'tubeset'
-      const next = patchBlock(made, block.id, { sim: { position: [metres(x), hung ? ceilingAt(made, metres(x), metres(y)) ?? 3 : block.kind === 'box' ? 0 : 1, metres(y)], rotation: [0, 0, 0] } })
+      const floor = floorOf(made, floorRef.current.floor).elevation
+      const next = patchBlock(made, block.id, { sim: { position: [metres(x), hung ? ceilingAt(made, metres(x), metres(y), floor) ?? floor + 3 : block.kind === 'box' ? floor : floor + 1, metres(y)], rotation: [0, 0, 0] } })
       commit(next, () => rebuild(next, [block.id]))
       return
     }
@@ -603,6 +619,22 @@ function Editor() {
     }, 120)
   }, [selectOnly, fitView])
 
+  const setPlan = useCallback((floor: string, plan: FloorPlan | null) => commit(withPlan(showRef.current, floor, plan)), [commit])
+  const planOf = (floor: string) => floorOf(showRef.current, floor).floorplan
+  const showFloor = useCallback((floor: string, all = false) => setFloorView({ floor, all }), [])
+  const commitFloors = useCallback((next: Show) => {
+    if (!floorsOf(next).some((f) => f.id === calib?.floor && f.floorplan)) setCalib(null)
+    commit(next)
+  }, [commit, calib])
+
+  const placePlan = useCallback(({ src, aspect }: PlanImage) => {
+    setPlanFile(null)
+    const floor = floorOf(showRef.current, floorRef.current.floor).id
+    const p = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+    setPlan(floor, newPlan(src, aspect, [p.x / SCALE, p.y / SCALE]))
+    setCalib({ floor, points: [] })
+  }, [setPlan, screenToFlowPosition])
+
   const listAudioDevices = useCallback(() => td.current!.audioDevices(), [])
 
   const readValues = useCallback(async (names: string[], member?: string) => {
@@ -632,7 +664,10 @@ function Editor() {
   const paletteBlock = show.blocks.find((b) => b.id === paletteId)
   const patchScene = show.blocks.find((b) => b.id === patchId && b.kind === 'scene')
   const focused = new Set(tab === LAYOUT ? [] : multi)
-  const shownEdges = edges.map((e) => {
+  const nodeIds = new Set(nodes.map((n) => n.id))
+  const activeFloor = floorOf(show, floorView.floor)
+  const floors = floorsOf(show)
+  const shownEdges = edges.filter((e) => tab !== LAYOUT || (nodeIds.has(e.source) && nodeIds.has(e.target))).map((e) => {
     const lit = hovered !== null && ((e.target === OUTPUTS_ID && e.targetHandle === hovered) || (e.source === INPUTS_ID && e.sourceHandle === hovered))
     const touches = focused.has(e.source) || focused.has(e.target)
     const dim = hovered !== null ? !lit : focused.size > 0 && !touches
@@ -717,6 +752,12 @@ function Editor() {
             <Background id="minor" variant={BackgroundVariant.Lines} gap={SCALE / 4} color="#25252d" />
             <Background id="major" variant={BackgroundVariant.Lines} gap={SCALE} color="#3a3a46" bgColor="transparent" />
           </> : <Background gap={GRID} />}
+          {tab === LAYOUT && <FloorPlanLayer floors={floors.filter((f) => f.floorplan && (floorView.all || f.id === activeFloor.id))} active={activeFloor.id} calib={calib} onMove={(floor, x, z) => setPlan(floor, movePlan(planOf(floor)!, x, z))} onPoint={(floor, p) => setCalib((c) => c && c.floor === floor ? { floor, points: [...c.points, p] } : c)} />}
+          {tab === LAYOUT && calib && floors.some((f) => f.id === calib.floor && f.floorplan) && <CalibrateBar points={calib.points} onApply={(m) => { setPlan(calib.floor, calibrate(planOf(calib.floor)!, calib.points, m)); setCalib(null) }} onReset={() => setCalib({ ...calib, points: [] })} onCancel={() => setCalib(null)} />}
+          {tab === LAYOUT && floors.length > 1 && <Panel position="top-left" className="floor-tabs">
+            {floors.map((f) => <button key={f.id} className={!floorView.all && f.id === activeFloor.id ? 'on' : ''} onClick={() => showFloor(f.id)}>{f.name}</button>)}
+            <button className={floorView.all ? 'on' : ''} onClick={() => showFloor(activeFloor.id, true)} title={`every floor; ${activeFloor.name} is active and the others are greyed`}>all</button>
+          </Panel>}
           <Controls />
           <MiniMap pannable zoomable />
         </ReactFlow>
@@ -736,7 +777,7 @@ function Editor() {
             </div>
           </aside>
         )}
-        {tab === LAYOUT && !selected && multi.length <= 1 && <RigPanel show={show} onSchedule={() => setPage('schedule')} />}
+        {tab === LAYOUT && !selected && multi.length <= 1 && <RigPanel show={show} onSchedule={() => setPage('schedule')}><FloorsPanel show={show} active={activeFloor.id} onActive={(id) => showFloor(id, floorView.all)} onCommit={commitFloors} onFile={setPlanFile} onCalibrate={() => setCalib({ floor: activeFloor.id, points: [] })} /></RigPanel>}
         {selected && (
           <div className="panel-wrap" onMouseUp={saveValues} onTouchEnd={saveValues}>
             <BlockPanel show={show} block={selected} driven={driven} onPatch={patchSelected} onOpenScene={setTab} onMoveScene={reorderScene} onPatchOther={patchOther} onResetPattern={() => tdDo(() => td.current!.resetPattern(selected.id))} onDesign={changeDesign} layout={unit && { placement: unit.placement, flip: unit.flip, onPlace: (p, flip) => commit(placeUnit(showRef.current, unit.key, p, flip)) }} onValue={setValue} listAudioDevices={listAudioDevices} readValues={readValues} configureAudioSlice={configureAudioSlice} onOpenPalette={setPaletteId} onOpenPatch={setPatchId} />
@@ -745,6 +786,7 @@ function Editor() {
         {paletteBlock?.kind === 'colors' && <PaletteView show={show} block={paletteBlock} onPatch={(patch) => patchById(paletteBlock.id, patch)} onResponse={setResponse} onClose={closePalette} />}
         {patchScene && <PatchView show={show} scene={patchScene.id} onScene={setPatchId} onChange={rewire} onClose={closePatch} />}
         {library && <LibraryView show={show} onFixture={saveProfile} onDesign={(d) => commit(addDesign(showRef.current, d))} onPalette={placePalette} onComposite={placeComposite} onEditProfile={setEditing} onClose={closeLibrary} />}
+        {planFile && <PlanImport file={planFile} onPlan={placePlan} onClose={() => setPlanFile(null)} />}
         {editing !== undefined && <ProfileEditor profile={editing} taken={(show.profiles ?? []).map((p) => p.id)} onSave={saveProfile} onClose={closeEditor} />}
       </main>
       <main hidden={page !== 'simulate'}>

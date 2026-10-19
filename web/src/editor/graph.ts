@@ -2,6 +2,7 @@ import type { Edge, Connection } from '@xyflow/react'
 import { RAIL_W, SCALE, flipY, railHeight, railSpots, unitSize } from '../td/spots'
 import { membersOf, type Cable, INPUTS_ID, LAYOUT, NODE_H, ON_PORT, OUTPUTS_ID, RAIL_SEP, SELECTOR_ID, SOURCE_KINDS, FIXTURE_PORT, type Rail, type SceneBlock, profileOf, scenesOf, visibleBlocks, visibleWires, type Block, type Show, type Wire } from '../model/show'
 import { roomsOf, unitsOf, type Unit } from '../model/units'
+import { floorAt } from '../model/floors'
 import { tubePatch, unitPatch, patchOf } from '../model/patch'
 import { boardUniverses, fixturesOf } from '../blocks'
 import { TYPE_COLORS } from '../model/catalog'
@@ -86,9 +87,12 @@ export function alignScenes(show: Show): [string, number, number][] {
   })
 }
 
-export function toNodes(show: Show, prev: AnyNode[], tab: string | null): AnyNode[] {
+export type FloorView = { id: string; all: boolean }
+
+export function toNodes(show: Show, prev: AnyNode[], tab: string | null, floor?: FloorView): AnyNode[] {
   const selected = new Set(prev.filter((n) => n.selected).map((n) => n.id))
-  if (tab === LAYOUT) return unitsOf(show).filter((u) => !(u.block.kind === 'tube' && u.block.set)).map((u) => {
+  const here = (u: Unit) => !floor || floorAt(show, u.placement.position[1]).id === floor.id
+  if (tab === LAYOUT) return unitsOf(show).filter((u) => !(u.block.kind === 'tube' && u.block.set) && (floor?.all || here(u))).map((u) => {
     const [w, h] = unitSize(u)
     const box = u.block.kind === 'box'
     return {
@@ -97,6 +101,7 @@ export function toNodes(show: Show, prev: AnyNode[], tab: string | null): AnyNod
       position: { x: u.placement.position[0] * SCALE - w / 2, y: u.placement.position[2] * SCALE - h / 2 },
       style: { width: w, height: h },
       zIndex: box ? 0 : 2,
+      ...(here(u) ? {} : { className: 'other-floor' }),
       draggable: !(u.block.kind === 'box' && u.block.locked),
       selected: selected.has(u.key),
       data: { unit: u, block: u.block, sub: unitSub(show, u) },

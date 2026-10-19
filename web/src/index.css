@@ -327,3 +327,20 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .patch-cell.on::after { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); vertical-align: middle; }
 .patch-cell.off { cursor: default; background: repeating-linear-gradient(45deg, transparent 0 3px, #2a2a30 3px 5px); }
 .patch-grid tbody tr:hover .patch-target { color: var(--accent); }
+
+.floorplan { position: absolute; z-index: -1; max-width: none; user-select: none; }
+.floorplan-marks { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: visible; pointer-events: none; }
+.floorplan-marks circle { fill: var(--accent); stroke: #000; }
+.floorplan-marks line { stroke: var(--accent); }
+.floorplan-tools { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: 6px; }
+.calibrate { display: flex; gap: 6px; align-items: center; padding: 6px 10px; background: var(--panel); border: 1px solid var(--accent); border-radius: 6px; font-size: 12px; }
+.calibrate input, .calibrate button { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font: inherit; }
+.calibrate button:disabled { opacity: 0.4; }
+.plan-pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.plan-pages button { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.plan-pages img, .plan-thumb { width: 100%; height: 140px; object-fit: contain; background: #fff; }
+.panel .file-button { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; cursor: pointer; }
+.floor-tabs { display: flex; gap: 4px; }
+.floor-tabs button { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; font: inherit; cursor: pointer; }
+.floor-tabs button.on, .floorplan-tools button.on { border-color: var(--accent); color: var(--accent); }
+.react-flow__node.other-floor { opacity: 0.3; }

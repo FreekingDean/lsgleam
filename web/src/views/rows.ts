@@ -2,10 +2,11 @@ import { FIXTURE_PORT, fixtureMode, profileOf, type BoardBlock, type Show } from
 import { pixelAddress, tubePatch, unitPatch } from '../model/patch'
 import { pixelChain } from '../blocks'
 import { roomAt, unitsOf } from '../model/units'
+import { floorAt } from '../model/floors'
 
 export type Row = { id: string; jump: string; warn: boolean }
 export type Column<T> = { label: string; text: (r: T) => string; sort?: (r: T) => number | string }
-export type FixtureRow = Row & { name: string; type: string; channels: number; node: string; universe: number | null; address: number; x: number; height: number; z: number; turn: number; tilt: number; room: string; scenes: string[] }
+export type FixtureRow = Row & { name: string; type: string; channels: number; node: string; universe: number | null; address: number; x: number; height: number; z: number; turn: number; tilt: number; room: string; floor: string; scenes: string[] }
 export type TubeRow = Row & { set: string; name: string; protocol: string; leds: number; length: number; board: string; output: number | null; offset: number; spans: [number, [number, number]][] }
 
 export const num = (v: number) => `${Number(v.toFixed(2))}`
@@ -30,7 +31,7 @@ export function fixtureRows(show: Show): FixtureRow[] {
     return [{
       id: b.id, jump: b.id, warn: !p, name: b.name, type: profileOf(b).label, channels: fixtureMode(b).channels.length,
       node: node?.kind === 'artnet' ? `${node.name} · ${node.ip} · ${node.protocol}` : '', universe: p?.universe ?? null, address: b.address,
-      x, height, z, turn: u.placement.rotation[1], tilt: u.placement.rotation[0], room: roomAt(show, x, z)?.name ?? '', scenes: drivers(show, b.id),
+      x, height, z, turn: u.placement.rotation[1], tilt: u.placement.rotation[0], room: roomAt(show, x, z, height)?.name ?? '', floor: floorAt(show, height).name, scenes: drivers(show, b.id),
     }]
   })
 }

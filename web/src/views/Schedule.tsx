@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Show } from '../model/show'
 import { formatLength } from '../model/format'
+import { floorsOf } from '../model/floors'
 import { download } from '../td/blt'
 import { compare, fixtureRows, num, range, summary, tubeRows, type Column, type FixtureRow, type Row, type TubeRow } from './rows'
 
@@ -38,7 +39,12 @@ const GROUPS: Record<string, (r: FixtureRow) => string> = {
   none: () => '',
   universe: (r) => (r.universe === null ? 'unpatched' : `${r.node} · U${r.universe}`),
   type: (r) => r.type,
+  floor: (r) => r.floor,
 }
+
+const FLOOR_COLUMN: Column<FixtureRow> = { label: 'Floor', text: (r) => r.floor }
+const ROOM = FIXTURE_COLUMNS.findIndex((c) => c.label === 'Room')
+const WITH_FLOOR = [...FIXTURE_COLUMNS.slice(0, ROOM), FLOOR_COLUMN, ...FIXTURE_COLUMNS.slice(ROOM)]
 
 const cell = (s: string) => (/[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s)
 const toCsv = <T,>(rows: T[], columns: Column<T>[]) => [columns.map((c) => c.label), ...rows.map((r) => columns.map((c) => c.text(r)))].map((line) => line.map(cell).join(',')).join('\n')
@@ -73,6 +79,7 @@ export function Schedule({ show, onJump }: { show: Show; onJump: (id: string) =>
   const [filter, setFilter] = useState('')
   const [groupBy, setGroupBy] = useState('none')
   const fixtures = fixtureRows(show)
+  const columns = floorsOf(show).length > 1 ? WITH_FLOOR : FIXTURE_COLUMNS
   const tubes = tubeRows(show)
   const s = summary(show, fixtures, tubes)
   const q = filter.trim().toLowerCase()
@@ -81,7 +88,7 @@ export function Schedule({ show, onJump }: { show: Show; onJump: (id: string) =>
     <div className="schedule">
       <div className="schedule-tools">
         <input placeholder="filter" value={filter} onChange={(e) => setFilter(e.target.value)} />
-        <label>group by <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>{Object.keys(GROUPS).map((g) => <option key={g}>{g}</option>)}</select></label>
+        <label>group by <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>{Object.keys(GROUPS).filter((g) => g !== 'floor' || columns === WITH_FLOOR).map((g) => <option key={g}>{g}</option>)}</select></label>
         <button onClick={() => window.print()}>print</button>
       </div>
       <h2>Fixture schedule</h2>
@@ -91,7 +98,7 @@ export function Schedule({ show, onJump }: { show: Show; onJump: (id: string) =>
         <div><h4>Pixel boards</h4>{s.boards.map((o) => <div key={o}>{o}</div>)}</div>
         <div className="schedule-warnings"><h4>Warnings</h4>{s.warnings.length ? s.warnings.map((w) => <div key={w}>{w}</div>) : <div>none</div>}</div>
       </div>
-      <Table title="Fixtures" file="lsgleam-fixtures.csv" rows={match(fixtures, FIXTURE_COLUMNS)} columns={FIXTURE_COLUMNS} group={groupBy === 'none' ? undefined : GROUPS[groupBy]} onJump={onJump} />
+      <Table title="Fixtures" file="lsgleam-fixtures.csv" rows={match(fixtures, columns)} columns={columns} group={groupBy === 'none' ? undefined : GROUPS[groupBy]} onJump={onJump} />
       <Table title="LED tubes" file="lsgleam-tubes.csv" rows={match(tubes, TUBE_COLUMNS)} columns={TUBE_COLUMNS} onJump={onJump} />
     </div>
   )

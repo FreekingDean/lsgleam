@@ -10,7 +10,7 @@ import { panelOf } from '../blocks/panels'
 
 function PlacementFields({ show, layout, block }: Props & { layout: Layout }) {
   const { placement, onPlace } = layout
-  const ceiling = ceilingAt(show, placement.position[0], placement.position[2])
+  const ceiling = ceilingAt(show, placement.position[0], placement.position[2], placement.position[1])
   return (
     <>
       <PlacementEditor placement={placement} onPlace={(p) => onPlace(p)} floor={block.kind === 'box'} />
