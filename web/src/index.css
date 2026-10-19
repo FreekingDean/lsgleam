@@ -186,8 +186,6 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .zone-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #b07ddc; }
 .zone-help { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .zone-head button { font-size: 11px; padding: 0 6px; }
-.help.warn { color: var(--accent); }
-.scene-rooms { display: flex; flex-wrap: wrap; gap: 4px 10px; }
 .patch-badge:hover { background: #b07ddc33; }
 .td-node.rail { border-style: dashed; height: 100%; box-sizing: border-box; }
 .td-node.rail .td-port { height: 18px; line-height: 18px; }

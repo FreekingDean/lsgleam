@@ -84,7 +84,7 @@ export function ZoneNode({ data }: NodeProps<ZoneFlowNode>) {
     <div className="zone">
       <div className="zone-head">
         <span className="zone-title">{data.title}</span>
-        <span className="zone-help">the director's outputs: each scene's on sets its weight{data.rooms ? '; fixtures follow only the scenes of their room' : ''}</span>
+        <span className="zone-help">the director's outputs: each scene's on sets its weight{data.rooms ? '; scope a scene to rooms in its panel' : ''}</span>
         <button className="nodrag" onClick={director.align} title="stack the scenes in priority order, right of the logic that drives them">align</button>
       </div>
     </div>

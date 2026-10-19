@@ -149,6 +149,7 @@ function Editor() {
     await rebuild(loaded, [...wanted].filter((id) => !present.has(id) || rewired.includes(id)))
     const extra = [...present].filter((id) => !wanted.has(id))
     if (extra.length) await t.destroy(extra)
+    if (rewired.length) await t.saveShow(loaded)
   }, [apply, rebuild])
 
   const replaceTd = useCallback(async (next: Show) => {
