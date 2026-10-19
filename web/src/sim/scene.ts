@@ -142,7 +142,7 @@ export class SimScene {
         const map = new THREE.TextureLoader().load(plan.src)
         map.colorSpace = THREE.SRGBColorSpace
         map.anisotropy = this.renderer.capabilities.getMaxAnisotropy()
-        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshLambertMaterial({ map, emissiveMap: map, emissive: 0x505058, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }))
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshLambertMaterial({ map, emissiveMap: map, emissive: 0x8a8a90, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }))
         mesh.raycast = () => {}
         this.scene.add(mesh)
         this.plans.set(id, { src: plan.src, mesh })

@@ -3,6 +3,7 @@ import { inputPorts, outputPorts, outputRail } from '../model/ports'
 import { addWire, canWire, removeWires } from '../model/wiring'
 import { itemsOf, roomsOf } from './plan'
 import { inRooms } from '../model/units'
+import { floorAt, floorsOf } from '../model/floors'
 import { fixtureRows, tubeRows } from './rows'
 
 export type Target = { id: string; name: string; plot: string; info: string; section: string }
@@ -14,6 +15,7 @@ export function targetsOf(show: Show, scene: string): Target[] {
   const tubes = new Map(tubeRows(show).map((r) => [r.id, r]))
   const names = new Map(roomsOf(show).map((r) => [r.id, r.name]))
   const rooms = sceneRooms(show, scene)
+  const floors = floorsOf(show)
   const mine = patched(show, scene)
   const rows = outputRail(show).flatMap((rail) => rail.ports.filter((p) => mine.has(p.id) || inRooms(show, rooms, p.id)).map((p) => {
     const b = show.blocks.find((x) => x.id === p.id)
@@ -21,11 +23,12 @@ export function targetsOf(show: Show, scene: string): Target[] {
     const f = fixtures.get(p.id)
     const t = tubes.get(p.id)
     const info = f ? (f.universe === null ? 'no DMX' : `U${f.universe}.${f.address}`) : t?.output != null ? `out ${t.output} @${t.offset + 1}` : 'no cable'
-    return { id: p.id, name: p.label, plot: item?.id ?? '', info, rail: rail.title, room: item?.room ? names.get(item.room) : undefined }
+    return { id: p.id, name: p.label, plot: item?.id ?? '', info, rail: rail.title, room: item?.room ? names.get(item.room) : undefined, floor: floors.indexOf(floorAt(show, item?.height ?? 0)) }
   }))
   const split = new Set(rows.map((r) => r.room)).size > 1
-  const sectioned = rows.map(({ rail, room, ...r }) => ({ ...r, section: split && room ? `${rail} · ${room}` : rail }))
-  return [...new Set(sectioned.map((r) => r.section))].flatMap((s) => sectioned.filter((r) => r.section === s))
+  const level = (n: number) => (floors.length > 1 ? `${floors[n].name} · ` : '')
+  const sectioned = rows.map(({ rail, room, floor, ...r }) => ({ ...r, floor, section: level(floor) + (split && room ? `${rail} · ${room}` : rail) }))
+  return [...new Set(sectioned.sort((a, b) => a.floor - b.floor).map((r) => r.section))].flatMap((s) => sectioned.filter((r) => r.section === s).map(({ floor: _floor, ...r }) => r))
 }
 
 export function driversOf(show: Show, scene: string): Driver[] {
