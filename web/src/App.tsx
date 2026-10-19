@@ -47,7 +47,7 @@ function Editor() {
   const [error, setError] = useState('')
   const [show, setShow] = useState<Show>(readDraft)
   const baseline = useRef(show)
-  const [conflict, setConflict] = useState<Show | null>(null)
+  const [conflict, setConflict] = useState<[Show, string[]] | null>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState<AnyNode>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -139,14 +139,14 @@ function Editor() {
 
   const rebuild = useCallback((next: Show, ids: string[]) => td.current!.buildAll(next, downstream(next, ids)), [])
 
-  const adopt = useCallback(async (loaded: Show) => {
+  const adopt = useCallback(async (loaded: Show, rewired: string[] = []) => {
     const t = td.current!
     remember(OFFLINE_KEY, null)
     baseline.current = loaded
     apply(loaded)
     const present = new Set(await t.existing())
     const wanted = new Set([...loaded.blocks.filter((b) => b.kind !== 'scene' && b.kind !== 'composite' && b.kind !== 'cdj' && b.kind !== 'box' && b.kind !== 'tubeset').map((b) => b.id), SELECTOR_ID])
-    await rebuild(loaded, [...wanted].filter((id) => !present.has(id)))
+    await rebuild(loaded, [...wanted].filter((id) => !present.has(id) || rewired.includes(id)))
     const extra = [...present].filter((id) => !wanted.has(id))
     if (extra.length) await t.destroy(extra)
   }, [apply, rebuild])
@@ -173,10 +173,11 @@ function Editor() {
     const mine = showRef.current
     if (!raw?.blocks?.length && mine.blocks.length) return sendMine()
     const theirs = load(raw ?? {})
-    if (!mine.blocks.length) return adopt(theirs)
+    const rewired = wireTargets(theirs, theirs.wires.filter((w) => !(raw?.wires ?? []).some((r) => r.from === w.from && r.fromPort === w.fromPort && r.to === w.to && r.port === w.port)))
+    if (!mine.blocks.length) return adopt(theirs, rewired)
     setCustomProfiles(mine.profiles ?? [])
-    if (offlineEdits() && JSON.stringify(theirs) !== JSON.stringify(mine)) return setConflict(theirs)
-    await adopt(theirs)
+    if (offlineEdits() && JSON.stringify(theirs) !== JSON.stringify(mine)) return setConflict([theirs, rewired])
+    await adopt(theirs, rewired)
   }, [adopt, sendMine])
 
   const repatchAll = useCallback(() => {
@@ -652,7 +653,7 @@ function Editor() {
             <div className="help">Using TouchDesigner's replaces your offline changes; sending yours rebuilds everything in TouchDesigner. Save a file first to keep both.</div>
             <div className="conflict-actions">
               <button onClick={exportShow}>save file</button>
-              <button onClick={() => { const theirs = conflict; setConflict(null); tdDo(() => adopt(theirs)) }}>use TouchDesigner's</button>
+              <button onClick={() => { const [theirs, rewired] = conflict; setConflict(null); tdDo(() => adopt(theirs, rewired)) }}>use TouchDesigner's</button>
               <button onClick={() => { setConflict(null); tdDo(sendMine) }}>send mine to TouchDesigner</button>
             </div>
           </div>

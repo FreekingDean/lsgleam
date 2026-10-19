@@ -1,7 +1,7 @@
 import { syncSets } from './edit'
 import { FIXTURES, compiledOf, type StoredProfile, type Values } from './fixtures'
 import type { ModeChannel, OflCapability, OflChannel, OflFixture, OflSlot } from './ofl'
-import { type Point, type TubeBlock, type TubeDesign, EMPTY_SHOW, FIXTURE_PORT, memberPort, NODE_H, NODE_W, scenesOf, type Aims, type Block, type Cable, type ColorResponse, type FixtureBlock, type GroupBlock, type LightBlock, hasProfile, type Kind, type Patch, type Placement, type Position, type Scene, type Show, type Wire } from './show'
+import { type Point, type TubeBlock, type TubeDesign, EMPTY_SHOW, FIXTURE_PORT, memberPort, NODE_H, NODE_W, scenesOf, type Aims, type Block, type Cable, type ColorResponse, type FixtureBlock, type GroupBlock, type LightBlock, hasProfile, SOURCE_KINDS, type Kind, type Patch, type Placement, type Position, type Scene, type Show, type Wire } from './show'
 import { blockHeight, hasInput, inputPorts, outputPorts } from './ports'
 import { pathLength } from './geometry'
 import { pruneCables } from './units'
@@ -328,5 +328,20 @@ export function normalize(raw: Partial<Show>): Show {
     const scene = w.scene ?? source.scene ?? target.scene
     return [{ ...w, port, fromPort, ...(scene ? { scene } : {}) }]
   })
-  return pruneCables({ ...sized, wires })
+  return railInputs(pruneCables({ ...sized, wires }))
+}
+
+function railInputs(show: Show): Show {
+  let next = show
+  for (const x of show.blocks) {
+    const scene = show.blocks.find((b) => b.id === x.scene)
+    if (x.kind !== 'input' || scene?.kind !== 'scene') continue
+    const feeds = next.wires.filter((w) => w.to === scene.id && w.port === x.id)
+    const src = feeds.length === 1 && !feeds[0].scene ? next.blocks.find((b) => b.id === feeds[0].from) : undefined
+    if (!src || src.scene || !SOURCE_KINDS.includes(src.kind) || outputPorts(src, next).find((p) => p.id === feeds[0].fromPort)?.type !== x.type) continue
+    const wires = next.wires.flatMap((w) => (w === feeds[0] ? [] : w.from === x.id ? [{ ...w, from: src.id, fromPort: feeds[0].fromPort }] : [w]))
+    const blocks = next.blocks.filter((b) => b.id !== x.id)
+    next = { ...next, wires, blocks: blocks.map((b) => (b.id === scene.id ? { ...b, h: blockHeight(b, { ...next, blocks }) } : b)) }
+  }
+  return next
 }

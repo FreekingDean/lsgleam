@@ -41,6 +41,15 @@ function railNodes(show: Show): RailFlowNode[] {
   return [node(INPUTS_ID, 'Inputs', inputRail(show), 'in'), ...(visibleWires(show, null).some((w) => isFixture(show, w.to) && !isScene(show, w.from)) ? [node(OUTPUTS_ID, 'Outputs', outputRail(show), 'out')] : [])]
 }
 
+function sceneRail(show: Show, tab: string): RailFlowNode {
+  const rails = inputRail(show)
+  const blocks = visibleBlocks(show, tab)
+  const position = { x: Math.min(0, ...blocks.map((b) => b.x)) - RAIL_W - 160, y: Math.min(0, ...blocks.map((b) => flipY(b.y, b.h))) }
+  return { id: INPUTS_ID, type: 'rail', position, style: { width: RAIL_W, height: railHeight(rails) }, deletable: false, selectable: false, draggable: false, data: { title: 'Inputs', rails, side: 'in' } }
+}
+
+const railTab = (show: Show, tab: string | null) => tab === null || isScene(show, tab)
+
 const patchCount = (show: Show, scene: string) => new Set(show.wires.filter((w) => w.from === scene && w.port === FIXTURE_PORT && !w.scene).map((w) => w.to)).size
 
 export function toNodes(show: Show, prev: AnyNode[], tab: string | null): AnyNode[] {
@@ -72,7 +81,8 @@ export function toNodes(show: Show, prev: AnyNode[], tab: string | null): AnyNod
       data: { block: b, keys: liveKeys(show, b), inputs, outputs: director ? [] : outputPorts(b, show), patch: patchOf(show, b.id), targets: fixturesOf(show, b.id, true).map((id) => show.blocks.find((x) => x.id === id)?.name ?? id), ...(director ? { patched: patchCount(show, b.id) } : {}) },
     }
   })
-  return tab === null ? [...railNodes(show), ...nodes] : nodes
+  if (tab === null) return [...railNodes(show), ...nodes]
+  return isScene(show, tab) ? [sceneRail(show, tab), ...nodes] : nodes
 }
 
 function liveKeys(show: Show, b: Block) {
@@ -98,7 +108,7 @@ export function toEdges(show: Show, tab: string | null): Edge[] {
     style: { stroke: TYPE_COLORS[unitsOf(show).find((u) => u.key === c.from)?.outputs.find((p) => p.id === c.fromPort)?.type ?? ''] },
   }))
   return visibleWires(show, tab).filter((w) => tab !== null || !(isScene(show, w.from) && isFixture(show, w.to))).map((w) => {
-    const rail = tab === null && isSource(show, w.from)
+    const rail = railTab(show, tab) && isSource(show, w.from)
     const out = tab === null && isFixture(show, w.to)
     return {
       id: `${w.scene ?? 'show'}:${w.from}#${w.fromPort}->${w.to}#${w.port}`,

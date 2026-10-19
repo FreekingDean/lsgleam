@@ -1,4 +1,4 @@
-import { type Block, type Wire, type Show, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB_ATTRS, LOOK_ATTRS, profileOf } from './show'
+import { type Block, type Wire, type Show, SOURCE_KINDS, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB_ATTRS, LOOK_ATTRS, profileOf } from './show'
 import { pruneWires, inputPorts, outputPorts, blockHeight } from './ports'
 import { ELEMENT_TYPES, blockDef } from '../blocks'
 
@@ -20,7 +20,8 @@ export function canWire(show: Show, from: string, fromPort: string, to: string, 
   const a = show.blocks.find((b) => b.id === from)
   const b = show.blocks.find((b) => b.id === to)
   if (!a || !b) return false
-  if (tab === null ? a.scene || b.scene : a.scene !== tab || b.scene !== tab) return false
+  const rail = !a.scene && SOURCE_KINDS.includes(a.kind) && show.blocks.some((x) => x.id === tab && x.kind === 'scene')
+  if (tab === null ? a.scene || b.scene : (a.scene !== tab && !rail) || b.scene !== tab) return false
   const source = outputPorts(a, show).find((p) => p.id === fromPort)
   const target = inputPorts(b, show, tab).find((p) => p.id === port)
   if (!source || !target || !(source.type === target.type || (target.multi && source.type === 'multi') || (target.type === 'any' && ELEMENT_TYPES.includes(source.type))) || source.profile !== target.profile) return false
