@@ -504,11 +504,39 @@ def light_defaults(c, pairs, prefix=''):
         d.nodeX, d.nodeY = -1400, 600 - k * 60
     return defaults
 
+def combine(c, name, how, ops, x, y, gain=1):
+    m = c.create(mathCHOP, name)
+    m.par.chopop = how
+    m.par.gain = gain
+    m.nodeX, m.nodeY = x, y
+    for o in ops:
+        o.outputConnectors[0].connect(m)
+    return m
+
 def wheel_pick(c, name, rgb, wheel):
-    pick = constant(c, name + '_wheel', [(wheel['key'], 0)])
-    pick.nodeX, pick.nodeY = rgb.nodeX + 100, rgb.nodeY - 60
-    n = len(wheel['colors'])
-    pick.par.const0value.expr = "min(range(%d), key=lambda k: sum((op('%s')[a] - %r[k][i]) ** 2 for i, a in enumerate(('red', 'green', 'blue')))) / %d" % (n, rgb.name, wheel['colors'], max(1, n - 1))
+    x, y = rgb.nodeX + 100, rgb.nodeY - 60
+    colors = wheel['colors']
+    keys = [wheel['key']] + ['slot%d' % k for k in range(1, len(colors))]
+    def table(part, values, k):
+        t = constant(c, '%s_wheel_%s' % (name, part), list(zip(keys, values)))
+        t.nodeX, t.nodeY = x, y - k * 100
+        return t
+    weighted = [combine(c, '%s_wheel_%s_dot' % (name, a), 'mul', [table(a, [col[i] for col in colors], i), select(c, '%s_wheel_%s_in' % (name, a), rgb, a, x - 150, y - i * 100)], x + 150, y - i * 100) for i, a in enumerate(('red', 'green', 'blue'))]
+    score = combine(c, name + '_wheel_score', 'add', weighted + [table('bias', [-sum(v * v for v in col) / 2 - k * 1e-6 for k, col in enumerate(colors)], 3)], x + 300, y)
+    best = c.create(mathCHOP, name + '_wheel_best')
+    best.par.chanop = 'max'
+    best.nodeX, best.nodeY = x + 450, y - 100
+    score.outputConnectors[0].connect(best.inputConnectors[0])
+    near = c.create(logicCHOP, name + '_wheel_near')
+    near.par.convert = 'pos'
+    near.par.preop = 'invert'
+    near.nodeX, near.nodeY = x + 750, y
+    combine(c, name + '_wheel_gap', 'sub', [score, best], x + 600, y, -1).outputConnectors[0].connect(near.inputConnectors[0])
+    hit = combine(c, name + '_wheel_hit', 'mul', [near, table('index', [k / max(1, len(colors) - 1) for k in range(len(colors))], 4)], x + 900, y)
+    pick = c.create(mathCHOP, name + '_wheel')
+    pick.par.chanop = 'add'
+    pick.nodeX, pick.nodeY = x + 1050, y
+    hit.outputConnectors[0].connect(pick.inputConnectors[0])
     return pick
 
 def as_attrs(c, name, end):
