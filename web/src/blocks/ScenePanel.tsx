@@ -18,8 +18,7 @@ export function ScenePanel({ show, block, onPatch, onOpenScene, onOpenPatch, onM
       </div>
       <NumField label="Fade in (s)" value={block.fadeIn} onCommit={(v) => onPatch({ fadeIn: Math.max(0, v) })} />
       <NumField label="Fade out (s)" value={block.fadeOut} onCommit={(v) => onPatch({ fadeOut: Math.max(0, v) })} />
-      <div className="par">
-        <label />
+      <div className="designer-buttons">
         <button onClick={() => onOpenScene(block.id)}>open scene</button>
         <button onClick={() => onOpenPatch(block.id)} title="patch this scene's outputs to fixtures in a grid">patch</button>
       </div>
