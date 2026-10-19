@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import { fixtureMode, membersOf, profileOf, type BoxBlock, type Kind, type Placement, type Point, type Show } from '../model/show'
-import { unitsOf } from '../model/units'
+import { fixtureMode, membersOf, profileOf, type Kind, type Placement, type Point, type Show } from '../model/show'
+import { nearestRoom, rectOf, roomsOf, unitsOf } from '../model/units'
 import { tubePatch, unitPatch } from '../model/patch'
 import { chainOf, outputUniverses, pixelChain } from '../blocks'
 import { range, tubeRows } from './rows'
@@ -39,20 +39,7 @@ const project = (p: Placement, at: Point): XZ => {
   return [p.position[0] + v.x, p.position[2] + v.z]
 }
 
-export const roomsOf = (show: Show) => show.blocks.filter((b): b is BoxBlock => b.kind === 'box')
-
-export function rectOf(b: BoxBlock) {
-  const [cx, , cz] = b.sim?.position ?? [0, 0, 0]
-  return { x: cx - b.size[0] / 2, z: cz - b.size[1] / 2, w: b.size[0], d: b.size[1], h: b.size[2] }
-}
-
-export function nearestRoom(show: Show, [x, z]: XZ) {
-  const away = (b: BoxBlock) => {
-    const r = rectOf(b)
-    return Math.hypot(Math.max(r.x - x, 0, x - r.x - r.w), Math.max(r.z - z, 0, z - r.z - r.d))
-  }
-  return roomsOf(show).sort((a, b) => away(a) - away(b))[0]?.id ?? null
-}
+export { roomsOf, rectOf }
 
 function infoOf(show: Show, key: string, ids: Map<string, string>, order: Map<string, string>) {
   const b = show.blocks.find((x) => x.id === key)

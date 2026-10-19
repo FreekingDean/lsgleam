@@ -11,6 +11,8 @@ export const PickContext = createContext<Picks>({ picked: new Set(), toggle: () 
 
 export type Focus = { hidden: Set<string>; toggleHidden: (id: string) => void; hover: (port: string | null) => void }
 export const FocusContext = createContext<Focus>({ hidden: new Set(), toggleHidden: () => {}, hover: () => {} })
+export type Director = { patch: (scene: string) => void; align: () => void }
+export const DirectorContext = createContext<Director>({ patch: () => {}, align: () => {} })
 
 export function usePick(ports: PortKey[]) {
   const { picked, toggle } = useContext(PickContext)

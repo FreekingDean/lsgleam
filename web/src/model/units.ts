@@ -109,3 +109,28 @@ export function simTubes(show: Show): SimTube[] {
 }
 
 export const simDevices = (show: Show): SimDevice[] => unitsOf(show).filter((u) => u.block.kind !== 'fixture' && u.block.kind !== 'tube' && u.block.kind !== 'tubeset' && !VIRTUAL_KINDS.includes(u.block.kind)).map((u) => ({ key: u.key, name: u.name, kind: u.block.kind, placement: u.placement, ...(u.block.kind === 'box' ? { size: u.block.size } : {}) }))
+
+export const roomsOf = (show: Show) => show.blocks.filter((b): b is BoxBlock => b.kind === 'box')
+
+export function rectOf(b: BoxBlock) {
+  const [cx, , cz] = b.sim?.position ?? [0, 0, 0]
+  return { x: cx - b.size[0] / 2, z: cz - b.size[1] / 2, w: b.size[0], d: b.size[1], h: b.size[2] }
+}
+
+export function nearestRoom(show: Show, [x, z]: [number, number]) {
+  const away = (b: BoxBlock) => {
+    const r = rectOf(b)
+    return Math.hypot(Math.max(r.x - x, 0, x - r.x - r.w), Math.max(r.z - z, 0, z - r.z - r.d))
+  }
+  return roomsOf(show).sort((a, b) => away(a) - away(b))[0]?.id ?? null
+}
+
+export function roomOf(show: Show, key: string) {
+  const u = unitsOf(show).find((x) => x.key === key)
+  return u ? nearestRoom(show, [u.placement.position[0], u.placement.position[2]]) : null
+}
+
+export function inRooms(show: Show, rooms: string[] | undefined, key: string) {
+  const live = (rooms ?? []).filter((id) => roomsOf(show).some((r) => r.id === id))
+  return !live.length || live.includes(roomOf(show, key) ?? '')
+}

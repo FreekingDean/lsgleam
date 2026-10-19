@@ -1,6 +1,7 @@
-import { type Block, type Wire, type Show, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB_ATTRS, LOOK_ATTRS, profileOf } from './show'
+import { type Block, type Wire, type Show, SOURCE_KINDS, FIXTURE_PORT, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB_ATTRS, LOOK_ATTRS, profileOf } from './show'
 import { pruneWires, inputPorts, outputPorts, blockHeight } from './ports'
 import { ELEMENT_TYPES, blockDef } from '../blocks'
+import { inRooms } from './units'
 
 export function drivenPorts(show: Show, id: string, tab: string | null) {
   const block = show.blocks.find((b) => b.id === id)
@@ -20,13 +21,15 @@ export function canWire(show: Show, from: string, fromPort: string, to: string, 
   const a = show.blocks.find((b) => b.id === from)
   const b = show.blocks.find((b) => b.id === to)
   if (!a || !b) return false
-  if (tab === null ? a.scene || b.scene : a.scene !== tab || b.scene !== tab) return false
+  const rail = !a.scene && SOURCE_KINDS.includes(a.kind) && show.blocks.some((x) => x.id === tab && x.kind === 'scene')
+  if (tab === null ? a.scene || b.scene : (a.scene !== tab && !rail) || b.scene !== tab) return false
   const source = outputPorts(a, show).find((p) => p.id === fromPort)
   const target = inputPorts(b, show, tab).find((p) => p.id === port)
   if (!source || !target || !(source.type === target.type || (target.multi && source.type === 'multi') || (target.type === 'any' && ELEMENT_TYPES.includes(source.type))) || source.profile !== target.profile) return false
   const here = show.wires.filter((w) => (w.scene ?? null) === tab)
   if (here.some((w) => w.from === from && w.fromPort === fromPort && w.to === to && w.port === port)) return false
   const output = target.type === 'fixture' || target.type === 'pixels'
+  if (output && a.kind === 'scene' && !inRooms(show, a.rooms, to)) return false
   if (output && here.some((w) => w.to === to && w.from === from)) return false
   if ((target.type !== 'signal' || source.type === 'multi' || blockDef(b.kind)?.slotted) && !output && here.some((w) => w.to === to && w.port === port)) return false
   const driven = drivenPorts(show, to, tab)
@@ -48,4 +51,9 @@ const sameWire = (a: Wire, b: Wire) => a.from === b.from && a.fromPort === b.fro
 
 export function removeWires(show: Show, wires: Wire[]): Show {
   return resized(pruneWires({ ...show, wires: show.wires.filter((w) => !wires.some((r) => sameWire(r, w))) }))
+}
+
+export function outOfRooms(show: Show, scene: string) {
+  const s = show.blocks.find((b) => b.id === scene)
+  return s?.kind === 'scene' ? show.wires.filter((w) => !w.scene && w.from === scene && w.port === FIXTURE_PORT && !inRooms(show, s.rooms, w.to)) : []
 }

@@ -1,13 +1,14 @@
 import { Position, type NodeProps, type Node } from '@xyflow/react'
 import { useContext } from 'react'
 import { PickTitle, PortHandle, PortRow } from './PortHandle'
-import { FocusContext } from './connect'
+import { DirectorContext, FocusContext } from './connect'
 import { TYPE_COLORS, portHint } from '../model/catalog'
 import { defOf, hasDef, kindInfo } from '../blocks'
 import { type Block, type Patch, type Port, type Rail } from '../model/show'
 import { LiveValue, useLive } from './live'
 
-export type FlowNode = Node<{ block: Block; inputs: Port[]; outputs: Port[]; patch: Patch | null; keys: Record<string, string | null>; targets: string[] }, 'block'>
+export type FlowNode = Node<{ block: Block; inputs: Port[]; outputs: Port[]; patch: Patch | null; keys: Record<string, string | null>; targets: string[]; patched?: number; rooms?: string }, 'block'>
+export type ZoneFlowNode = Node<{ title: string; rooms: boolean }, 'zone'>
 export type RailFlowNode = Node<{ title: string; rails: Rail[]; side: 'in' | 'out' }, 'rail'>
 
 function subtitle(b: Block, patch: Patch | null, targets: string[], outputs: Port[]) {
@@ -19,6 +20,7 @@ export function BlockNode({ id, data, selected }: NodeProps<FlowNode>) {
   const { block, keys } = data
   const live = useLive()
   const focus = useContext(FocusContext)
+  const director = useContext(DirectorContext)
   const eye = block.kind === 'scene' || block.kind === 'composite'
   const sample = (portId: string) => {
     const key = keys[portId]
@@ -49,6 +51,7 @@ export function BlockNode({ id, data, selected }: NodeProps<FlowNode>) {
           ))}
         </div>
       </div>
+      {data.patched !== undefined && <button className="patch-badge nodrag" onClick={(e) => { e.stopPropagation(); director.patch(id) }} title="open the patch matrix: which fixtures this scene drives">→ {data.patched} {data.patched === 1 ? 'fixture' : 'fixtures'}{data.rooms && ` · ${data.rooms}`}</button>}
     </div>
   )
 }
@@ -71,6 +74,19 @@ export function RailNode({ id, data }: NodeProps<RailFlowNode>) {
         </div>
       ))}
       {data.rails.length === 0 && <div className="td-node-type">{data.side === 'in' ? 'add sources on the layout' : 'add fixtures on the layout'}</div>}
+    </div>
+  )
+}
+
+export function ZoneNode({ data }: NodeProps<ZoneFlowNode>) {
+  const director = useContext(DirectorContext)
+  return (
+    <div className="zone">
+      <div className="zone-head">
+        <span className="zone-title">{data.title}</span>
+        <span className="zone-help">the director's outputs: each scene's on sets its weight{data.rooms ? '; scope a scene to rooms in its panel' : ''}</span>
+        <button className="nodrag" onClick={director.align} title="stack the scenes in priority order, right of the logic that drives them">align</button>
+      </div>
     </div>
   )
 }

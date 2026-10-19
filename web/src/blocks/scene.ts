@@ -2,7 +2,7 @@ import { type Base, ON_PORT, memberPort, typed } from '../model/show'
 import type { BlockDef } from './types'
 import { innerInputs } from './input'
 
-export type SceneBlock = Base & { kind: 'scene'; fadeIn: number; fadeOut: number }
+export type SceneBlock = Base & { kind: 'scene'; fadeIn: number; fadeOut: number; rooms?: string[] }
 
 export const scene: BlockDef<SceneBlock> = {
   kind: 'scene',

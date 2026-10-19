@@ -106,7 +106,7 @@ def tap(src, chan):
     wire(src, sel, sel.inputConnectors[0])
     x = port_op(box, outCHOP, 'out', label, label, [src.name])
     sel.outputConnectors[0].connect(x.inputConnectors[0])
-    return box, outlet(box, x)
+    return box, outlet(box, x), label
 
 def wire(src, dst, conn, chan=None):
     above = set()
@@ -115,8 +115,9 @@ def wire(src, dst, conn, chan=None):
         above.add(a.path)
         a = a.parent()
     show = LS.path + '/show/'
+    name = src.name
     if RAIL and src.parent().path == LS.path + '/layout' and dst.path.startswith(show) and not dst.path.startswith(show + 'inputs/'):
-        o, out = tap(src, chan)
+        o, out, name = tap(src, chan)
     else:
         o, out = lift(src, above)
     level = o.parent().path
@@ -126,7 +127,7 @@ def wire(src, dst, conn, chan=None):
         if d.name in p.storage.get('order', []):
             x = port_op(p, inCHOP, 'in', src.name + '_' + d.name, d.name, [src.name, d.name])
         else:
-            x = port_op(p, inCHOP, 'in', src.name, src.name, [src.name])
+            x = port_op(p, inCHOP, 'in', name, name, [src.name])
         x.outputConnectors[0].connect(target)
         target = inlet(p, x)
         d = p

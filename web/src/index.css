@@ -180,6 +180,13 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .par.mixed label, .par.mixed input, .par.mixed select, .par.mixed .slider span { opacity: 0.45; }
 .unit-dir { display: inline-block; font-size: 9px; margin-left: 4px; color: var(--accent); }
 .sim-place.pars { width: 280px; margin: 6px 0; }
+.patch-badge { display: block; margin-top: 6px; padding: 2px 8px; font-size: 11px; border: 1px solid #b07ddc; border-radius: 10px; background: transparent; color: #b07ddc; cursor: pointer; }
+.zone { width: 100%; height: 100%; box-sizing: border-box; border: 1px dashed #b07ddc66; border-radius: 8px; background: #b07ddc0d; pointer-events: none; }
+.zone-head { display: flex; gap: 8px; align-items: baseline; padding: 6px 10px; pointer-events: auto; width: max-content; max-width: 100%; }
+.zone-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #b07ddc; }
+.zone-help { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zone-head button { font-size: 11px; padding: 0 6px; }
+.patch-badge:hover { background: #b07ddc33; }
 .td-node.rail { border-style: dashed; height: 100%; box-sizing: border-box; }
 .td-node.rail .td-port { height: 18px; line-height: 18px; }
 .td-node.rail .rail-in { text-align: right; padding-right: 6px; }
