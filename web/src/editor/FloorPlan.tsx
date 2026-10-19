@@ -1,6 +1,6 @@
 import { useEffect, useState, type MouseEvent } from 'react'
 import { Panel, ViewportPortal, useReactFlow, useStore } from '@xyflow/react'
-import type { PDFDocumentProxy } from 'pdfjs-dist'
+import type { PDFDocumentProxy } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import type { Floor } from '../model/show'
 import type { Calib, XZ } from '../model/floorplan'
 import { parseLength } from '../model/format'

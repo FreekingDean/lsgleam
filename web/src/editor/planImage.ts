@@ -1,5 +1,5 @@
-import type { PDFDocumentProxy } from 'pdfjs-dist'
-import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import type { PDFDocumentProxy } from 'pdfjs-dist/legacy/build/pdf.mjs'
+import workerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'
 
 const LONGEST = 3000
 const BUDGET = 1_000_000
@@ -9,7 +9,7 @@ export type PlanImage = { src: string; aspect: number }
 export const isPdf = (file: File) => file.type === 'application/pdf' || /\.pdf$/i.test(file.name)
 
 export async function openPdf(file: File) {
-  const pdfjs = await import('pdfjs-dist')
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
   return pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) })
 }
