@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "ofl": "node scripts/ofl.mjs"
+    "ofl": "node scripts/ofl.mjs",
+    "td": "node scripts/td.mjs"
   },
   "dependencies": {
     "@types/three": "^0.170.0",
