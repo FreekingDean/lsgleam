@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { scenesOf, type Placement, type Show } from '../model/show'
-import { simDevices, simFixtures, simTubes } from '../model/units'
+import { roomsOf, simDevices, simFixtures, simTubes } from '../model/units'
 import { LAYOUT_DEFAULTS, previewDmx } from './preview'
 import type { Td } from '../td/td'
 import { SimScene } from './scene'
@@ -48,6 +48,7 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
   useEffect(() => { scene.current?.sync(simFixtures(show), simDevices(show), simTubes(show)) }, [show])
   useEffect(() => { if (preview !== null) scene.current?.apply(previewDmx(show, preview)) }, [show, preview])
   useEffect(() => { scene.current?.setMode(mode) }, [mode])
+  useEffect(() => { scene.current?.setPlans(roomsOf(show)) }, [show])
   useEffect(() => { if (active) scene.current?.resize() }, [active])
 
   useEffect(() => {

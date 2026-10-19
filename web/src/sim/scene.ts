@@ -1,9 +1,9 @@
 import * as THREE from 'three'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
-import type { Placement } from '../model/show'
+import type { BoxBlock, Placement } from '../model/show'
 import type { SimDevice, SimFixture, SimTube } from '../model/units'
 import type { DmxValues } from '../td/td'
-import { Par, placementOf, type Light, type Spot } from './par'
+import { Par, disposeAll, placementOf, type Light, type Spot } from './par'
 import { Head } from './head'
 import { Device } from './device'
 import { Tube } from './tube'
@@ -28,6 +28,7 @@ export class SimScene {
   private clock = new THREE.Clock()
   private events = new AbortController()
   private pool: THREE.SpotLight[] = []
+  private plans = new Map<string, { src: string; mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshLambertMaterial> }>()
   onSelect: (key: string | null) => void = () => {}
   onLost: (lost: boolean) => void = () => {}
   private canvas: HTMLCanvasElement
@@ -122,6 +123,34 @@ export class SimScene {
       const light = item.tube ? new Tube(item.tube.path, item.tube.leds, item.placement) : !sim ? new Device(item.kind as SimDevice['kind'], item.placement, item.size) : sim.kind === 'head' ? new Head(item.placement, sim) : new Par(item.placement, sim)
       this.scene.add(light.object)
       this.lights.set(item.key, { light, fixture: item.fixture, tube: item.tube, kind: item.kind })
+    }
+  }
+
+  setPlans(rooms: BoxBlock[]) {
+    const wanted = new Map(rooms.flatMap((r) => (r.floorplan ? [[r.id, r]] : [])))
+    for (const [id, p] of this.plans) if (wanted.get(id)?.floorplan?.src !== p.src) {
+      this.scene.remove(p.mesh)
+      p.mesh.material.map?.dispose()
+      disposeAll(p.mesh)
+      this.plans.delete(id)
+    }
+    for (const [id, room] of wanted) {
+      const plan = room.floorplan!
+      if (!this.plans.has(id)) {
+        const map = new THREE.TextureLoader().load(plan.src)
+        map.colorSpace = THREE.SRGBColorSpace
+        map.anisotropy = this.renderer.capabilities.getMaxAnisotropy()
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshLambertMaterial({ map, emissiveMap: map, emissive: 0x505058, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }))
+        mesh.raycast = () => {}
+        this.scene.add(mesh)
+        this.plans.set(id, { src: plan.src, mesh })
+      }
+      const { mesh } = this.plans.get(id)!
+      const [x, y, z] = room.sim?.position ?? [0, 0, 0]
+      mesh.scale.set(plan.width, plan.height, 1)
+      mesh.rotation.set(-Math.PI / 2, (-plan.rotation * Math.PI) / 180, 0, 'YXZ')
+      mesh.position.set(x + plan.x, y + 0.006, z + plan.z)
+      mesh.material.opacity = plan.opacity
     }
   }
 
@@ -239,6 +268,7 @@ export class SimScene {
   dispose() {
     cancelAnimationFrame(this.frame)
     for (const { light } of this.lights.values()) light.dispose()
+    this.setPlans([])
     this.gizmo.dispose()
     this.events.abort()
     this.renderer.dispose()

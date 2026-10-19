@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { profileOf, type BoxBlock, type Show } from '../model/show'
 import { formatLength } from '../model/format'
 import { download } from '../td/blt'
@@ -41,6 +41,7 @@ const arrow = ([ax, ay]: XZ, [bx, by]: XZ, color: string) => {
 }
 
 function PlanSvg({ room, items, ends, runs, style }: Plotted) {
+  const clip = useId()
   const rect = room && rectOf(room)
   const mine = items.filter((i) => !room || i.room === room.id)
   const types = [...new Map(mine.map((i) => [i.type, i])).values()].map((i) => ({ letter: i.id.replace(/\d+$/, ''), type: i.type, mark: i.mark, n: mine.filter((m) => m.type === i.type).length })).sort((a, b) => compare(a.letter, b.letter))
@@ -97,6 +98,8 @@ function PlanSvg({ room, items, ends, runs, style }: Plotted) {
     const label = t.replace(/\D/g, '') || t
     return { label, x: tx + ((tx - at[0]) / len) * 7, y: ty + ((ty - at[1]) / len) * 7 }
   }))
+  const plan = rect && room.floorplan
+  const centre = plan && P([rect.x + rect.w / 2 + plan.x, rect.z + rect.d / 2 + plan.z])
   const rp = rect && { a: P([rect.x, rect.z]), b: P([rect.x + rect.w, rect.z + rect.d]) }
   const title = room?.name ?? 'Layout'
   const step = STEPS.find((s) => s * k >= 90) ?? 100
@@ -105,6 +108,10 @@ function PlanSvg({ room, items, ends, runs, style }: Plotted) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width={W} height={H} viewBox={`0 0 ${W} ${H}`} fontFamily="Helvetica, Arial, sans-serif" style={{ background: '#fff' }}>
       <rect x={0.5} y={0.5} width={W - 1} height={H - 1} fill="#fff" stroke="#000" />
+      {plan && centre && <g clipPath={`url(#${clip})`}>
+        <clipPath id={clip}><rect x={frame.x} y={frame.y} width={frame.w} height={frame.h} /></clipPath>
+        <image href={plan.src} x={centre[0] - (plan.width * k) / 2} y={centre[1] - (plan.height * k) / 2} width={plan.width * k} height={plan.height * k} preserveAspectRatio="none" opacity={0.35} transform={`rotate(${plan.rotation} ${centre[0]} ${centre[1]})`} />
+      </g>}
       {rect && rp && <g>
         {grid.xs.map((x) => <line key={`x${x}`} x1={P([x, rect.z])[0]} y1={rp.a[1]} x2={P([x, rect.z])[0]} y2={rp.b[1]} stroke="#ddd" strokeWidth={0.6} />)}
         {grid.zs.map((z) => <line key={`z${z}`} x1={rp.a[0]} y1={P([rect.x, z])[1]} x2={rp.b[0]} y2={P([rect.x, z])[1]} stroke="#ddd" strokeWidth={0.6} />)}

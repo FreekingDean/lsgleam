@@ -8,7 +8,7 @@ import { Bridge } from './td/bridge'
 import { Td, colorTable, valueTable } from './td/td'
 import { SCALE, STEP, flipY, metres, unitSize } from './td/spots'
 import { isLight, ownersOf, type Cable, type TubeDesign, INPUTS_ID, LAYOUT, LAYOUT_KINDS, NODE_H, OUTPUTS_ID, SELECTOR_ID, hasProfile, profileOf, scenesOf, type Block, type ColorResponse, type PaletteItem, type Placement, type Show, type Wire } from './model/show'
-import { ceilingAt, addCable, canCable, removeCables, unitsOf } from './model/units'
+import { ceilingAt, addCable, canCable, removeCables, roomsOf, unitsOf } from './model/units'
 import { setDesign, placeUnit, copyBlocks, diffShows, pasteBlocks, moveScene, newBlock, patchBlock, removeBlocks, type Clip } from './model/edit'
 import { addWire, canWire, drivenPorts, outOfRooms, removeWires } from './model/wiring'
 import { downstream, repatch } from './model/patch'
@@ -32,6 +32,10 @@ import { download } from './td/blt'
 import { ConnectContext, DirectorContext, FocusContext, PickContext, portKey, type PortKey } from './editor/connect'
 import { LiveContext, outputValue, record, type PortValues } from './editor/live'
 import { type AnyNode, alignScenes, toNodes, toEdges, toCable, connectPairs, toWire, cabled, wireTargets } from './editor/graph'
+import { CalibrateBar, FloorPlanLayer, PlanImport } from './editor/FloorPlan'
+import type { PlanImage } from './editor/planImage'
+import { calibrate, movePlan, newPlan, withPlan, type Calib } from './model/floorplan'
+import type { FloorPlan } from './blocks/box'
 import { withRails, load, DRAFT_KEY, OFFLINE_KEY, readDraft, remember, offlineEdits } from './editor/draft'
 
 const NODE_TYPES = { block: BlockNode, unit: UnitNode, box: BoxNode, rail: RailNode, zone: ZoneNode }
@@ -64,6 +68,8 @@ function Editor() {
   const [library, setLibrary] = useState(false)
   const [editing, setEditing] = useState<StoredProfile | null | undefined>(undefined)
   const [picked, setPicked] = useState<Set<string>>(new Set())
+  const [planFile, setPlanFile] = useState<{ room: string; file: File } | null>(null)
+  const [calib, setCalib] = useState<Calib | null>(null)
   const pickedRef = useRef(picked)
   pickedRef.current = picked
   const togglePorts = useCallback((ports: PortKey[]) => setPicked((prev) => {
@@ -83,7 +89,10 @@ function Editor() {
     return next
   }), [])
   const focus = useMemo(() => ({ hidden: hiddenNodes, toggleHidden, hover: setHovered }), [hiddenNodes, toggleHidden])
-  useEffect(() => setPicked(new Set()), [tab])
+  useEffect(() => {
+    setPicked(new Set())
+    setCalib(null)
+  }, [tab])
   const tabRef = useRef(tab)
   tabRef.current = tab
   const [tick, setTick] = useState(0)
@@ -471,6 +480,11 @@ function Editor() {
       return
     }
     const prev = showRef.current.blocks.find((b) => b.id === selectedId)
+    if (block.kind === 'box' && Object.keys(patch).every((k) => k === 'floorplan')) {
+      if (!block.floorplan) setCalib(null)
+      commit(next)
+      return
+    }
     if (block.kind === 'tubeset') {
       commitDiff(next)
       return
@@ -603,6 +617,18 @@ function Editor() {
     }, 120)
   }, [selectOnly, fitView])
 
+  const setPlan = useCallback((room: string, plan: FloorPlan | null) => commit(withPlan(showRef.current, room, plan)), [commit])
+  const planOf = (room: string) => roomsOf(showRef.current).find((r) => r.id === room)?.floorplan
+
+  const placePlan = useCallback(({ src, aspect }: PlanImage) => {
+    if (!planFile) return
+    const room = roomsOf(showRef.current).find((r) => r.id === planFile.room)
+    setPlanFile(null)
+    if (!room) return
+    setPlan(room.id, newPlan(src, aspect, room.size[0]))
+    setCalib({ room: room.id, points: [] })
+  }, [planFile, setPlan])
+
   const listAudioDevices = useCallback(() => td.current!.audioDevices(), [])
 
   const readValues = useCallback(async (names: string[], member?: string) => {
@@ -717,6 +743,8 @@ function Editor() {
             <Background id="minor" variant={BackgroundVariant.Lines} gap={SCALE / 4} color="#25252d" />
             <Background id="major" variant={BackgroundVariant.Lines} gap={SCALE} color="#3a3a46" bgColor="transparent" />
           </> : <Background gap={GRID} />}
+          {tab === LAYOUT && <FloorPlanLayer rooms={roomsOf(show).filter((r) => r.floorplan)} calib={calib} onMove={(room, x, z) => setPlan(room, movePlan(planOf(room)!, x, z))} onPoint={(room, p) => setCalib((c) => c && c.room === room ? { room, points: [...c.points, p] } : c)} />}
+          {tab === LAYOUT && calib && roomsOf(show).some((r) => r.id === calib.room && r.floorplan) && <CalibrateBar points={calib.points} onApply={(m) => { setPlan(calib.room, calibrate(planOf(calib.room)!, calib.points, m)); setCalib(null) }} onReset={() => setCalib({ ...calib, points: [] })} onCancel={() => setCalib(null)} />}
           <Controls />
           <MiniMap pannable zoomable />
         </ReactFlow>
@@ -739,12 +767,13 @@ function Editor() {
         {tab === LAYOUT && !selected && multi.length <= 1 && <RigPanel show={show} onSchedule={() => setPage('schedule')} />}
         {selected && (
           <div className="panel-wrap" onMouseUp={saveValues} onTouchEnd={saveValues}>
-            <BlockPanel show={show} block={selected} driven={driven} onPatch={patchSelected} onOpenScene={setTab} onMoveScene={reorderScene} onPatchOther={patchOther} onResetPattern={() => tdDo(() => td.current!.resetPattern(selected.id))} onDesign={changeDesign} layout={unit && { placement: unit.placement, flip: unit.flip, onPlace: (p, flip) => commit(placeUnit(showRef.current, unit.key, p, flip)) }} onValue={setValue} listAudioDevices={listAudioDevices} readValues={readValues} configureAudioSlice={configureAudioSlice} onOpenPalette={setPaletteId} onOpenPatch={setPatchId} />
+            <BlockPanel show={show} block={selected} driven={driven} onPatch={patchSelected} onOpenScene={setTab} onMoveScene={reorderScene} onPatchOther={patchOther} onResetPattern={() => tdDo(() => td.current!.resetPattern(selected.id))} onDesign={changeDesign} layout={unit && { placement: unit.placement, flip: unit.flip, onPlace: (p, flip) => commit(placeUnit(showRef.current, unit.key, p, flip)) }} onValue={setValue} listAudioDevices={listAudioDevices} readValues={readValues} configureAudioSlice={configureAudioSlice} onOpenPalette={setPaletteId} onOpenPatch={setPatchId} onFloorPlan={unit && selected.kind === 'box' ? (file) => setPlanFile({ room: selected.id, file }) : undefined} onCalibrate={() => setCalib({ room: selected.id, points: [] })} />
           </div>
         )}
         {paletteBlock?.kind === 'colors' && <PaletteView show={show} block={paletteBlock} onPatch={(patch) => patchById(paletteBlock.id, patch)} onResponse={setResponse} onClose={closePalette} />}
         {patchScene && <PatchView show={show} scene={patchScene.id} onScene={setPatchId} onChange={rewire} onClose={closePatch} />}
         {library && <LibraryView show={show} onFixture={saveProfile} onDesign={(d) => commit(addDesign(showRef.current, d))} onPalette={placePalette} onComposite={placeComposite} onEditProfile={setEditing} onClose={closeLibrary} />}
+        {planFile && <PlanImport file={planFile.file} onPlan={placePlan} onClose={() => setPlanFile(null)} />}
         {editing !== undefined && <ProfileEditor profile={editing} taken={(show.profiles ?? []).map((p) => p.id)} onSave={saveProfile} onClose={closeEditor} />}
       </main>
       <main hidden={page !== 'simulate'}>

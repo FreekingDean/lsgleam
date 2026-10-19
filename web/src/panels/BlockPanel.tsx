@@ -70,7 +70,7 @@ function body(props: Props) {
 
 export function BlockPanel(props: Props) {
   const { block, onPatch, show } = props
-  const { values: _values, positions: _positions, aims: _aims, rows: _rows, ...identity } = block as Record<string, unknown>
+  const { values: _values, positions: _positions, aims: _aims, rows: _rows, floorplan: _floorplan, ...identity } = block as Record<string, unknown>
   const key = JSON.stringify({ ...identity, flip: props.layout?.flip, placement: props.layout?.placement, targets: fixturesOf(show, block.id, true), scenes: scenesOf(show).map((s) => s.id), cables: show.cables.filter((c) => c.from === block.id) })
   return (
     <aside className="panel">
