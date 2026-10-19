@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { scenesOf, type Placement, type Show } from '../model/show'
-import { roomsOf, simDevices, simFixtures, simTubes } from '../model/units'
+import { simDevices, simFixtures, simTubes } from '../model/units'
+import { floorsOf } from '../model/floors'
 import { LAYOUT_DEFAULTS, previewDmx } from './preview'
 import type { Td } from '../td/td'
 import { SimScene } from './scene'
@@ -17,6 +18,7 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
   place.current = onPlace
   const [selected, setSelected] = useState<string | null>(null)
   const [mode, setMode] = useState<'translate' | 'rotate'>('translate')
+  const [cut, setCut] = useState('')
   const [glError, setGlError] = useState('')
   const [lost, setLost] = useState(false)
   const [timing, setTiming] = useState('')
@@ -48,7 +50,11 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
   useEffect(() => { scene.current?.sync(simFixtures(show), simDevices(show), simTubes(show)) }, [show])
   useEffect(() => { if (preview !== null) scene.current?.apply(previewDmx(show, preview)) }, [show, preview])
   useEffect(() => { scene.current?.setMode(mode) }, [mode])
-  useEffect(() => { scene.current?.setPlans(roomsOf(show)) }, [show])
+  const floors = floorsOf(show)
+  const top = floors[floors.findIndex((f) => f.id === cut) + 1]?.elevation
+  const above = cut && top !== undefined ? top : Infinity
+  useEffect(() => { scene.current?.setPlans(show.floors ?? []) }, [show.floors])
+  useEffect(() => { scene.current?.setCut(above) }, [above])
   useEffect(() => { if (active) scene.current?.resize() }, [active])
 
   useEffect(() => {
@@ -115,6 +121,10 @@ export function Simulator({ show, td, connected, active, onPlace }: Props) {
             <option value={LAYOUT_DEFAULTS}>preview: layout defaults</option>
             {scenes.map((s) => <option key={s.id} value={s.id}>preview: {s.name}</option>)}
           </select>
+          {floors.length > 1 && <select value={cut} onChange={(e) => setCut(e.target.value)} title="hide everything above a floor to see inside">
+            <option value="">all floors</option>
+            {floors.slice(0, -1).map((f) => <option key={f.id} value={f.id}>cut above {f.name}</option>)}
+          </select>}
         </div>
         {timing && <div className="hint">{timing}</div>}
         <div>{current ? `${current.name} · ${current.universe === null ? 'no DMX cable' : `U${current.universe} @${current.address}`}` : device ? device.name : tube ? `${tube.name} · ${tube.label}` : 'click a fixture to move it'}</div>

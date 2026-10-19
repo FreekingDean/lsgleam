@@ -58,7 +58,7 @@ function Choice({ label, values, options, onChange }: { label: string; values: s
 const meters = (v: string | number) => String(Number(Number(v).toFixed(3)))
 
 function PlacementFields({ show, units, onPlace }: { show: Show; units: Unit[]; onPlace: Props['onPlace'] }) {
-  const ceiled = units.filter((u) => u.block.kind !== 'box').flatMap((u): [Unit, number][] => { const h = ceilingAt(show, u.placement.position[0], u.placement.position[2]); return h === null ? [] : [[u, h]] })
+  const ceiled = units.filter((u) => u.block.kind !== 'box').flatMap((u): [Unit, number][] => { const h = ceilingAt(show, u.placement.position[0], u.placement.position[2], u.placement.position[1]); return h === null ? [] : [[u, h]] })
   const axis = (i: number, v: string) => {
     const m = parseLength(v)
     if (m === null) return

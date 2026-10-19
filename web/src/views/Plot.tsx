@@ -1,5 +1,6 @@
 import { useId, useRef, useState } from 'react'
-import { profileOf, type BoxBlock, type Show } from '../model/show'
+import { profileOf, type BoxBlock, type Floor, type Show } from '../model/show'
+import { floorsOf, roomFloor } from '../model/floors'
 import { formatLength } from '../model/format'
 import { download } from '../td/blt'
 import { compare, fixtureRows, num, range, summary, tubeRows } from './rows'
@@ -16,7 +17,7 @@ const textW = (s: string, size: number) => s.length * size * 0.6
 const STEPS = [1, 2, 5, 10, 20, 50]
 
 type Style = ReturnType<ReturnType<typeof styles>>
-type Plotted = { room: BoxBlock | null; items: Item[]; ends: Map<string, End>; runs: Run[]; style: (r: Run) => Style }
+type Plotted = { room: BoxBlock | null; items: Item[]; ends: Map<string, End>; runs: Run[]; style: (r: Run) => Style; floor?: Floor; level?: string }
 
 const sizeOf = (id: string) => Math.max(8, textW(id, ID) / 2 + 3)
 
@@ -40,7 +41,7 @@ const arrow = ([ax, ay]: XZ, [bx, by]: XZ, color: string) => {
   return <path d={`M${mx + 5} ${my}L${mx - 4} ${my - 4}L${mx - 4} ${my + 4}Z`} fill={color} transform={`rotate(${a} ${mx} ${my})`} />
 }
 
-function PlanSvg({ room, items, ends, runs, style }: Plotted) {
+function PlanSvg({ room, items, ends, runs, style, floor, level }: Plotted) {
   const clip = useId()
   const rect = room && rectOf(room)
   const mine = items.filter((i) => !room || i.room === room.id)
@@ -98,10 +99,10 @@ function PlanSvg({ room, items, ends, runs, style }: Plotted) {
     const label = t.replace(/\D/g, '') || t
     return { label, x: tx + ((tx - at[0]) / len) * 7, y: ty + ((ty - at[1]) / len) * 7 }
   }))
-  const plan = rect && room.floorplan
-  const centre = plan && P([rect.x + rect.w / 2 + plan.x, rect.z + rect.d / 2 + plan.z])
+  const plan = floor?.floorplan
+  const centre = plan && P([plan.x, plan.z])
   const rp = rect && { a: P([rect.x, rect.z]), b: P([rect.x + rect.w, rect.z + rect.d]) }
-  const title = room?.name ?? 'Layout'
+  const title = [level, room?.name ?? 'Layout'].filter(Boolean).join(' · ')
   const step = STEPS.find((s) => s * k >= 90) ?? 100
   const parts = step <= 2 ? step * 2 : 5
   const grid = rect ? { xs: Array.from({ length: Math.floor(rect.w) + 1 }, (_, i) => rect.x + i), zs: Array.from({ length: Math.floor(rect.d) + 1 }, (_, i) => rect.z + i) } : { xs: [], zs: [] }
@@ -208,7 +209,7 @@ export function Plot({ show }: { show: Show }) {
         <button onClick={save}>download SVG</button>
       </div>
       <div ref={ref}>
-        {shown.map((room) => <div key={room?.id ?? 'layout'} className="plot-plan"><PlanSvg room={room} items={items} ends={ends} runs={runs} style={style} /></div>)}
+        {shown.map((room) => <div key={room?.id ?? 'layout'} className="plot-plan"><PlanSvg room={room} items={items} ends={ends} runs={runs} style={style} floor={room ? roomFloor(show, room) : floorsOf(show)[0]} level={floorsOf(show).length > 1 && room ? roomFloor(show, room).name : undefined} /></div>)}
       </div>
       <section className="plot-sheet">
         <h2>Legend and checks</h2>

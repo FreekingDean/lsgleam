@@ -1,8 +1,8 @@
 import { useEffect, useState, type MouseEvent } from 'react'
-import { Panel, ViewportPortal, useInternalNode, useReactFlow, useStore } from '@xyflow/react'
+import { Panel, ViewportPortal, useReactFlow, useStore } from '@xyflow/react'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
-import type { BoxBlock } from '../model/show'
-import { roomCentre, type Calib, type XZ } from '../model/floorplan'
+import type { Floor } from '../model/show'
+import type { Calib, XZ } from '../model/floorplan'
 import { parseLength } from '../model/format'
 import { SCALE } from '../td/spots'
 import { imagePlan, isPdf, openPdf, pdfPlan, renderPage, type PlanImage } from './planImage'
@@ -58,26 +58,24 @@ export function PlanImport({ file, onPlan, onClose }: { file: File; onPlan: (p: 
   )
 }
 
-type Handlers = { onMove: (room: string, x: number, z: number) => void; onPoint: (room: string, p: XZ) => void }
+type Handlers = { onMove: (floor: string, x: number, z: number) => void; onPoint: (floor: string, p: XZ) => void }
 
-export function FloorPlanLayer({ rooms, calib, ...handlers }: Handlers & { rooms: BoxBlock[]; calib: Calib | null }) {
-  return <ViewportPortal>{rooms.map((r) => <RoomPlan key={r.id} room={r} points={calib?.room === r.id ? calib.points : null} {...handlers} />)}</ViewportPortal>
+export function FloorPlanLayer({ floors, active, calib, ...handlers }: Handlers & { floors: Floor[]; active: string; calib: Calib | null }) {
+  return <ViewportPortal>{floors.map((f) => <FloorImage key={f.id} floor={f} dim={f.id !== active} points={calib?.floor === f.id ? calib.points : null} {...handlers} />)}</ViewportPortal>
 }
 
-function RoomPlan({ room, points, onMove, onPoint }: Handlers & { room: BoxBlock; points: XZ[] | null }) {
+function FloorImage({ floor, dim, points, onMove, onPoint }: Handlers & { floor: Floor; dim: boolean; points: XZ[] | null }) {
   const { screenToFlowPosition } = useReactFlow()
   const zoom = useStore((s) => s.transform[2])
-  const node = useInternalNode(room.id)
   const [drag, setDrag] = useState<{ from: XZ; by: XZ } | null>(null)
-  const plan = room.floorplan!
-  const [cx, cz] = node ? [node.position.x / SCALE + room.size[0] / 2, node.position.y / SCALE + room.size[1] / 2] : roomCentre(room)
+  const plan = floor.floorplan!
   const at = (e: MouseEvent): XZ => {
     const p = screenToFlowPosition({ x: e.clientX, y: e.clientY })
-    return [p.x / SCALE - cx, p.y / SCALE - cz]
+    return [p.x / SCALE, p.y / SCALE]
   }
   const [x, z] = [plan.x + (drag?.by[0] ?? 0), plan.z + (drag?.by[1] ?? 0)]
   const calibrating = points !== null
-  const movable = !plan.locked && !calibrating
+  const movable = !plan.locked && !calibrating && !dim
   return (
     <>
       <img
@@ -85,8 +83,8 @@ function RoomPlan({ room, points, onMove, onPoint }: Handlers & { room: BoxBlock
         alt=""
         draggable={false}
         className={`floorplan${movable ? ' nodrag nopan' : ''}`}
-        style={{ left: (cx + x - plan.width / 2) * SCALE, top: (cz + z - plan.height / 2) * SCALE, width: plan.width * SCALE, height: plan.height * SCALE, transform: `rotate(${plan.rotation}deg)`, opacity: plan.opacity, pointerEvents: plan.locked && !calibrating ? 'none' : 'all', cursor: calibrating ? 'crosshair' : 'move' }}
-        onClick={(e) => calibrating && points.length < 2 && onPoint(room.id, at(e))}
+        style={{ left: (x - plan.width / 2) * SCALE, top: (z - plan.height / 2) * SCALE, width: plan.width * SCALE, height: plan.height * SCALE, transform: `rotate(${plan.rotation}deg)`, opacity: plan.opacity * (dim ? 0.35 : 1), pointerEvents: (plan.locked || dim) && !calibrating ? 'none' : 'all', cursor: calibrating ? 'crosshair' : 'move' }}
+        onClick={(e) => calibrating && points.length < 2 && onPoint(floor.id, at(e))}
         onPointerDown={(e) => {
           if (!movable || e.button !== 0) return
           e.currentTarget.setPointerCapture(e.pointerId)
@@ -98,13 +96,13 @@ function RoomPlan({ room, points, onMove, onPoint }: Handlers & { room: BoxBlock
           setDrag({ ...drag, by: [p[0] - drag.from[0], p[1] - drag.from[1]] })
         }}
         onPointerUp={() => {
-          if (drag && (drag.by[0] || drag.by[1])) onMove(room.id, x, z)
+          if (drag && (drag.by[0] || drag.by[1])) onMove(floor.id, x, z)
           setDrag(null)
         }}
       />
       {points && <svg className="floorplan-marks">
-        {points.length === 2 && <line x1={(cx + points[0][0]) * SCALE} y1={(cz + points[0][1]) * SCALE} x2={(cx + points[1][0]) * SCALE} y2={(cz + points[1][1]) * SCALE} strokeWidth={2 / zoom} />}
-        {points.map(([px, pz], i) => <circle key={i} cx={(cx + px) * SCALE} cy={(cz + pz) * SCALE} r={5 / zoom} strokeWidth={2 / zoom} />)}
+        {points.length === 2 && <line x1={points[0][0] * SCALE} y1={points[0][1] * SCALE} x2={points[1][0] * SCALE} y2={points[1][1] * SCALE} strokeWidth={2 / zoom} />}
+        {points.map(([px, pz], i) => <circle key={i} cx={px * SCALE} cy={pz * SCALE} r={5 / zoom} strokeWidth={2 / zoom} />)}
       </svg>}
     </>
   )

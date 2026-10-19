@@ -1,4 +1,4 @@
-import type { FloorPlan } from '../blocks/box'
+import type { FloorPlan } from '../model/show'
 import { movePlan, turnPlan } from '../model/floorplan'
 import { formatLength } from '../model/format'
 
@@ -7,7 +7,7 @@ const NUDGE = 0.1
 type Props = { plan?: FloorPlan; onFile: (file: File) => void; onChange: (plan: FloorPlan | undefined) => void; onCalibrate: () => void }
 
 function PickFile({ label, onFile }: { label: string; onFile: (file: File) => void }) {
-  return <label className="file-button" title="a PDF or image of this room's floor plan, drawn under the room on the layout, the simulator floor and the lighting plot">{label}<input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = '' }} /></label>
+  return <label className="file-button" title="a PDF or image of this floor's plan, drawn under the layout, on the simulator floor and on the lighting plot">{label}<input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = '' }} /></label>
 }
 
 export function FloorPlanPanel({ plan, onFile, onChange, onCalibrate }: Props) {
@@ -17,7 +17,7 @@ export function FloorPlanPanel({ plan, onFile, onChange, onCalibrate }: Props) {
   return (
     <>
       <h3>Floor plan</h3>
-      <div className="help">{formatLength(plan.width)} × {formatLength(plan.height)} · offset {plan.x}, {plan.z} m{plan.rotation ? ` · turned ${plan.rotation}°` : ''}</div>
+      <div className="help">{formatLength(plan.width)} × {formatLength(plan.height)} · centre {plan.x}, {plan.z} m{plan.rotation ? ` · turned ${plan.rotation}°` : ''}</div>
       <div className="floorplan-tools">
         <button disabled={plan.locked} onClick={onCalibrate} title="click two points a known distance apart on the plan, then type the distance">set scale</button>
         <button disabled={plan.locked} onClick={() => onChange(turnPlan(plan, -90))} title="turn 90° anticlockwise">⟲ 90°</button>
@@ -36,7 +36,7 @@ export function FloorPlanPanel({ plan, onFile, onChange, onCalibrate }: Props) {
         <PickFile label="replace…" onFile={onFile} />
         <button onClick={() => onChange(undefined)}>remove</button>
       </div>
-      <div className="help">{plan.locked ? 'Locked: clicks go through to the canvas.' : 'Drag the plan on the layout to line it up with the room, then lock it.'}</div>
+      <div className="help">{plan.locked ? 'Locked: clicks go through to the canvas.' : 'Drag the plan on the layout to line it up with the rooms, then lock it.'}</div>
     </>
   )
 }

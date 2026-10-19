@@ -30,7 +30,7 @@ export function fixtureRows(show: Show): FixtureRow[] {
     return [{
       id: b.id, jump: b.id, warn: !p, name: b.name, type: profileOf(b).label, channels: fixtureMode(b).channels.length,
       node: node?.kind === 'artnet' ? `${node.name} · ${node.ip} · ${node.protocol}` : '', universe: p?.universe ?? null, address: b.address,
-      x, height, z, turn: u.placement.rotation[1], tilt: u.placement.rotation[0], room: roomAt(show, x, z)?.name ?? '', scenes: drivers(show, b.id),
+      x, height, z, turn: u.placement.rotation[1], tilt: u.placement.rotation[0], room: roomAt(show, x, z, height)?.name ?? '', scenes: drivers(show, b.id),
     }]
   })
 }

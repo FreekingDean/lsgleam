@@ -75,7 +75,9 @@ export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | Fade
 export type Kind = Block['kind']
 export type Wire = { from: string; fromPort: string; to: string; port: string; scene?: string }
 export type Cable = { from: string; fromPort: string; to: string; port: string }
-export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; profiles?: StoredProfile[]; responses?: Record<string, ColorResponse> }
+export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; profiles?: StoredProfile[]; responses?: Record<string, ColorResponse>; floors?: Floor[] }
+export type FloorPlan = { src: string; x: number; z: number; width: number; height: number; rotation: number; opacity: number; locked: boolean }
+export type Floor = { id: string; name: string; elevation: number; floorplan?: FloorPlan }
 export type ColorResponse = { multiplier: [number, number, number]; gamma: number }
 export const NO_RESPONSE: ColorResponse = { multiplier: [1, 1, 1], gamma: 1 }
 

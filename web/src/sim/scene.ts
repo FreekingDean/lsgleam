@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
-import type { BoxBlock, Placement } from '../model/show'
+import type { Floor, Placement } from '../model/show'
 import type { SimDevice, SimFixture, SimTube } from '../model/units'
 import type { DmxValues } from '../td/td'
 import { Par, disposeAll, placementOf, type Light, type Spot } from './par'
@@ -28,6 +28,7 @@ export class SimScene {
   private clock = new THREE.Clock()
   private events = new AbortController()
   private pool: THREE.SpotLight[] = []
+  private cut = Infinity
   private plans = new Map<string, { src: string; mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshLambertMaterial> }>()
   onSelect: (key: string | null) => void = () => {}
   onLost: (lost: boolean) => void = () => {}
@@ -124,18 +125,19 @@ export class SimScene {
       this.scene.add(light.object)
       this.lights.set(item.key, { light, fixture: item.fixture, tube: item.tube, kind: item.kind })
     }
+    this.setCut(this.cut)
   }
 
-  setPlans(rooms: BoxBlock[]) {
-    const wanted = new Map(rooms.flatMap((r) => (r.floorplan ? [[r.id, r]] : [])))
+  setPlans(floors: Floor[]) {
+    const wanted = new Map(floors.flatMap((f) => (f.floorplan ? [[f.id, f]] : [])))
     for (const [id, p] of this.plans) if (wanted.get(id)?.floorplan?.src !== p.src) {
       this.scene.remove(p.mesh)
       p.mesh.material.map?.dispose()
       disposeAll(p.mesh)
       this.plans.delete(id)
     }
-    for (const [id, room] of wanted) {
-      const plan = room.floorplan!
+    for (const [id, floor] of wanted) {
+      const plan = floor.floorplan!
       if (!this.plans.has(id)) {
         const map = new THREE.TextureLoader().load(plan.src)
         map.colorSpace = THREE.SRGBColorSpace
@@ -146,12 +148,19 @@ export class SimScene {
         this.plans.set(id, { src: plan.src, mesh })
       }
       const { mesh } = this.plans.get(id)!
-      const [x, y, z] = room.sim?.position ?? [0, 0, 0]
       mesh.scale.set(plan.width, plan.height, 1)
       mesh.rotation.set(-Math.PI / 2, (-plan.rotation * Math.PI) / 180, 0, 'YXZ')
-      mesh.position.set(x + plan.x, y + 0.006, z + plan.z)
+      mesh.position.set(plan.x, floor.elevation + 0.006, plan.z)
       mesh.material.opacity = plan.opacity
     }
+    this.setCut(this.cut)
+  }
+
+  setCut(top: number) {
+    this.cut = top
+    for (const { light } of this.lights.values()) light.object.visible = light.object.position.y < top - 0.01
+    for (const { mesh } of this.plans.values()) mesh.visible = mesh.position.y < top - 0.01
+    if (this.selected && !this.lights.get(this.selected)?.light.object.visible) this.select(null)
   }
 
   apply(dmx: DmxValues) {
@@ -184,7 +193,7 @@ export class SimScene {
     const rect = this.canvas.getBoundingClientRect()
     const pointer = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1)
     this.raycaster.setFromCamera(pointer, this.camera)
-    const hits = this.raycaster.intersectObjects([...this.lights.values()].map((l) => l.light.object), true)
+    const hits = this.raycaster.intersectObjects([...this.lights.values()].map((l) => l.light.object).filter((o) => o.visible), true)
     const owners = hits.flatMap((h) => [...this.lights].filter(([, l]) => this.owns(l.light.object, h.object)))
     this.select((owners.find(([, l]) => !l.kind.startsWith('box:')) ?? owners[0])?.[0] ?? null)
   }
@@ -242,7 +251,7 @@ export class SimScene {
 
   private aim() {
     const power = (s: Spot) => s.intensity * (0.2126 * s.color.r + 0.7152 * s.color.g + 0.0722 * s.color.b)
-    const spots = [...this.lights.values()].flatMap(({ light: { spot } }) => (spot && power(spot) > 0.05 ? [spot] : []))
+    const spots = [...this.lights.values()].flatMap(({ light: { spot, object } }) => (spot && object.visible && power(spot) > 0.05 ? [spot] : []))
     spots.sort((a, b) => power(b) - power(a))
     this.pool.forEach((light, i) => {
       const s = spots[i]

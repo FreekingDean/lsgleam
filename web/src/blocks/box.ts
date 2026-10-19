@@ -1,8 +1,7 @@
 import type { Base } from '../model/show'
 import type { BlockDef } from './types'
 
-export type FloorPlan = { src: string; x: number; z: number; width: number; height: number; rotation: number; opacity: number; locked: boolean }
-export type BoxBlock = Base & { kind: 'box'; size: [number, number, number]; locked: boolean; floorplan?: FloorPlan }
+export type BoxBlock = Base & { kind: 'box'; size: [number, number, number]; locked: boolean }
 
 export const box: BlockDef<BoxBlock> = {
   kind: 'box',

@@ -22,8 +22,6 @@ export type Props = {
   configureAudioSlice: () => Promise<string>
   onOpenPalette: (id: string) => void
   onOpenPatch: (id: string) => void
-  onFloorPlan?: (file: File) => void
-  onCalibrate?: () => void
 }
 
 export function Protocol({ value, onChange }: { value: 'artnet' | 'sacn'; onChange: (v: 'artnet' | 'sacn') => void }) {

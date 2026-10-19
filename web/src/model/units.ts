@@ -4,6 +4,7 @@ import { type Placement, type BoxBlock, type Point, type TubeBlock, type BoardBl
 import { audioInputs } from '../blocks'
 import { typed } from './show'
 import { unitPatch, tubePatch, pixelAddress } from './patch'
+import { floorAt } from './floors'
 
 export type Unit = { key: string; block: Block; name: string; placement: Placement; flip: boolean; inputs: Port[]; outputs: Port[] }
 
@@ -63,16 +64,18 @@ export const addCable = (show: Show, c: Cable): Show => ({ ...show, cables: [...
 const sameCable = (a: Cable, b: Cable) => a.from === b.from && a.fromPort === b.fromPort && a.to === b.to && a.port === b.port
 export const removeCables = (show: Show, cables: Cable[]): Show => ({ ...show, cables: show.cables.filter((c) => !cables.some((r) => sameCable(r, c))) })
 
-export const roomAt = (show: Show, x: number, z: number) => show.blocks.find((b): b is BoxBlock => b.kind === 'box' && Math.abs(x - (b.sim?.position[0] ?? 0)) <= b.size[0] / 2 && Math.abs(z - (b.sim?.position[2] ?? 0)) <= b.size[1] / 2)
+const level = (show: Show, y?: number) => (y === undefined ? () => true : (b: BoxBlock) => floorAt(show, b.sim?.position[1] ?? 0).id === floorAt(show, y).id)
 
-export function ceilingAt(show: Show, x: number, z: number) {
-  const room = roomAt(show, x, z)
+export const roomAt = (show: Show, x: number, z: number, y?: number) => roomsOf(show).filter(level(show, y)).find((b) => Math.abs(x - (b.sim?.position[0] ?? 0)) <= b.size[0] / 2 && Math.abs(z - (b.sim?.position[2] ?? 0)) <= b.size[1] / 2)
+
+export function ceilingAt(show: Show, x: number, z: number, y?: number) {
+  const room = roomAt(show, x, z, y)
   return room ? (room.sim?.position[1] ?? 0) + room.size[2] : null
 }
 
 export function onWall(show: Show, p: Placement): Placement | null {
   const [x, y, z] = p.position
-  const room = roomAt(show, x, z)
+  const room = roomAt(show, x, z, y)
   if (!room) return null
   const [cx, , cz] = room.sim?.position ?? [0, 0, 0]
   const [w, d] = room.size
@@ -117,17 +120,17 @@ export function rectOf(b: BoxBlock) {
   return { x: cx - b.size[0] / 2, z: cz - b.size[1] / 2, w: b.size[0], d: b.size[1], h: b.size[2] }
 }
 
-export function nearestRoom(show: Show, [x, z]: [number, number]) {
+export function nearestRoom(show: Show, [x, z]: [number, number], y?: number) {
   const away = (b: BoxBlock) => {
     const r = rectOf(b)
     return Math.hypot(Math.max(r.x - x, 0, x - r.x - r.w), Math.max(r.z - z, 0, z - r.z - r.d))
   }
-  return roomsOf(show).sort((a, b) => away(a) - away(b))[0]?.id ?? null
+  return roomsOf(show).filter(level(show, y)).sort((a, b) => away(a) - away(b))[0]?.id ?? null
 }
 
 export function roomOf(show: Show, key: string) {
   const u = unitsOf(show).find((x) => x.key === key)
-  return u ? nearestRoom(show, [u.placement.position[0], u.placement.position[2]]) : null
+  return u ? nearestRoom(show, [u.placement.position[0], u.placement.position[2]], u.placement.position[1]) : null
 }
 
 export function inRooms(show: Show, rooms: string[] | undefined, key: string) {

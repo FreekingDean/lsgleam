@@ -73,7 +73,7 @@ export function itemsOf(show: Show): Item[] {
   const placed = unitsOf(show).flatMap((u): Omit<Item, 'id' | 'info'>[] => {
     const b = u.block
     const at: XZ = [u.placement.position[0], u.placement.position[2]]
-    const base = { key: u.key, name: u.name, at, height: u.placement.position[1], room: nearestRoom(show, at), tips: [], patched: true }
+    const base = { key: u.key, name: u.name, at, height: u.placement.position[1], room: nearestRoom(show, at, u.placement.position[1]), tips: [], patched: true }
     if (b.kind === 'fixture') return [{ ...base, type: profileOf(b).label, mark: 'fixture', patched: !!unitPatch(show, b.id) }]
     if (b.kind === 'tubeset') return [{ ...base, type: DEVICES.tubeset!, mark: 'tubes', tips: membersOf(show, b.id).map((t): [string, XZ] => [t.name.slice(b.name.length + 1), project(u.placement, t.path.at(-1)!)]) }]
     const type = DEVICES[b.kind]
@@ -96,7 +96,7 @@ export function endsOf(show: Show): Map<string, End> {
     const at: XZ = [u.placement.position[0], u.placement.position[2]]
     const path = b.kind === 'tube' ? b.path.map((p) => project(u.placement, p)) : [at]
     const set = b.kind === 'tube' ? show.blocks.find((x) => x.id === b.set) : undefined
-    return [u.key, { name: set ? `${set.name} · ${b.name.slice(set.name.length + 1)}` : u.name, in: path[0], out: path.at(-1)!, room: nearestRoom(show, at) }]
+    return [u.key, { name: set ? `${set.name} · ${b.name.slice(set.name.length + 1)}` : u.name, in: path[0], out: path.at(-1)!, room: nearestRoom(show, at, u.placement.position[1]) }]
   }))
 }
 

@@ -5,6 +5,7 @@ import { type Point, type TubeBlock, type TubeDesign, EMPTY_SHOW, FIXTURE_PORT, 
 import { blockHeight, hasInput, inputPorts, outputPorts } from './ports'
 import { pathLength } from './geometry'
 import { pruneCables } from './units'
+import { FLOOR_1 } from './floors'
 
 const LEGACY_KINDS: Record<string, Kind> = { scenes: 'looks' }
 const LIGHT_KINDS = ['fixture', 'group']
@@ -307,7 +308,7 @@ export function normalize(raw: Partial<Show>): Show {
     if (sized.kind === 'audioslice') Object.assign(sized, { apiPort: sized.apiPort ?? 8722, token: sized.token ?? '', smoothing: sized.smoothing ?? 0 })
     return sized
   })
-  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(profiles.length ? { profiles } : {}), ...(raw.responses ? { responses: Object.fromEntries(Object.entries(raw.responses).map(([id, r]) => [id, multiplierOf(r)])) } : {}), designs: raw.designs ?? [] })
+  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(profiles.length ? { profiles } : {}), ...(raw.responses ? { responses: Object.fromEntries(Object.entries(raw.responses).map(([id, r]) => [id, multiplierOf(r)])) } : {}), designs: raw.designs ?? [], floors: raw.floors?.length ? raw.floors : [FLOOR_1] })
   const used = new Map<string, number>()
   const cables = draft.cables.map((c) => {
     if (c.port !== 'in' || draft.blocks.find((b) => b.id === c.to)?.kind !== 'audio') return c
