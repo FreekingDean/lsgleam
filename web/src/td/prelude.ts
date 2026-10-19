@@ -700,7 +700,6 @@ def build_tube(b, sources, geo):
         dark.par.channelname = 'Red Green Blue'
         finish(c, dark, 200)
         return
-    weight = lambda src: "op('%s')['w%d']" % (weights.name, src['scene']) if weights else '1'
     share = geo['index'] / max(geo['count'], 1)
     coords = c.create(tableDAT, 'coords')
     coords.clear()
@@ -709,9 +708,17 @@ def build_tube(b, sources, geo):
     coords.nodeX, coords.nodeY = -600, 300
     total = c.create(mathCHOP, 'sum')
     total.par.chopop = 'add'
-    total.par.gain.expr = '1 / max(%s, 1)' % ' + '.join(weight(src) for src, e in strips)
-    total.nodeX = 400
+    total.nodeX = 1000
+    wsel = select(c, 'weights', weights, ' '.join('w%d' % src['scene'] for src, e in strips), 600, 300)
+    wsum = c.create(mathCHOP, 'wsum')
+    wsum.par.chanop = 'add'
+    floor = c.create(limitCHOP, 'wfloor')
+    floor.par.type = 'clamp'
+    floor.par.min = 1
+    floor.par.max = 1000
+    chain(wsel, wsum, floor, y=300)
     for k, (src, end) in enumerate(strips):
+        y = -k * 150
         along = src.get('along') or 'tube'
         u = c.op('u_' + along)
         if u is None:
@@ -724,20 +731,33 @@ def build_tube(b, sources, geo):
             u.par.firstcolumn = 'values'
             u.nodeX, u.nodeY = -400, 300 - k * 100
         lo, hi, cyclic = SHAPES[src['mode']]
-        at = "op('%s')['pos'] + op('%s')['spread'] * %r" % (end.name, end.name, share)
+        pos = select(c, 'pos%d' % (k + 1), end, 'pos', -200, y)
+        spread = combine(c, 'spread%d' % (k + 1), 'add', [select(c, 'spread_in%d' % (k + 1), end, 'spread', -400, y - 50)], -200, y - 50, share)
+        at = combine(c, 'at%d' % (k + 1), 'add', [pos, spread], 0, y)
         if src['mode'] == 'band':
-            at = '(%s) %% 1' % at
+            wrap = c.create(limitCHOP, 'wrap%d' % (k + 1))
+            wrap.par.type = 'loop'
+            wrap.par.min = 0
+            wrap.par.max = 1
+            wrap.nodeX, wrap.nodeY = 100, y
+            at.outputConnectors[0].connect(wrap.inputConnectors[0])
+            at = wrap
+        rel = combine(c, 'rel%d' % (k + 1), 'sub', [u, at], 200, y)
+        rel.par.align = 'shift1'
         look = c.create(lookupCHOP, 'look%d' % (k + 1))
-        look.par.index1.expr = '%s + %r' % (at, lo)
-        look.par.index2.expr = '%s + %r' % (at, hi)
+        look.par.index1 = lo
+        look.par.index2 = hi
         look.par.cyclic = 'yes' if cyclic else 'no'
-        u.outputConnectors[0].connect(look.inputConnectors[0])
+        look.nodeX, look.nodeY = 400, y
+        rel.outputConnectors[0].connect(look.inputConnectors[0])
         end.outputConnectors[0].connect(look.inputConnectors[1])
-        mix = c.create(mathCHOP, 'mix%d' % (k + 1))
-        mix.par.gain.expr = weight(src)
-        chain(look, mix, y=-k * 150)
+        weight = select(c, 'w%d' % (k + 1), weights, 'w%d' % src['scene'], 400, y - 50)
+        mix = combine(c, 'mix%d' % (k + 1), 'mul', [look, weight], 600, y)
+        mix.par.align = 'shift1'
         mix.outputConnectors[0].connect(total)
-    finish(c, select(c, 'rgb', total, 'Red Green Blue', 600, 0), 800)
+    blend = combine(c, 'blend', 'div', [total, floor], 1200, 0)
+    blend.par.align = 'shift1'
+    finish(c, select(c, 'rgb', blend, 'Red Green Blue', 1400, 0), 1600)
 
 ${BLOCKS.board.python}
 ${BLOCKS.artnet.python}`

@@ -24,16 +24,18 @@ def set_strip(c, cfg):
         listed = '[%s]' % ', '.join('(%s)' % ', '.join(s) for s in stops)
         first, last = [[str(at)] + ['%s(%s)[%d]' % (pick, listed, k) for k in (1, 2, 3)] for at, pick in ((0, 'min'), (1, 'max'))]
         c.op('keys').clear()
-        c.op('keys').appendRows([row + ['1'] for row in [first] + stops + [last]])
+        c.op('keys').appendRows([['pos', 'r', 'g', 'b', 'a']] + [row + ['1'] for row in [first] + stops + [last]])
 
 def ramp_shape(c):
     keys = c.create(tableDAT, 'keys')
     values = c.create(evaluateDAT, 'values')
     values.par.output = 'evaluate'
+    values.par.xfirstrow = True
     order = c.create(sortDAT, 'sorted')
     order.par.sortmethod = 'colindex'
     order.par.index = 0
     order.par.order = 'nums'
+    order.par.preservefirst = True
     ramp = c.create(rampTOP, 'ramp')
     ramp.par.dat = order
     ramp.par.type = 'horizontal'
