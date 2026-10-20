@@ -43,8 +43,8 @@ ${triggers.join('\n')}
 `
 }
 
-export function download(name: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }))
+export function download(name: string, data: BlobPart, type = 'text/plain') {
+  const url = URL.createObjectURL(new Blob([data], { type }))
   const a = Object.assign(document.createElement('a'), { href: url, download: name })
   a.click()
   URL.revokeObjectURL(url)

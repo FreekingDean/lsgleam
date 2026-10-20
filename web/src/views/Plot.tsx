@@ -5,6 +5,7 @@ import { formatLength } from '../model/format'
 import { download } from '../td/blt'
 import { compare, fixtureRows, num, range, summary, tubeRows } from './rows'
 import { endsOf, itemsOf, rectOf, roomsOf, runsOf, styles, type Box, type End, type Item, type Run, type XZ } from './plan'
+import { exportMvr } from './mvr'
 
 const W = 1120
 const H = 768
@@ -207,6 +208,7 @@ export function Plot({ show }: { show: Show }) {
         {rooms.length > 1 && <label>room <select value={scope} onChange={(e) => setScope(e.target.value)}><option value="all">all</option>{rooms.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label>}
         <button onClick={() => window.print()}>print</button>
         <button onClick={save}>download SVG</button>
+        <button onClick={() => exportMvr(show)} title="fixtures, patch and rooms as MVR + GDTF, for Unreal and other visualisers">export MVR</button>
       </div>
       <div ref={ref}>
         {shown.map((room) => <div key={room?.id ?? 'layout'} className="plot-plan"><PlanSvg room={room} items={items} ends={ends} runs={runs} style={style} floor={room ? roomFloor(show, room) : floorsOf(show)[0]} level={floorsOf(show).length > 1 && room ? roomFloor(show, room).name : undefined} /></div>)}

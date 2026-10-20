@@ -4,6 +4,7 @@ import { formatLength } from '../model/format'
 import { floorsOf } from '../model/floors'
 import { download } from '../td/blt'
 import { compare, fixtureRows, num, range, summary, tubeRows, type Column, type FixtureRow, type Row, type TubeRow } from './rows'
+import { exportMvr } from './mvr'
 
 const addressText = (r: FixtureRow) => (r.universe === null ? 'unpatched' : `${r.universe}/${range(r.address, r.address + r.channels - 1)}`)
 
@@ -90,6 +91,7 @@ export function Schedule({ show, onJump }: { show: Show; onJump: (id: string) =>
         <input placeholder="filter" value={filter} onChange={(e) => setFilter(e.target.value)} />
         <label>group by <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>{Object.keys(GROUPS).filter((g) => g !== 'floor' || columns === WITH_FLOOR).map((g) => <option key={g}>{g}</option>)}</select></label>
         <button onClick={() => window.print()}>print</button>
+        <button onClick={() => exportMvr(show)} title="fixtures, patch and rooms as MVR + GDTF, for Unreal and other visualisers">export MVR</button>
       </div>
       <h2>Fixture schedule</h2>
       <div className="schedule-summary">
