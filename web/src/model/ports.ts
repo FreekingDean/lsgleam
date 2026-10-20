@@ -2,7 +2,7 @@ import { allProfiles } from './fixtures'
 import { NODE_H, type CombineBlock, type Block, type Kind, type Wire, type Show, FIXTURE_PORT, SOURCE_KINDS, isLight, type Port, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB_ATTRS, LOOK_ATTRS, profileOf, type Rail, RAIL_SEP, membersOf, typed } from './show'
 import { type Ports, blockDef, defOf, elementOf, hasDef } from '../blocks'
 
-const MULTI_INPUTS: Partial<Record<Kind, string[]>> = { gate: ['signal'], not: ['signal'], fade: ['signal'], range: ['signal'], mix: ['a', 'b'], and: ['a', 'b'] }
+const MULTI_INPUTS: Partial<Record<Kind, string[]>> = { gate: ['signal'], not: ['signal'], fade: ['signal'], range: ['signal'], add: ['in'], mix: ['a', 'b'], and: ['a', 'b'] }
 
 export function multiFeeds(show: Show | undefined, b: Block, seen = new Set<string>()): Wire[] {
   if (!show || seen.has(b.id) || (b.kind === 'mix' && b.type === 'color')) return []

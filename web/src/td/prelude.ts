@@ -426,6 +426,7 @@ def gate(c, name, threshold, x, y):
 ${BLOCKS.drop.python}
 ${BLOCKS.hold.python}
 ${BLOCKS.range.python}
+${BLOCKS.add.python}
 ${BLOCKS.values.python}
 ${BLOCKS.pattern.python}
 def position_switch(c, name, index, aim, positions, y):

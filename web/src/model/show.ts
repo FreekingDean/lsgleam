@@ -15,6 +15,7 @@ import type { MixBlock } from '../blocks/mix'
 import type { HoldBlock } from '../blocks/hold'
 import type { DropBlock } from '../blocks/drop'
 import type { RangeBlock } from '../blocks/range'
+import type { AddBlock } from '../blocks/add'
 import type { SplitBlock } from '../blocks/split'
 import type { SequenceBlock } from '../blocks/sequence'
 import type { ValuesBlock } from '../blocks/values'
@@ -39,7 +40,7 @@ import type { OutputBlock } from '../blocks/output'
 import type { SceneBlock } from '../blocks/scene'
 import type { CompositeBlock } from '../blocks/composite'
 
-export type { TimerBlock, CombineBlock, ConstantBlock, LatchBlock, AndBlock, NotBlock, EqualsBlock, CounterBlock, StepsBlock, LevelBlock, GateBlock, FadeBlock, MixBlock, HoldBlock, DropBlock, RangeBlock, SplitBlock, SequenceBlock, ValuesBlock, ColorsBlock, PatternBlock, LooksBlock, AudioBlock, DmxInBlock, BltBlock, AudioSliceBlock, CdjBlock, BoxBlock, ArtnetBlock, StripBlock, BoardBlock, FixtureBlock, LightBlock, GroupBlock, ManualBlock, InputBlock, OutputBlock, SceneBlock, CompositeBlock }
+export type { TimerBlock, CombineBlock, ConstantBlock, LatchBlock, AndBlock, NotBlock, EqualsBlock, CounterBlock, StepsBlock, LevelBlock, GateBlock, FadeBlock, MixBlock, HoldBlock, DropBlock, RangeBlock, AddBlock, SplitBlock, SequenceBlock, ValuesBlock, ColorsBlock, PatternBlock, LooksBlock, AudioBlock, DmxInBlock, BltBlock, AudioSliceBlock, CdjBlock, BoxBlock, ArtnetBlock, StripBlock, BoardBlock, FixtureBlock, LightBlock, GroupBlock, ManualBlock, InputBlock, OutputBlock, SceneBlock, CompositeBlock }
 
 export const NODE_W = 160
 export const NODE_H = 130
@@ -71,7 +72,7 @@ export type ColorStop = { at: number; color: string }
 export type StripAlong = 'tube' | 'height' | 'distance'
 export const STRIP_ALONG: Record<StripAlong, string> = { tube: 'each tube, from its start', height: 'height, across the whole design', distance: 'distance from the base' }
 
-export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | FadeBlock | NotBlock | GateBlock | AudioBlock | DmxInBlock | BltBlock | AudioSliceBlock | LevelBlock | StepsBlock | DropBlock | HoldBlock | RangeBlock | SequenceBlock | LooksBlock | PatternBlock | FixtureBlock | LightBlock | GroupBlock | ArtnetBlock | SceneBlock | InputBlock | ManualBlock | EqualsBlock | ConstantBlock | LatchBlock | AndBlock | CounterBlock | TimerBlock | CombineBlock | SplitBlock | CdjBlock | BoxBlock | ColorsBlock | TubeBlock | TubeSetBlock | BoardBlock | StripBlock
+export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | FadeBlock | NotBlock | GateBlock | AudioBlock | DmxInBlock | BltBlock | AudioSliceBlock | LevelBlock | StepsBlock | DropBlock | HoldBlock | RangeBlock | AddBlock | SequenceBlock | LooksBlock | PatternBlock | FixtureBlock | LightBlock | GroupBlock | ArtnetBlock | SceneBlock | InputBlock | ManualBlock | EqualsBlock | ConstantBlock | LatchBlock | AndBlock | CounterBlock | TimerBlock | CombineBlock | SplitBlock | CdjBlock | BoxBlock | ColorsBlock | TubeBlock | TubeSetBlock | BoardBlock | StripBlock
 export type Kind = Block['kind']
 export type Wire = { from: string; fromPort: string; to: string; port: string; scene?: string }
 export type Cable = { from: string; fromPort: string; to: string; port: string }
@@ -101,7 +102,7 @@ export const scenesOf = (show: Show) => show.blocks.filter((b): b is SceneBlock 
 export type Port = { id: string; label: string; type: string; hint?: string; chans?: string; strip?: string; profile?: string; multi?: boolean }
 export const typed = (id: string, type: string, label = id): Port => ({ id, label, type })
 
-export type PaletteItem = { kind: 'light'; profile: string } | { kind: 'box' } | { kind: 'cdj' } | { kind: 'audio' } | { kind: 'dmxin' } | { kind: 'blt' } | { kind: 'audioslice' } | { kind: 'level' } | { kind: 'steps' } | { kind: 'gate' } | { kind: 'drop' } | { kind: 'hold' } | { kind: 'range' } | { kind: 'sequence' } | { kind: 'looks' } | { kind: 'pattern' } | { kind: 'fixture'; profile: string } | { kind: 'group'; profile: string } | { kind: 'artnet' } | { kind: 'scene' } | { kind: 'input'; type?: InputType } | { kind: 'output'; type?: InputType } | { kind: 'composite' } | { kind: 'manual' } | { kind: 'equals' } | { kind: 'constant' } | { kind: 'latch' } | { kind: 'and' } | { kind: 'not' } | { kind: 'mix' } | { kind: 'fade' } | { kind: 'counter' } | { kind: 'timer' } | { kind: 'combine' } | { kind: 'split' } | { kind: 'colors' } | { kind: 'values' } | { kind: 'tubeset'; design?: string } | { kind: 'board' } | { kind: 'strip' }
+export type PaletteItem = { kind: 'light'; profile: string } | { kind: 'box' } | { kind: 'cdj' } | { kind: 'audio' } | { kind: 'dmxin' } | { kind: 'blt' } | { kind: 'audioslice' } | { kind: 'level' } | { kind: 'steps' } | { kind: 'gate' } | { kind: 'drop' } | { kind: 'hold' } | { kind: 'range' } | { kind: 'add' } | { kind: 'sequence' } | { kind: 'looks' } | { kind: 'pattern' } | { kind: 'fixture'; profile: string } | { kind: 'group'; profile: string } | { kind: 'artnet' } | { kind: 'scene' } | { kind: 'input'; type?: InputType } | { kind: 'output'; type?: InputType } | { kind: 'composite' } | { kind: 'manual' } | { kind: 'equals' } | { kind: 'constant' } | { kind: 'latch' } | { kind: 'and' } | { kind: 'not' } | { kind: 'mix' } | { kind: 'fade' } | { kind: 'counter' } | { kind: 'timer' } | { kind: 'combine' } | { kind: 'split' } | { kind: 'colors' } | { kind: 'values' } | { kind: 'tubeset'; design?: string } | { kind: 'board' } | { kind: 'strip' }
 
 export const POSITION_PORT = 'position'
 export const PATTERN_PORT = 'pattern'
