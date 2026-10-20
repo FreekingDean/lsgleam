@@ -39,6 +39,7 @@ def build_board(b, sources, slots, size):
     dmx = c.create(dmxoutCHOP, 'dmxout')
     dmx.par.interface = 'artnet'
     dmx.par.format = 'packetperchan'
+    dmx.par.routingtable = ''
     dmx.par.universe = b['startUniverse']
     dmx.par.netaddress = b['ip']
     dmx.par.active = b['active']
