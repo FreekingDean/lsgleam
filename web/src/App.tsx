@@ -131,14 +131,24 @@ function Editor() {
     return () => clearTimeout(t)
   }, [tab, floorView, setNodes, setEdges, fitView, viewOf])
 
-  const tdDo = useCallback(async (work: () => Promise<unknown>) => {
-    if (!connectedRef.current) return
-    try {
-      setError('')
-      await work()
-    } catch (e) {
-      if (connectedRef.current) setError((e as Error).message)
-    }
+  const queue = useRef<Promise<void>>(Promise.resolve())
+  const saving = useRef<Show | null>(null)
+
+  const tdDo = useCallback((work: () => Promise<unknown>) => {
+    queue.current = queue.current.then(async () => {
+      if (!connectedRef.current) return
+      try {
+        setError('')
+        await work()
+      } catch (e) {
+        if (connectedRef.current) setError((e as Error).message)
+      }
+    })
+    return queue.current
+  }, [])
+
+  const saveLatest = useCallback(async (show: Show) => {
+    if (saving.current === show) await td.current!.saveShow(show)
   }, [])
 
   const commit = useCallback((next: Show, work?: () => Promise<unknown>) => {
@@ -148,13 +158,14 @@ function Editor() {
     future.current = []
     setHistoryTick((t) => t + 1)
     apply(next)
+    saving.current = next
     tdDo(async () => {
       await work?.()
       const moved = wipesMoved(prev, next)
       if (moved.length) await td.current!.buildAll(next, moved)
-      await td.current!.saveShow(next)
+      await saveLatest(next)
     })
-  }, [apply, tdDo])
+  }, [apply, tdDo, saveLatest])
 
   const rebuild = useCallback((next: Show, ids: string[]) => td.current!.buildAll(next, downstream(next, ids)), [])
 
@@ -211,6 +222,7 @@ function Editor() {
     const from = showRef.current
     const d = diffShows(from, target)
     apply(target)
+    saving.current = target
     tdDo(async () => {
       const t = td.current!
       if (d.removed.length) await t.destroy(d.removed)
@@ -218,9 +230,9 @@ function Editor() {
       await t.place(target, [INPUTS_ID, OUTPUTS_ID, ...target.blocks.filter((b) => LAYOUT_KINDS.includes(b.kind)).map((b) => b.id)])
       const ids = [...new Set([...d.rebuilt, ...wireTargets(target, d.wires).filter((id) => target.blocks.some((b) => b.id === id) || id === SELECTOR_ID), ...(d.scenes ? [SELECTOR_ID, ...target.blocks.filter((b) => b.kind === 'manual').map((b) => b.id)] : []), ...(d.cables ? cabled(target) : []), ...(from.visualiser !== target.visualiser ? sendersOf(target) : [])])]
       await rebuild(target, [...ids, ...wipesMoved(from, target)])
-      await t.saveShow(target)
+      await saveLatest(target)
     })
-  }, [apply, tdDo, rebuild])
+  }, [apply, tdDo, rebuild, saveLatest])
 
   const undo = useCallback(() => {
     const target = past.current.pop()

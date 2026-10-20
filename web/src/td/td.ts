@@ -35,7 +35,7 @@ result = json.loads(d.text) if d and d.text.strip() else None
     return this.run<null>(`
 d = ROOT.op(SHOW_DAT) or ROOT.create(textDAT, SHOW_DAT)
 d.nodeX, d.nodeY = -400, 0
-d.text = ${JSON.stringify(JSON.stringify(show, null, 2))}
+d.text = ${JSON.stringify(JSON.stringify(show))}
 `)
   }
 
