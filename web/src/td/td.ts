@@ -85,22 +85,26 @@ probe.destroy()
     return this.buildAll(show, [SELECTOR_ID])
   }
 
-  async buildAll(show: Show, ids: string[]) {
-    for (const id of new Set(ids.flatMap((id) => [id, ...membersOf(show, id).map((t) => t.id).filter((t) => !ids.includes(t))]))) {
+  buildAll(show: Show, ids: string[]) {
+    const codes = [...new Set(ids.flatMap((id) => [id, ...membersOf(show, id).map((t) => t.id).filter((t) => !ids.includes(t))]))].flatMap((id) => {
       const block = show.blocks.find((b) => b.id === id)
       const code = id === SELECTOR_ID ? this.selectorCode(show) : block ? this.buildCode(show, block) : null
-      if (code) await this.run<null>(`${railCode(show)}\n${code}`)
-    }
-    return this.place(show, [INPUTS_ID, OUTPUTS_ID])
+      return code ? [code] : []
+    })
+    return this.run<null>([railCode(show), ...codes, this.placeCode(show, [INPUTS_ID, OUTPUTS_ID])].join('\n'))
   }
 
-  place(show: Show, ids: string[]) {
-    return this.run<null>(ids.map((id) => {
+  private placeCode(show: Show, ids: string[]) {
+    return ids.map((id) => {
       if (id === INPUTS_ID) return `ensure(${j([showDir(show), inputsDir(show)])})`
       if (id === OUTPUTS_ID) return `ensure(${j([showDir(show), outputsDir(show)])})`
       const b = show.blocks.find((x) => x.id === id)
       return b ? `put(${JSON.stringify(id)}, ${j(spotOf(show, b))})` : ''
-    }).join('\n'))
+    }).join('\n')
+  }
+
+  place(show: Show, ids: string[]) {
+    return this.run<null>(this.placeCode(show, ids))
   }
 
   setColors(id: string, table: [string, number][][]) {
