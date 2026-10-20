@@ -507,6 +507,10 @@ function Editor() {
       commitDiff(next)
       return
     }
+    if (block.kind === 'scene' && Object.keys(patch).every((k) => k === 'fadeIn' || k === 'fadeOut')) {
+      commit(next, () => td.current!.setFades(next))
+      return
+    }
     if (block.kind === 'scene' && 'rooms' in patch) {
       const gone = outOfRooms(next, block.id)
       const pruned = removeWires(next, gone)

@@ -118,6 +118,17 @@ for k, pairs in enumerate(${j(table)}):
 `)
   }
 
+  setFades(show: Show) {
+    return this.run<null>(`
+c = find(${JSON.stringify(SELECTOR_ID)})
+for k, (fade_in, fade_out) in enumerate(${j(scenesOf(show).map((s) => [s.fadeIn, s.fadeOut]))}):
+    lag = c.op('fade%d' % k) if c else None
+    if lag:
+        lag.par.slope1 = 1.0 / fade_in if fade_in > 0 else 1e6
+        lag.par.slope2 = 1.0 / fade_out if fade_out > 0 else 1e6
+`)
+  }
+
   setStrip(block: StripBlock) {
     return this.run<null>(`set_strip(find(${JSON.stringify(block.id)}), ${j(stripConfig(block))})`)
   }
