@@ -162,7 +162,7 @@ for p in ${j(prefixes)}:
     o = root.op(p + 'values')
     if o:
         o.par['const${index}value'] = ${value}
-for o in root.ops('default_*', 'dim_values'):
+for o in matching(root, 'default_*', 'dim_values'):
     for i in range(o.seq.const.numBlocks):
         if o.par['const%dname' % i].eval() == ${JSON.stringify(channel)}:
             o.par['const%dvalue' % i] = ${value}
@@ -215,8 +215,8 @@ result = 'AudioSlice output "%s" -> 127.0.0.1:%d with %d modulators' % (name, ${
     return this.read<DmxValues>(`
 result = {}
 for c in (LS.op('layout').children if LS and LS.op('layout') else []):
-    for p in c.ops('patch_u*'):
-        if not p.isCHOP:
+    for p in c.children:
+        if not p.isCHOP or not p.name.startswith('patch_u'):
             continue
         result[c.name + ':' + p.name[7:]] = p.numpyArray()[:, 0].round().astype(int).tolist() if p.numChans else []
     d = c.op('dmxout')

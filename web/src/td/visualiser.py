@@ -1,6 +1,6 @@
 def visualise(name, ip):
     c = find(name)
-    for d in [o for o in c.ops('dmxout*') if o.isCHOP]:
+    for d in [o for o in matching(c, 'dmxout*') if o.isCHOP]:
         v = c.copy(d, name='visualiser_' + d.name, includeDocked=False)
         v.par.interface = 'artnet'
         v.par.netaddress = ip

@@ -3,6 +3,7 @@ import { BLOCKS } from '../blocks'
 export const j = (v: unknown) => `json.loads(${JSON.stringify(JSON.stringify(v))})`
 
 export const PRELUDE = `
+import fnmatch
 import json
 import td
 
@@ -21,6 +22,9 @@ def home():
 LS = home()
 
 RAIL = None
+
+def matching(c, *patterns):
+    return [o for o in c.children if any(fnmatch.fnmatchcase(o.name, p) for p in patterns)]
 
 def find(name):
     found = LS.findChildren(name=name, tags=['lsgleam'])

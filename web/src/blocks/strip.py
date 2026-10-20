@@ -2,7 +2,7 @@ SHAPE_SAMPLES = 4096
 SHAPES = {'solid': (0, 1, False), 'band': (-1, 1, False), 'fill': (-2, 2, False), 'chase': (-0.5, 0.5, True), 'ramp': (0, 1, True)}
 
 def set_strip(c, cfg):
-    wired = [o.name[2:] for o in c.ops('p_*')]
+    wired = [o.name[2:] for o in matching(c, 'p_*')]
     def num(port, v):
         return "op('p_%s')[0]" % port if port in wired else repr(v)
     dim = num('dimmer', cfg['dimmer'])
