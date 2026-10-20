@@ -7,7 +7,7 @@ import '@xyflow/react/dist/style.css'
 import { Bridge } from './td/bridge'
 import { Td, colorTable, valueTable } from './td/td'
 import { SCALE, STEP, flipY, metres, unitSize } from './td/spots'
-import { isLight, ownersOf, type Cable, type TubeDesign, INPUTS_ID, LAYOUT, LAYOUT_KINDS, NODE_H, OUTPUTS_ID, SELECTOR_ID, hasProfile, profileOf, scenesOf, type Block, type ColorResponse, type FloorPlan, type PaletteItem, type Placement, type Show, type Wire } from './model/show'
+import { isLight, ownersOf, type Cable, type TubeDesign, INPUTS_ID, LAYOUT, LAYOUT_KINDS, NODE_H, OUTPUTS_ID, SELECTOR_ID, hasProfile, profileOf, scenesOf, sendersOf, type Block, type ColorResponse, type FloorPlan, type PaletteItem, type Placement, type Show, type Wire } from './model/show'
 import { ceilingAt, addCable, canCable, removeCables, unitsOf } from './model/units'
 import { setDesign, placeUnit, copyBlocks, diffShows, pasteBlocks, moveScene, newBlock, patchBlock, removeBlocks, type Clip } from './model/edit'
 import { addWire, canWire, drivenPorts, outOfRooms, removeWires } from './model/wiring'
@@ -216,7 +216,7 @@ function Editor() {
       if (d.removed.length) await t.destroy(d.removed)
       for (const b of d.moved) await t.move(b.id, b.x, b.y)
       await t.place(target, [INPUTS_ID, OUTPUTS_ID, ...target.blocks.filter((b) => LAYOUT_KINDS.includes(b.kind)).map((b) => b.id)])
-      const ids = [...new Set([...d.rebuilt, ...wireTargets(target, d.wires).filter((id) => target.blocks.some((b) => b.id === id) || id === SELECTOR_ID), ...(d.scenes ? [SELECTOR_ID, ...target.blocks.filter((b) => b.kind === 'manual').map((b) => b.id)] : []), ...(d.cables ? cabled(target) : [])])]
+      const ids = [...new Set([...d.rebuilt, ...wireTargets(target, d.wires).filter((id) => target.blocks.some((b) => b.id === id) || id === SELECTOR_ID), ...(d.scenes ? [SELECTOR_ID, ...target.blocks.filter((b) => b.kind === 'manual').map((b) => b.id)] : []), ...(d.cables ? cabled(target) : []), ...(from.visualiser !== target.visualiser ? sendersOf(target) : [])])]
       await rebuild(target, [...ids, ...wipesMoved(from, target)])
       await t.saveShow(target)
     })
@@ -626,6 +626,12 @@ function Editor() {
   const setPlan = useCallback((floor: string, plan: FloorPlan | null) => commit(withPlan(showRef.current, floor, plan)), [commit])
   const planOf = (floor: string) => floorOf(showRef.current, floor).floorplan
   const showFloor = useCallback((floor: string, all = false) => setFloorView({ floor, all }), [])
+  const setVisualiser = useCallback((ip: string) => {
+    const { visualiser: _old, ...rest } = showRef.current
+    const next: Show = ip ? { ...rest, visualiser: ip } : rest
+    commit(next, () => rebuild(next, sendersOf(next)))
+  }, [commit, rebuild])
+
   const commitFloors = useCallback((next: Show) => {
     if (!floorsOf(next).some((f) => f.id === calib?.floor && f.floorplan)) setCalib(null)
     commit(next)
@@ -781,7 +787,7 @@ function Editor() {
             </div>
           </aside>
         )}
-        {tab === LAYOUT && !selected && multi.length <= 1 && <RigPanel show={show} onSchedule={() => setPage('schedule')}><FloorsPanel show={show} active={activeFloor.id} onActive={(id) => showFloor(id, floorView.all)} onCommit={commitFloors} onFile={setPlanFile} onCalibrate={() => setCalib({ floor: activeFloor.id, points: [] })} /></RigPanel>}
+        {tab === LAYOUT && !selected && multi.length <= 1 && <RigPanel show={show} onSchedule={() => setPage('schedule')} onVisualiser={setVisualiser}><FloorsPanel show={show} active={activeFloor.id} onActive={(id) => showFloor(id, floorView.all)} onCommit={commitFloors} onFile={setPlanFile} onCalibrate={() => setCalib({ floor: activeFloor.id, points: [] })} /></RigPanel>}
         {selected && (
           <div className="panel-wrap" onMouseUp={saveValues} onTouchEnd={saveValues}>
             <BlockPanel show={show} block={selected} driven={driven} onPatch={patchSelected} onOpenScene={setTab} onMoveScene={reorderScene} onPatchOther={patchOther} onResetPattern={() => tdDo(() => td.current!.resetPattern(selected.id))} onDesign={changeDesign} layout={unit && { placement: unit.placement, flip: unit.flip, onPlace: (p, flip) => commit(placeUnit(showRef.current, unit.key, p, flip)) }} onValue={setValue} listAudioDevices={listAudioDevices} readValues={readValues} configureAudioSlice={configureAudioSlice} onOpenPalette={setPaletteId} onOpenPatch={setPatchId} />

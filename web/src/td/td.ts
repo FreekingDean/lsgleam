@@ -1,10 +1,11 @@
 import type { Bridge } from './bridge'
 import type { PortValues } from '../editor/live'
-import { INPUTS_ID, OUTPUTS_ID, membersOf, scenesOf, SELECTOR_ID, type AudioSliceBlock, type Block, type Show, type StripBlock } from '../model/show'
+import { INPUTS_ID, OUTPUTS_ID, SENDER_KINDS, membersOf, scenesOf, SELECTOR_ID, type AudioSliceBlock, type Block, type Show, type StripBlock } from '../model/show'
 import { selectorSources, sourcesOf } from '../model/patch'
 import { PORTS } from '../model/ports'
 import { tubeGeometry } from '../model/geometry'
 import { j, PRELUDE } from './prelude'
+import VISUALISER from './visualiser.py?raw'
 import { AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, audioSliceAlpha, audioSlicePath, defOf, hasDef, stripConfig } from '../blocks'
 import { TINTS, showDir, inputsDir, outputsDir, spotOf, placed, railCode } from './tree'
 
@@ -66,7 +67,8 @@ probe.destroy()
     if (block.kind === 'scene' || block.kind === 'composite' || block.kind === 'cdj' || block.kind === 'box' || block.kind === 'tubeset') return null
     const sources = j(sourcesOf(show, block.id))
     const b = placed(show, block)
-    if (hasDef(block)) return `${defOf(block).builder ?? `build_${block.kind}`}(${[j(b), ...(defOf(block).lead?.(block, show) ?? []).map(j), sources, ...(defOf(block).args?.(block, show, PORTS) ?? []).map(j)].join(', ')})`
+    const copy = show.visualiser && SENDER_KINDS.includes(block.kind) ? `\n${VISUALISER}\nvisualise(${JSON.stringify(block.id)}, ${JSON.stringify(show.visualiser)})` : ''
+    if (hasDef(block)) return `${defOf(block).builder ?? `build_${block.kind}`}(${[j(b), ...(defOf(block).lead?.(block, show) ?? []).map(j), sources, ...(defOf(block).args?.(block, show, PORTS) ?? []).map(j)].join(', ')})${copy}`
     return `build_tube(${j(b)}, ${sources}, ${j(tubeGeometry(show, block))})`
   }
 

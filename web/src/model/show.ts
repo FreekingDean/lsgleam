@@ -76,7 +76,7 @@ export type Block = CompositeBlock | OutputBlock | ValuesBlock | MixBlock | Fade
 export type Kind = Block['kind']
 export type Wire = { from: string; fromPort: string; to: string; port: string; scene?: string }
 export type Cable = { from: string; fromPort: string; to: string; port: string }
-export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; profiles?: StoredProfile[]; responses?: Record<string, ColorResponse>; floors?: Floor[] }
+export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; profiles?: StoredProfile[]; responses?: Record<string, ColorResponse>; floors?: Floor[]; visualiser?: string }
 export type FloorPlan = { src: string; x: number; z: number; width: number; height: number; rotation: number; opacity: number; locked: boolean }
 export type Floor = { id: string; name: string; elevation: number; floorplan?: FloorPlan }
 export type ColorResponse = { multiplier: [number, number, number]; gamma: number }
@@ -95,6 +95,8 @@ export const SOURCE_KINDS: Kind[] = ['audio', 'dmxin', 'blt', 'audioslice']
 export const LAYOUT_KINDS: Kind[] = ['artnet', 'fixture', 'cdj', 'box', 'tube', 'tubeset', 'board', ...SOURCE_KINDS]
 export const SHOW_KINDS: Kind[] = ['scene', 'manual']
 export const VIRTUAL_KINDS: Kind[] = ['blt', 'audioslice']
+export const SENDER_KINDS: Kind[] = ['artnet', 'board']
+export const sendersOf = (show: Show) => show.blocks.filter((b) => SENDER_KINDS.includes(b.kind)).map((b) => b.id)
 export const isLight = (b: Block): b is LightBlock | GroupBlock => b.kind === 'light' || b.kind === 'group'
 export const hasProfile = (b: Block): b is FixtureBlock | LightBlock | GroupBlock => b.kind === 'fixture' || isLight(b)
 export const scenesOf = (show: Show) => show.blocks.filter((b): b is SceneBlock => b.kind === 'scene')

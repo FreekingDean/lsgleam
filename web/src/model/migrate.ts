@@ -308,7 +308,7 @@ export function normalize(raw: Partial<Show>): Show {
     if (sized.kind === 'audioslice') Object.assign(sized, { apiPort: sized.apiPort ?? 8722, token: sized.token ?? '', smoothing: sized.smoothing ?? 0 })
     return sized
   })
-  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(profiles.length ? { profiles } : {}), ...(raw.responses ? { responses: Object.fromEntries(Object.entries(raw.responses).map(([id, r]) => [id, multiplierOf(r)])) } : {}), designs: raw.designs ?? [], floors: raw.floors?.length ? raw.floors : [FLOOR_1] })
+  const draft: Show = setsFromTubes({ ...migrated, blocks, ...(raw.rails ? { rails: raw.rails } : {}), ...(profiles.length ? { profiles } : {}), ...(raw.responses ? { responses: Object.fromEntries(Object.entries(raw.responses).map(([id, r]) => [id, multiplierOf(r)])) } : {}), designs: raw.designs ?? [], floors: raw.floors?.length ? raw.floors : [FLOOR_1], ...(raw.visualiser ? { visualiser: raw.visualiser } : {}) })
   const used = new Map<string, number>()
   const cables = draft.cables.map((c) => {
     if (c.port !== 'in' || draft.blocks.find((b) => b.id === c.to)?.kind !== 'audio') return c
