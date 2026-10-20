@@ -5,6 +5,7 @@ import { hexToRgb } from '../model/format'
 import { simFixtures, simTubes } from '../model/units'
 import { tubeGeometry } from '../model/geometry'
 import type { DmxValues } from '../td/td'
+import { wipeMix, wipeOn, wipeRanks } from '../blocks/group'
 
 export const LAYOUT_DEFAULTS = ''
 
@@ -59,6 +60,7 @@ export function previewDmx(show: Show, scene: string): DmxValues {
     const aims = light?.kind === 'group' && member !== undefined ? light.aims[member] ?? {} : {}
     const aimed = light ? profileOf(light).position ?? [] : []
     const values = { ...valuesOf(fixture), ...(light ? valuesOf(light) : {}), ...Object.fromEntries(aimed.flatMap((k) => (aims[k] === undefined ? [] : [[k, aims[k]]]))) }
+    if (light?.kind === 'group' && member !== undefined && wipeOn(light)) [values.red, values.green, values.blue] = wipeMix(light, wipeRanks(show, light)[Number(member)], [values.red ?? 1, values.green ?? 1, values.blue ?? 1])
     const u = universe(`${f.node}:${f.universe}`)
     encode(f.mode, values).forEach((v, i) => {
       const at = f.address - 1 + i

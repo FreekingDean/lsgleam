@@ -1,7 +1,8 @@
-import { NumField } from '../panels/fields'
+import { NumberBox, NumField } from '../panels/fields'
 import { memberPort, POSITION_PORT, profileOf, type GroupPosition } from '../model/show'
-import { type Props, Slider, PatternFields } from '../panels/shared'
-import { type GroupBlock, fixturesOf } from './group'
+import { type Props, Slider, PatternFields, Wired } from '../panels/shared'
+import { type GroupBlock, type Wipe, type WipeOrder, COLOR_B_PORT, fixturesOf, PROGRESS_PORT, WIPE_OFF, WIPE_ORDERS } from './group'
+import { hasRgb } from './light'
 import { PositionRows } from './PositionRows'
 
 function GroupPositions({ block, driven, onPatch, onValue, readValues }: Props & { block: GroupBlock }) {
@@ -18,6 +19,50 @@ function GroupPositions({ block, driven, onPatch, onValue, readValues }: Props &
       onGo={(p) => Object.entries(p.members).forEach(([id, m]) => names.forEach((n) => m[n] !== undefined && onValue(n, m[n], id)))}
       onChange={(positions) => onPatch({ positions })}
     />
+  )
+}
+
+function WipeFields({ block, driven, onPatch }: Props & { block: GroupBlock }) {
+  const wipe = { ...WIPE_OFF, ...block.wipe }
+  const set = (patch: Partial<Wipe>) => onPatch({ wipe: { ...wipe, ...patch } })
+  const fraction = (label: string, key: 'softness' | 'progress') => (
+    <Wired label={label} wired={driven.has(key)}>
+      <div className="par">
+        <label>{label}</label>
+        <div className="slider">
+          <input type="range" min={0} max={1} step={0.01} key={wipe[key]} defaultValue={wipe[key]} onPointerUp={(e) => set({ [key]: Number((e.target as HTMLInputElement).value) })} onKeyUp={(e) => set({ [key]: Number((e.target as HTMLInputElement).value) })} />
+          <NumberBox value={wipe[key]} onCommit={(v) => set({ [key]: v })} />
+        </div>
+      </div>
+    </Wired>
+  )
+  return (
+    <>
+      <hr />
+      <div className="par">
+        <label>Wipe</label>
+        <input type="checkbox" checked={wipe.on} onChange={(e) => set({ on: e.target.checked })} />
+      </div>
+      {wipe.on && (
+        <>
+          <Wired label="Colour B" wired={driven.has(COLOR_B_PORT)}>
+            <div className="par">
+              <label>Colour B</label>
+              <input type="color" key={wipe.colorB} defaultValue={wipe.colorB} onBlur={(e) => e.target.value !== wipe.colorB && set({ colorB: e.target.value })} />
+            </div>
+          </Wired>
+          <div className="par">
+            <label>Order</label>
+            <select value={wipe.order} onChange={(e) => set({ order: e.target.value as WipeOrder })}>
+              {Object.entries(WIPE_ORDERS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </div>
+          {fraction('Softness', 'softness')}
+          {fraction('Progress', PROGRESS_PORT)}
+        </>
+      )}
+      <div className="help">Wipe: each member shows colour A (the color input or the colour sliders) or colour B, and as progress rises 0 → 1 they flip to B one at a time in the chosen order (left/right/front/back use the fixtures' layout positions; unwired members go last). Softness 0 flips hard; higher crossfades each member over that fraction of its step. Brightness, pattern and positions apply as usual.</div>
+    </>
   )
 }
 
@@ -45,6 +90,7 @@ export function GroupPanel(props: Props & { block: GroupBlock }) {
         </div>
       ))}
       {profile.position && <GroupPositions {...props} />}
+      {hasRgb(block) && <WipeFields {...props} />}
     </>
   )
 }

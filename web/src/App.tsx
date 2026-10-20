@@ -29,6 +29,7 @@ import { Simulator } from './sim/Simulator'
 import { Schedule } from './views/Schedule'
 import { Plot } from './views/Plot'
 import { download } from './td/blt'
+import { wipesMoved } from './blocks/group'
 import { ConnectContext, DirectorContext, FocusContext, PickContext, portKey, type PortKey } from './editor/connect'
 import { LiveContext, outputValue, record, type PortValues } from './editor/live'
 import { type AnyNode, type FloorView, alignScenes, toNodes, toEdges, toCable, connectPairs, toWire, cabled, wireTargets } from './editor/graph'
@@ -142,12 +143,15 @@ function Editor() {
 
   const commit = useCallback((next: Show, work?: () => Promise<unknown>) => {
     if (!next.rails) next = withRails(next)
-    past.current = [...past.current.slice(-99), showRef.current]
+    const prev = showRef.current
+    past.current = [...past.current.slice(-99), prev]
     future.current = []
     setHistoryTick((t) => t + 1)
     apply(next)
     tdDo(async () => {
       await work?.()
+      const moved = wipesMoved(prev, next)
+      if (moved.length) await td.current!.buildAll(next, moved)
       await td.current!.saveShow(next)
     })
   }, [apply, tdDo])
@@ -213,7 +217,7 @@ function Editor() {
       for (const b of d.moved) await t.move(b.id, b.x, b.y)
       await t.place(target, [INPUTS_ID, OUTPUTS_ID, ...target.blocks.filter((b) => LAYOUT_KINDS.includes(b.kind)).map((b) => b.id)])
       const ids = [...new Set([...d.rebuilt, ...wireTargets(target, d.wires).filter((id) => target.blocks.some((b) => b.id === id) || id === SELECTOR_ID), ...(d.scenes ? [SELECTOR_ID, ...target.blocks.filter((b) => b.kind === 'manual').map((b) => b.id)] : []), ...(d.cables ? cabled(target) : [])])]
-      await rebuild(target, ids)
+      await rebuild(target, [...ids, ...wipesMoved(from, target)])
       await t.saveShow(target)
     })
   }, [apply, tdDo, rebuild])

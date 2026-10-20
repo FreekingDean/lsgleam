@@ -1,4 +1,37 @@
-def build_group(b, pairs, pos, wheel, sources, masks, members):
+def wipe_sides(c, by_port, values, wipe):
+    a = by_port.pop('color', None)
+    if a is None:
+        a = constant(c, 'wipe_a', [(n, values.get(n, 1)) for n in ('red', 'green', 'blue')])
+        a.nodeX, a.nodeY = -900, 700
+    other = by_port.pop('colorB', None)
+    if other is None:
+        other = constant(c, 'wipe_b', list(zip(('red', 'green', 'blue'), wipe['color'])))
+    else:
+        other = as_attrs(c, 'colorB', other)
+    other.nodeX, other.nodeY = -900, 800
+    progress = by_port.pop('progress', None)
+    if progress is None:
+        progress = constant(c, 'wipe_progress', [('progress', wipe['progress'])])
+        progress.nodeX, progress.nodeY = -900, 900
+    return a, combine(c, 'wipe_diff', 'sub', [other, a], -700, 800), progress
+
+def wipe_member(c, p, wipe, a, diff, progress, rank, n, y):
+    t = c.create(mathCHOP, p + 'wipe_t')
+    t.par.preoff = -(rank + 1.0) / n
+    t.par.gain = n / max(wipe['softness'], 0.0001)
+    t.par.postoff = 1
+    lim = c.create(limitCHOP, p + 'wipe_clamp')
+    lim.par.type = 'clamp'
+    lim.par.min = 0
+    lim.par.max = 1
+    t.nodeX, lim.nodeX = -1000, -850
+    t.nodeY = lim.nodeY = y - 200
+    progress.outputConnectors[0].connect(t.inputConnectors[0])
+    t.outputConnectors[0].connect(lim.inputConnectors[0])
+    step = combine(c, p + 'wipe_step', 'mul', [diff, lim], -700, y - 200)
+    return combine(c, p + 'wipe', 'add', [step, a], -550, y - 200)
+
+def build_group(b, pairs, pos, wheel, sources, masks, members, wipe=None):
     c = new_block(b)
     if not members:
         return
@@ -15,7 +48,7 @@ def build_group(b, pairs, pos, wheel, sources, masks, members):
     floor = floor_of(c, b, by_port)
     if 'color' in by_port:
         by_port['color'] = as_attrs(c, 'color', by_port['color'])
-        if wheel:
+        if wheel and not wipe:
             by_port['color_wheel'] = wheel_pick(c, 'color', by_port['color'], wheel)
     look = by_port.pop('look', None)
     if look is not None:
@@ -31,6 +64,9 @@ def build_group(b, pairs, pos, wheel, sources, masks, members):
         if wheel:
             by_port['look_wheel'] = wheel_pick(c, 'look', by_port['look'], wheel)
         by_port['pattern'] = look_dim
+    if wipe:
+        a, diff, progress = wipe_sides(c, by_port, values, wipe)
+        by_port = dict([('color', a)] + ([('color_wheel', None)] if wheel else []) + list(by_port.items()))
     if 'intensity' in names:
         dim = by_port.get('pattern') or defaults['pattern']
         slots = pattern_chain(c, by_port.get('step'), by_port.get('trigger'), masks, dim, 400, b['every'], floor)
@@ -38,7 +74,12 @@ def build_group(b, pairs, pos, wheel, sources, masks, members):
     for i, m in enumerate(members):
         p = 'm%d_' % (i + 1)
         y = -i * 600
-        feeds = [end for port, end in by_port.items() if port in names or port in ('look', 'color', 'look_wheel', 'color_wheel')]
+        own = {}
+        if wipe:
+            own['color'] = wipe_member(c, p, wipe, a, diff, progress, wipe['ranks'][i], len(members), y)
+            if wheel:
+                own['color_wheel'] = wheel_pick(c, p + 'wipe', own['color'], wheel)
+        feeds = [own.get(port, end) for port, end in by_port.items() if port in names or port in ('look', 'color', 'look_wheel', 'color_wheel')]
         if slots is not None:
             sel = c.create(selectCHOP, p + 'slot')
             sel.par.channames = 'slot%d' % (i + 1)
