@@ -227,6 +227,23 @@ The "schedule" tab is a read-only fixture schedule / patch sheet. A summary list
 
 "save file" downloads the show as JSON (the same document stored in `/project1/lsgleam_show`). "open file" loads one, runs it through the same migrations as a reload, replaces the current show, destroys every lsgleam COMP in TD and rebuilds everything from the file in dependency order ("rebuild all" uses the same order). The .toe still carries the show, so save file is for backups, sharing a rig, and moving between machines.
 
+### Unreal Engine preview (MVR)
+
+"export MVR" on the plot and schedule pages downloads `lsgleam-show.mvr` (MVR 1.6, the GDTF-share rig format):
+- one layer per floor; every fixture with a fixed UUID (from its block id, so re-exports update the same fixtures), name `P3 vocal-c1` (plot ID + name), Fixture ID = type number × 100 + plot number (types numbered by letter, so with E, M and P: M2 → 202, P3 → 303; × 1000 once a type passes 99), unit number = plot number, its GDTF file and mode, and its Art-Net address as absolute `universe × 512 + address` (MVR universe 1 = Art-Net universe 0);
+- one generated `lsgleam-<profile>.gdtf` per fixture profile with the modes in use, using GDTF standard attributes (Dimmer, ColorAdd_R/G/B/W/RY/UV, ColorSub_C/M/Y, HSB_Hue/Saturation, Shutter1 + Shutter1Strobe, 16-bit Pan/Tilt with the profile's range, Color1/Gobo1 wheels, Zoom, Focus1, PositionMSpeed, other channels Control1…), a Body + Beam (PARs) or Base → Yoke → Head → Beam (moving heads) with the profile's beam angle;
+- rooms, LED tubes and floor plans as scene objects with `.glb` meshes in world coordinates (metres, glTF Y-up, so they line up when imported at the origin).
+
+Coordinates: layout x → MVR X, layout −z → MVR Y, height → MVR Z, millimetres; the layout's turn/tilt/roll become the fixture matrix (a fixture at 0° hangs pointing down, as in GDTF).
+
+In Unreal (5.x, Windows):
+1. Edit → Plugins: enable DMX Engine, DMX Protocol and DMX Fixtures; restart.
+2. Project Settings → Plugins → DMX → Communication Settings → Input Ports: add one with Protocol Art-Net, the network card's IP, Local Universe Start 1, Amount of Universes covering the highest universe + 1, Extern Universe Start 0 (Unreal universe 1 = Art-Net universe 0, matching the MVR). Make sure Receive DMX is on.
+3. Drag `lsgleam-show.mvr` into the Content Browser. This makes a DMX Library (fixture types from the GDTFs, patch from the addresses). Drag the library into the level: a DMX MVR Scene Actor spawns a fixture Blueprint per fixture at its position, picked by matching attributes; change it per fixture type under "Fixture Type to Spawned Actor" if needed. Pan/tilt ranges of the stock moving head Blueprint are set on the Blueprint, so check them against the profile (e.g. 540° / 270°).
+4. Rooms, tubes and floor plans are not imported by a plain MVR import (Unreal needs Datasmith for MVR geometry). Rename the `.mvr` to `.zip`, unzip it and drag the `room-*.glb` / `plan-*.glb` / `tube-*.glb` files into the level at the origin.
+5. In lsgleam, set the visualiser IP (layout tab → Rig → Visualiser) to the Unreal PC's IP. TouchDesigner then also sends every Art-Net/sACN node universe and pixel board universe as Art-Net to that IP; empty turns it off. Two nodes sending the same universe number collide on the visualiser.
+6. For beams: Exponential Height Fog with Volumetric Fog on, Lumen for global illumination (Project Settings → Rendering), or the Path Tracer viewport mode for stills; keep the room meshes so beams have something to land on.
+
 ### Libraries
 
 "library" in the header opens a page for sharing fixture profiles, tube designs, colour palettes and composites as plain JSON files, with no server: post the file anywhere (a GitHub repo, a gist) and others import it.
