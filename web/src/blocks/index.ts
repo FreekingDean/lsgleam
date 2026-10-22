@@ -20,6 +20,7 @@ import { hold } from './hold'
 import { drop } from './drop'
 import { range } from './range'
 import { add } from './add'
+import { priority } from './priority'
 import { split } from './split'
 import { sequence } from './sequence'
 import { values } from './values'
@@ -58,7 +59,7 @@ export { universesPerOutput, boardUniverses, outputUniverses, pixelChain, boardP
 export { nextAddress } from './fixture'
 export { fixturesOf } from './group'
 
-export const BLOCKS = { timer, combine, constant, latch, and, not, equals, counter, steps, level, gate, fade, mix, hold, drop, range, add, split, sequence, values, colors, pattern, looks, audio, dmxin, blt, audioslice, cdj, box, artnet, strip, board, fixture, light, group, manual, input, output, scene, composite }
+export const BLOCKS = { timer, combine, constant, latch, and, not, equals, priority, counter, steps, level, gate, fade, mix, hold, drop, range, add, split, sequence, values, colors, pattern, looks, audio, dmxin, blt, audioslice, cdj, box, artnet, strip, board, fixture, light, group, manual, input, output, scene, composite }
 export type DefKind = keyof typeof BLOCKS
 
 export const blockDef = (kind: Kind): BlockDef | undefined => (BLOCKS as Partial<Record<Kind, BlockDef>>)[kind]
