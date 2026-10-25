@@ -1,6 +1,6 @@
 def build_oscout(b, sources):
     c = new_block(b)
-    src = ports(c, sources).get('value') or constant(c, 'novalue', [('value', 0)])
+    src = ports(c, sources).get('in') or constant(c, 'novalue', [('value', 0)])
     scale = c.create(mathCHOP, 'scale')
     scale.par.gain = b['scale']
     name = c.create(renameCHOP, 'address')

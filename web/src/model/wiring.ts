@@ -29,9 +29,10 @@ export function canWire(show: Show, from: string, fromPort: string, to: string, 
   const here = show.wires.filter((w) => (w.scene ?? null) === tab)
   if (here.some((w) => w.from === from && w.fromPort === fromPort && w.to === to && w.port === port)) return false
   const output = target.type === 'fixture' || target.type === 'pixels'
+  const patch = output || (b.kind === 'oscout' && a.kind === 'scene')
   if (output && a.kind === 'scene' && !inRooms(show, a.rooms, to)) return false
-  if (output && here.some((w) => w.to === to && w.from === from)) return false
-  if ((target.type !== 'signal' || source.type === 'multi' || blockDef(b.kind)?.slotted) && !output && here.some((w) => w.to === to && w.port === port)) return false
+  if (patch && here.some((w) => w.to === to && w.from === from)) return false
+  if ((target.type !== 'signal' || source.type === 'multi' || blockDef(b.kind)?.slotted) && !patch && here.some((w) => w.to === to && w.port === port)) return false
   const driven = drivenPorts(show, to, tab)
   for (const [master, channels] of exclusions(b)) {
     if (port === master && channels.some((ch) => driven.has(ch))) return false

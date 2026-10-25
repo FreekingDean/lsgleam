@@ -82,6 +82,26 @@ function controllers(show: Show): Show {
   return { ...show, cables, blocks: blocks.map((b) => (b.kind === 'artnet' ? { ...b, inputs: [...new Set([...b.inputs, ...inputs(b.id)])] } : b)) }
 }
 
+function oscOuts(show: Show): Show {
+  let { nextId } = show
+  const moved = new Map<string, string>()
+  const added: Block[] = []
+  const wires: Wire[] = []
+  const blocks = show.blocks.map((b) => {
+    if (b.kind !== 'oscout' || !b.scene) return b
+    const { scene, ...rest } = b
+    const owner = show.blocks.find((x) => x.id === scene)
+    const id = `out${nextId++}`
+    moved.set(b.id, id)
+    added.push({ id, name: `${b.name} value`, kind: 'output', type: 'number', x: b.x, y: b.y, w: b.w, h: b.h, scene })
+    if (owner) wires.push({ from: scene, fromPort: id, to: b.id, port: FIXTURE_PORT, ...(owner.scene ? { scene: owner.scene } : {}) })
+    return rest
+  })
+  const oscs = new Set(show.blocks.filter((b) => b.kind === 'oscout').map((b) => b.id))
+  const rewired = show.wires.map((w) => (!oscs.has(w.to) || w.port !== 'value' ? w : moved.has(w.to) ? { ...w, to: moved.get(w.to)! } : { ...w, port: FIXTURE_PORT }))
+  return { ...show, nextId, blocks: [...blocks, ...added], wires: [...rewired, ...wires] }
+}
+
 function lift(show: Show, names: Record<string, string[]>): Show {
   const old = show.blocks.filter((b) => b.kind === 'fixture' || (b.kind === 'group' && !b.scene))
   const legacyWire = (w: Wire) => w.port !== FIXTURE_PORT && old.some((l) => l.id === w.to)
@@ -282,7 +302,7 @@ function attributes(show: Show, names: Record<string, string[]>, profiles: Store
 export function normalize(raw: Partial<Show>): Show {
   const profiles = migrateProfiles(raw.profiles ?? [])
   const names = legacyNames(raw.profiles ?? [])
-  const migrated = attributes(explode(lift(controllers(migrate({ ...EMPTY_SHOW, ...raw } as Legacy)), names)), names, profiles)
+  const migrated = attributes(explode(lift(oscOuts(controllers(migrate({ ...EMPTY_SHOW, ...raw } as Legacy))), names)), names, profiles)
   const blocks = migrated.blocks.map((b) => {
     const sized = { ...b, w: b.w ?? NODE_W }
     if (sized.kind === 'light' || sized.kind === 'group') sized.positions = sized.positions ?? []

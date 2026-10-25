@@ -100,6 +100,7 @@ export const outputRail = (show: Show): Rail[] => [
   ...allProfiles().map((f) => ({ title: f.label, ports: byLabel(show.blocks.filter((b) => b.kind === 'fixture' && b.profile === f.id).flatMap((b) => inputPorts(b, show).map((p) => ({ ...p, id: b.id })))) })),
   { title: 'LED tubes', ports: byLabel(show.blocks.filter((b) => b.kind === 'tube' && !b.set).flatMap((b) => inputPorts(b, show).map((p) => ({ ...p, id: b.id })))) },
   ...show.blocks.filter((b) => b.kind === 'tubeset').map((s) => ({ title: s.name, ports: byLabel(membersOf(show, s.id).map((t) => ({ ...typed(FIXTURE_PORT, 'pixels', t.name.slice(s.name.length + 1)), id: t.id }))) })),
+  { title: 'OSC out', ports: byLabel(show.blocks.filter((b) => b.kind === 'oscout').flatMap((b) => inputPorts(b, show).map((p) => ({ ...p, id: b.id })))) },
 ].filter((r) => r.ports.length)
 
 export function blockHeight(b: Block, show?: Show) {

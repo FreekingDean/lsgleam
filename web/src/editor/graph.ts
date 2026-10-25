@@ -28,6 +28,7 @@ function unitSub(show: Show, u: Unit) {
   if (b.kind === 'dmxin') return `${b.channels} faders`
   if (b.kind === 'blt') return `OSC :${b.port}`
   if (b.kind === 'audioslice') return `OSC :${b.port}`
+  if (b.kind === 'oscout') return `${b.address} → ${b.host}:${b.port}`
   if (b.kind === 'tube') {
     const p = tubePatch(show, b.id)
     return `${b.leds} ${b.protocol} · ${b.length.toFixed(2)} m · ${p ? `out ${p.output} @${p.offset + 1}` : 'no cable'}`
@@ -41,7 +42,7 @@ function unitSub(show: Show, u: Unit) {
 function railNodes(show: Show): RailFlowNode[] {
   const spots = railSpots(show)
   const node = (id: string, title: string, rails: Rail[], side: 'in' | 'out'): RailFlowNode => ({ id, type: 'rail', position: spots[id], style: { width: RAIL_W, height: railHeight(rails) }, deletable: false, selectable: false, data: { title, rails, side } })
-  return [node(INPUTS_ID, 'Inputs', inputRail(show), 'in'), ...(visibleWires(show, null).some((w) => isFixture(show, w.to) && !isScene(show, w.from)) ? [node(OUTPUTS_ID, 'Outputs', outputRail(show), 'out')] : [])]
+  return [node(INPUTS_ID, 'Inputs', inputRail(show), 'in'), ...(show.blocks.some((b) => b.kind === 'oscout') || visibleWires(show, null).some((w) => isOutput(show, w.to) && !isScene(show, w.from)) ? [node(OUTPUTS_ID, 'Outputs', outputRail(show), 'out')] : [])]
 }
 
 function sceneRail(show: Show, tab: string): RailFlowNode {
@@ -132,7 +133,7 @@ function liveKeys(show: Show, b: Block) {
 }
 
 const isSource = (show: Show, id: string) => SOURCE_KINDS.includes(show.blocks.find((b) => b.id === id)?.kind ?? 'scene')
-const isFixture = (show: Show, id: string) => show.blocks.some((b) => b.id === id && (b.kind === 'fixture' || b.kind === 'tube'))
+const isOutput = (show: Show, id: string) => show.blocks.some((b) => b.id === id && (b.kind === 'fixture' || b.kind === 'tube' || b.kind === 'oscout'))
 const isScene = (show: Show, id: string) => show.blocks.some((b) => b.id === id && b.kind === 'scene')
 
 export function toEdges(show: Show, tab: string | null): Edge[] {
@@ -146,9 +147,9 @@ export function toEdges(show: Show, tab: string | null): Edge[] {
     zIndex: 1,
     style: { stroke: TYPE_COLORS[unitsOf(show).find((u) => u.key === c.from)?.outputs.find((p) => p.id === c.fromPort)?.type ?? ''] },
   }))
-  return visibleWires(show, tab).filter((w) => tab !== null || !(isScene(show, w.from) && isFixture(show, w.to))).map((w) => {
+  return visibleWires(show, tab).filter((w) => tab !== null || !(isScene(show, w.from) && isOutput(show, w.to))).map((w) => {
     const rail = railTab(show, tab) && isSource(show, w.from)
-    const out = tab === null && isFixture(show, w.to)
+    const out = tab === null && isOutput(show, w.to)
     return {
       id: `${w.scene ?? 'show'}:${w.from}#${w.fromPort}->${w.to}#${w.port}`,
       source: rail ? INPUTS_ID : w.from,

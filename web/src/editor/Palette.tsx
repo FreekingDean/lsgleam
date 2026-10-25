@@ -11,7 +11,7 @@ type Tab = { title: string; sections: Category[] }
 
 const defined = (kind: DefKind) => ({ label: BLOCKS[kind].label, item: { kind } as PaletteItem })
 
-const TRANSFORMERS: Category = { title: 'Transformers', items: [defined('constant'), defined('level'), defined('gate'), defined('steps'), defined('equals'), defined('priority'), defined('oscout'), defined('latch'), defined('and'), defined('not'), defined('mix'), defined('fade'), defined('counter'), defined('timer'), defined('combine'), defined('split'), defined('pattern'), defined('drop'), defined('hold'), defined('range'), defined('add'), defined('sequence'), defined('looks'), defined('colors'), defined('values'), defined('composite')] }
+const TRANSFORMERS: Category = { title: 'Transformers', items: [defined('constant'), defined('level'), defined('gate'), defined('steps'), defined('equals'), defined('priority'), defined('latch'), defined('and'), defined('not'), defined('mix'), defined('fade'), defined('counter'), defined('timer'), defined('combine'), defined('split'), defined('pattern'), defined('drop'), defined('hold'), defined('range'), defined('add'), defined('sequence'), defined('looks'), defined('colors'), defined('values'), defined('composite')] }
 
 const OPERATOR_TABS: Tab[] = ['Logic', 'Math', 'Time'].map((title) => ({ title, sections: [{ title, items: TRANSFORMERS.items.filter((i) => blockDef(i.item.kind)?.tab === title) }] }))
 
@@ -19,7 +19,7 @@ const HARDWARE: Category[] = [
   { title: 'Space', items: [defined('box')] },
   { title: 'DMX', items: [defined('artnet'), defined('dmxin')] },
   { title: 'Audio', items: [defined('cdj'), defined('audio')] },
-  { title: 'Software', items: [defined('blt'), defined('audioslice')] },
+  { title: 'Software', items: [defined('blt'), defined('audioslice'), defined('oscout')] },
 ]
 
 const PIXELS: Category = { title: 'Pixels', items: [{ label: 'LED tubes', item: { kind: 'tubeset' } }, defined('board')] }
@@ -58,7 +58,11 @@ const scene = (profiles: FixtureProfile[]): Tab[] => [
     { label: 'Colour (Red, Green, Blue)', item: { kind: 'input', type: 'color' } },
     { label: 'Multichannel (several signals on one wire)', item: { kind: 'input', type: 'multi' } },
   ] }] },
-  { title: 'Outputs', sections: [{ title: 'Outputs', items: [...profiles.flatMap((f) => [{ label: `${f.label} out`, item: { kind: 'light', profile: f.id } as PaletteItem }, { label: `${f.label} group out`, item: { kind: 'group', profile: f.id } as PaletteItem }]), defined('strip')] }] },
+  { title: 'Outputs', sections: [{ title: 'Outputs', items: [...profiles.flatMap((f) => [{ label: `${f.label} out`, item: { kind: 'light', profile: f.id } as PaletteItem }, { label: `${f.label} group out`, item: { kind: 'group', profile: f.id } as PaletteItem }]), defined('strip')] }, { title: 'Values (for OSC out)', items: [
+    { label: 'Signal out', item: { kind: 'output', type: 'signal' } },
+    { label: 'Index out', item: { kind: 'output', type: 'index' } },
+    { label: 'Number out', item: { kind: 'output', type: 'number' } },
+  ] }] },
   ...OPERATOR_TABS,
 ]
 

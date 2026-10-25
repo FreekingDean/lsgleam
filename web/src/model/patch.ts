@@ -26,6 +26,13 @@ export function sourcesOf(show: Show, id: string): Source[] {
     return feeds.length ? [...feeds, { from: SELECTOR_ID, chan: null, port: SCENE_PORT, scene: scenes.length }] : []
   }
   if (block.kind === 'board') return boardPlan(show, block).sources
+  if (block.kind === 'oscout') {
+    const feeds = show.wires.filter((w) => w.to === id).map((w): Source => {
+      const scene = scenes.findIndex((sc) => sc.id === w.from)
+      return scene >= 0 ? { from: w.fromPort, chan: null, port: FIXTURE_PORT, scene } : { ...via(show, w), port: FIXTURE_PORT, scene: null }
+    })
+    return feeds.some((f) => f.scene !== null) ? [...feeds, { from: SELECTOR_ID, chan: null, port: SCENE_PORT, scene: scenes.length }] : feeds
+  }
   if (block.kind === 'fixture') {
     const feeds = show.wires.filter((w) => w.to === id && w.port === FIXTURE_PORT).flatMap((w): Source[] => {
       const [outId, member] = w.fromPort.split(':')

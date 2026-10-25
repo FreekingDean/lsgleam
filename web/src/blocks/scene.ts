@@ -15,6 +15,7 @@ export const scene: BlockDef<SceneBlock> = {
     if (x.kind === 'group') return Array.from({ length: x.size }, (_, i) => ({ ...typed(memberPort(x.id, i), 'fixture', `${x.name} ${i + 1}`), profile: x.profile }))
     if (x.kind === 'light') return [{ ...typed(x.id, 'fixture', x.name), profile: x.profile }]
     if (x.kind === 'strip') return [typed(x.id, 'pixels', x.name)]
+    if (x.kind === 'output') return [typed(x.id, x.type, x.name)]
     return []
   }),
   subtitle: () => 'scene',

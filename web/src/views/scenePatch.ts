@@ -22,7 +22,7 @@ export function targetsOf(show: Show, scene: string): Target[] {
     const item = items.get(b?.kind === 'tube' && b.set ? b.set : p.id)
     const f = fixtures.get(p.id)
     const t = tubes.get(p.id)
-    const info = f ? (f.universe === null ? 'no DMX' : `U${f.universe}.${f.address}`) : t?.output != null ? `out ${t.output} @${t.offset + 1}` : 'no cable'
+    const info = b?.kind === 'oscout' ? `${b.host}:${b.port}` : f ? (f.universe === null ? 'no DMX' : `U${f.universe}.${f.address}`) : t?.output != null ? `out ${t.output} @${t.offset + 1}` : 'no cable'
     return { id: p.id, name: p.label, plot: item?.id ?? '', info, rail: rail.title, room: item?.room ? names.get(item.room) : undefined, floor: floors.indexOf(floorAt(show, item?.height ?? 0)) }
   }))
   const split = new Set(rows.map((r) => r.room)).size > 1

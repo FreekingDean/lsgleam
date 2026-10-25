@@ -4,7 +4,7 @@ import { formatLength } from '../model/format'
 import { unitsOf } from '../model/units'
 import { Field } from './fields'
 
-const DEVICES: Partial<Record<Kind, string>> = { artnet: 'Art-Net / sACN nodes', board: 'Pixel boards', dmxin: 'DMX controllers', audio: 'Audio inputs', cdj: 'Audio sources', blt: 'Beat Link Triggers', audioslice: 'AudioSlice', box: 'Rooms' }
+const DEVICES: Partial<Record<Kind, string>> = { artnet: 'Art-Net / sACN nodes', board: 'Pixel boards', dmxin: 'DMX controllers', audio: 'Audio inputs', cdj: 'Audio sources', blt: 'Beat Link Triggers', audioslice: 'AudioSlice', oscout: 'OSC outputs', box: 'Rooms' }
 
 const tally = (names: string[]) => [...names.reduce((m, n) => m.set(n, (m.get(n) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1])
 

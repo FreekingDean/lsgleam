@@ -9,10 +9,12 @@ export const TINTS = { dir: [0.3, 0.3, 0.34], hardware: [0.36, 0.56, 0.84], sour
 const HARDWARE: Kind[] = ['artnet', 'dmxin', 'board']
 const ROW = 200
 
+const isOutput = (b: Block) => b.kind === 'fixture' || b.kind === 'tube' || b.kind === 'oscout'
+
 function tintOf(b: Block) {
   if (HARDWARE.includes(b.kind)) return TINTS.hardware
   if (SOURCE_KINDS.includes(b.kind)) return TINTS.source
-  if (b.kind === 'fixture' || b.kind === 'tube') return TINTS.fixture
+  if (isOutput(b)) return TINTS.fixture
   if (b.kind === 'light' || b.kind === 'group' || b.kind === 'strip') return TINTS.output
   if (b.kind === 'input') return TINTS.input
   return TINTS.logic
@@ -20,7 +22,6 @@ function tintOf(b: Block) {
 
 const sources = (show: Show) => show.blocks.filter((b) => SOURCE_KINDS.includes(b.kind))
 const inLayout = (b: Block) => HARDWARE.includes(b.kind) || SOURCE_KINDS.includes(b.kind)
-const isOutput = (b: Block) => b.kind === 'fixture' || b.kind === 'tube'
 
 function outputOrder(show: Show) {
   const seen = new Set<string>()

@@ -94,9 +94,9 @@ export const LAYOUT = '__layout'
 export const INPUTS_ID = '__inputs'
 export const OUTPUTS_ID = '__outputs'
 export const SOURCE_KINDS: Kind[] = ['audio', 'dmxin', 'blt', 'audioslice']
-export const LAYOUT_KINDS: Kind[] = ['artnet', 'fixture', 'cdj', 'box', 'tube', 'tubeset', 'board', ...SOURCE_KINDS]
+export const LAYOUT_KINDS: Kind[] = ['artnet', 'fixture', 'cdj', 'box', 'tube', 'tubeset', 'board', 'oscout', ...SOURCE_KINDS]
 export const SHOW_KINDS: Kind[] = ['scene', 'manual']
-export const VIRTUAL_KINDS: Kind[] = ['blt', 'audioslice']
+export const VIRTUAL_KINDS: Kind[] = ['blt', 'audioslice', 'oscout']
 export const SENDER_KINDS: Kind[] = ['artnet', 'board']
 export const sendersOf = (show: Show) => show.blocks.filter((b) => SENDER_KINDS.includes(b.kind)).map((b) => b.id)
 export const isLight = (b: Block): b is LightBlock | GroupBlock => b.kind === 'light' || b.kind === 'group'
