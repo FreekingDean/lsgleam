@@ -11,4 +11,12 @@ def build_oscout(b, sources):
     osc.par.port = b['port']
     osc.par.numericformat = 'float'
     chain(scale, name, osc)
+    if b.get('glide'):
+        glide = c.create(lagCHOP, 'glide')
+        glide.par.lagunit = 'seconds'
+        glide.par.lag1 = b['glide'] / 3.0
+        glide.par.lag2 = b['glide'] / 3.0
+        glide.nodeY = 150
+        src.outputConnectors[0].connect(glide.inputConnectors[0])
+        src = glide
     src.outputConnectors[0].connect(scale.inputConnectors[0])
