@@ -5,8 +5,11 @@ def build_dmxin(b, sources, protocol, universe):
     dmx.par.format = 'packetpersample'
     dmx.par.universe = universe or 0
     dmx.par.active = universe is not None
-    data = c.create(selectCHOP, 'data')
-    data.par.channames = '* ^startcode'
+    data = c.create(deleteCHOP, 'data')
+    data.par.delchannels = True
+    data.par.select = 'bynum'
+    data.par.selnumbers = '[1-512]'
+    data.par.discard = 'nonscoped'
     names = c.create(renameCHOP, 'names')
     names.par.renamefrom = '*'
     names.par.renameto = 'ch[1-512]'
