@@ -5,6 +5,8 @@ def build_dmxin(b, sources, protocol, universe):
     dmx.par.format = 'packetpersample'
     dmx.par.universe = universe or 0
     dmx.par.active = universe is not None
+    data = c.create(selectCHOP, 'data')
+    data.par.channames = '* ^startcode'
     names = c.create(renameCHOP, 'names')
     names.par.renamefrom = '*'
     names.par.renameto = 'ch[1-512]'
@@ -12,4 +14,4 @@ def build_dmxin(b, sources, protocol, universe):
     faders.par.channames = 'ch[1-%d]' % b['channels']
     norm = c.create(mathCHOP, 'norm')
     norm.par.fromrange2 = 255
-    chain(dmx, names, faders, norm, c.create(outCHOP, 'out1'))
+    chain(dmx, data, names, faders, norm, c.create(outCHOP, 'out1'))
