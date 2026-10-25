@@ -432,6 +432,7 @@ ${BLOCKS.hold.python}
 ${BLOCKS.range.python}
 ${BLOCKS.add.python}
 ${BLOCKS.priority.python}
+${BLOCKS.oscout.python}
 ${BLOCKS.values.python}
 ${BLOCKS.pattern.python}
 def position_switch(c, name, index, aim, positions, y):
