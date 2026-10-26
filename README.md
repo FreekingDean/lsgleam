@@ -2,6 +2,8 @@
 
 Opinionated lightshow UI on top of TouchDesigner.
 
+**User guides with screenshots: [docs/](docs/README.md)** (getting started, layout, show and scenes, blocks, recipes, outputs). This README is the technical reference.
+
 ## TD bridge
 
 A WebServer DAT inside TD that execs whatever Python it is sent and replies with `result`. That is the whole TD side; everything node-related lives in the web client (`web/src/td.ts`).
@@ -236,13 +238,7 @@ The "schedule" tab is a read-only fixture schedule / patch sheet. A summary list
 
 Coordinates: layout x → MVR X, layout −z → MVR Y, height → MVR Z, millimetres; the layout's turn/tilt/roll become the fixture matrix (a fixture at 0° hangs pointing down, as in GDTF).
 
-In Unreal (5.x, Windows):
-1. Edit → Plugins: enable DMX Engine, DMX Protocol and DMX Fixtures; restart.
-2. Project Settings → Plugins → DMX → Communication Settings → Input Ports: add one with Protocol Art-Net, the network card's IP, Local Universe Start 1, Amount of Universes covering the highest universe + 1, Extern Universe Start 0 (Unreal universe 1 = Art-Net universe 0, matching the MVR). Make sure Receive DMX is on.
-3. Drag `lsgleam-show.mvr` into the Content Browser. This makes a DMX Library (fixture types from the GDTFs, patch from the addresses). Drag the library into the level: a DMX MVR Scene Actor spawns a fixture Blueprint per fixture at its position, picked by matching attributes; change it per fixture type under "Fixture Type to Spawned Actor" if needed. Pan/tilt ranges of the stock moving head Blueprint are set on the Blueprint, so check them against the profile (e.g. 540° / 270°).
-4. Rooms, tubes and floor plans are not imported by a plain MVR import (Unreal needs Datasmith for MVR geometry). Rename the `.mvr` to `.zip`, unzip it and drag the `room-*.glb` / `plan-*.glb` / `tube-*.glb` files into the level at the origin.
-5. In lsgleam, set the visualiser IP (layout tab → Rig → Visualiser) to the Unreal PC's IP. TouchDesigner then also sends every Art-Net/sACN node universe and pixel board universe as Art-Net to that IP; empty turns it off. Two nodes sending the same universe number collide on the visualiser.
-6. For beams: Exponential Height Fog with Volumetric Fog on, Lumen for global illumination (Project Settings → Rendering), or the Path Tracer viewport mode for stills; keep the room meshes so beams have something to land on.
+Setting it up in Unreal (plugins, Art-Net input ports, importing the MVR and meshes, the visualiser IP): see [docs/outputs.md](docs/outputs.md#unreal-engine).
 
 ### Libraries
 
