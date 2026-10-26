@@ -13,7 +13,7 @@ Port types: **signal** (0–1: energy, fader, on/off), **index** (whole number: 
 | Box (room, stage, bar) | A room, stage or other space. | Width, depth, height, locked |
 | Art-Net / sACN node | The interface TouchDesigner sends DMX through and listens on. | Protocol, IP, active, universes (out or in) |
 | DMX controller (faders in) | A desk or fader box; one signal per fader on the Inputs rail. | Faders |
-| Audio source (CDJ) | A player sending audio into an audio input. | Player |
+| Audio source | Anything sending audio into an audio input: a mixer, player, mic or laptop. | – |
 | Audio input (interface) | The sound card; one audio port per channel or stereo pair. | Device, channels, stereo pairs |
 | Beat Link Trigger (OSC) | Pioneer decks via Beat Link Trigger: playing, on air, beat, BPM, song. | OSC port, decks, master, signals, songs |
 | AudioSlice (OSC) | Stem energy, hits and beats from AudioSlice. | OSC port, signals, smoothing, push to AudioSlice |

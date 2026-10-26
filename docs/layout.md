@@ -70,7 +70,7 @@ A **DMX controller (faders in)** is a lighting desk or fader box. Set how many f
 
 ## Audio and software sources
 
-- **Audio source (CDJ)** and **Audio input (interface)**: cable each player into an interface channel. Each input becomes an audio signal on the show tab, for a Level block.
+- **Audio source** and **Audio input (interface)**: cable each source (a DJ mixer, player, mic or laptop) into a channel on an audio interface such as a Focusrite. Each input becomes an audio signal on the show tab, for a Level block.
 - **Beat Link Trigger (OSC)**: Pioneer deck state (playing, on air, beat, BPM, song) over OSC. List your cue songs in its panel and `song` becomes an index you can match.
 - **AudioSlice (OSC)**: stem energy and hits (`kick/energy`, `snare/onset`, `beat/energy`…). **Push to AudioSlice** sets AudioSlice up to send them.
 - **OSC out**: sends a value to another app, e.g. MadMapper. See [Recipes](recipes.md#dmx-faders-pick-a-section-and-turn-madmapper).
