@@ -21,9 +21,9 @@ export const audio: BlockDef<AudioBlock> = {
   create: (base, n) => ({ ...base, id: `audio${n}`, name: `audio${n}`, kind: 'audio', device: '', channels: 2, stereo: true }),
   inputs: () => [],
   outputs: (b, show) => audioInputs(b).map((p) => {
-    const cdj = show?.cables.find((c) => c.to === b.id && c.port === p.id)
+    const source = show?.cables.find((c) => c.to === b.id && c.port === p.id)
     const first = Number(p.id.slice(2))
-    const name = cdj && show?.blocks.find((x) => x.id === cdj.from)?.name
+    const name = source && show?.blocks.find((x) => x.id === source.from)?.name
     return { ...p, label: name ? `${name} (${p.label})` : p.label, chans: b.stereo && first < b.channels ? `chan${first} chan${first + 1}` : `chan${first}` }
   }),
   subtitle: (b) => b.device || 'default device',

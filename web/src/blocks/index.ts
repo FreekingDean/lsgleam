@@ -32,7 +32,7 @@ import { audio } from './audio'
 import { dmxin } from './dmxin'
 import { blt } from './blt'
 import { audioslice } from './audioslice'
-import { cdj } from './cdj'
+import { audiosource } from './audiosource'
 import { box } from './box'
 import { artnet } from './artnet'
 import { strip } from './strip'
@@ -60,7 +60,7 @@ export { universesPerOutput, boardUniverses, outputUniverses, pixelChain, boardP
 export { nextAddress } from './fixture'
 export { fixturesOf } from './group'
 
-export const BLOCKS = { timer, combine, constant, latch, and, not, equals, priority, oscout, counter, steps, level, gate, fade, mix, hold, drop, range, add, split, sequence, values, colors, pattern, looks, audio, dmxin, blt, audioslice, cdj, box, artnet, strip, board, fixture, light, group, manual, input, output, scene, composite }
+export const BLOCKS = { timer, combine, constant, latch, and, not, equals, priority, oscout, counter, steps, level, gate, fade, mix, hold, drop, range, add, split, sequence, values, colors, pattern, looks, audio, dmxin, blt, audioslice, audiosource, box, artnet, strip, board, fixture, light, group, manual, input, output, scene, composite }
 export type DefKind = keyof typeof BLOCKS
 
 export const blockDef = (kind: Kind): BlockDef | undefined => (BLOCKS as Partial<Record<Kind, BlockDef>>)[kind]

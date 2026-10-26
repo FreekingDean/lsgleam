@@ -24,7 +24,6 @@ function unitSub(show: Show, u: Unit) {
   }
   if (b.kind === 'artnet') return `${b.protocol} ${b.ip}`
   if (b.kind === 'audio') return b.device || 'default device'
-  if (b.kind === 'cdj') return `player ${b.player}`
   if (b.kind === 'dmxin') return `${b.channels} faders`
   if (b.kind === 'blt') return `OSC :${b.port}`
   if (b.kind === 'audioslice') return `OSC :${b.port}`
