@@ -2,8 +2,8 @@ import * as THREE from 'three'
 import type { Kind, Placement } from '../model/show'
 import { disposeAll, place, type Light } from './par'
 
-const SIZES: Partial<Record<Kind, [number, number, number]>> = { board: [0.2, 0.05, 0.12], dmxin: [0.5, 0.08, 0.3], artnet: [0.25, 0.06, 0.15], audio: [0.3, 0.05, 0.2], cdj: [0.33, 0.12, 0.42] }
-const COLORS: Partial<Record<Kind, number>> = { board: 0xffd24a, dmxin: 0x5c8ed6, artnet: 0x5c8ed6, audio: 0xe06c6c, cdj: 0x777788 }
+const SIZES: Partial<Record<Kind, [number, number, number]>> = { board: [0.2, 0.05, 0.12], dmxin: [0.5, 0.08, 0.3], artnet: [0.25, 0.06, 0.15], audio: [0.3, 0.05, 0.2], audiosource: [0.33, 0.12, 0.42] }
+const COLORS: Partial<Record<Kind, number>> = { board: 0xffd24a, dmxin: 0x5c8ed6, artnet: 0x5c8ed6, audio: 0xe06c6c, audiosource: 0x777788 }
 
 export class Device implements Light {
   object = new THREE.Group()

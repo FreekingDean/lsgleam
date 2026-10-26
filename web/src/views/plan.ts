@@ -15,7 +15,7 @@ export type Box = { x: number; y: number; w: number; h: number }
 const COLORS = ['#d62728', '#1f77b4', '#2ca02c', '#9467bd', '#ff7f0e', '#17becf', '#8c564b', '#e377c2']
 const DASHES = ['', '10 4', '3 3', '12 3 3 3', '6 6', '12 3 3 3 3 3']
 
-const DEVICES: Partial<Record<Kind, string>> = { tubeset: 'Tube set', board: 'Pixel board', artnet: 'Art-Net node', dmxin: 'DMX controller', cdj: 'CDJ', audio: 'Audio interface' }
+const DEVICES: Partial<Record<Kind, string>> = { tubeset: 'Tube set', board: 'Pixel board', artnet: 'Art-Net node', dmxin: 'DMX controller', audiosource: 'Audio source', audio: 'Audio interface' }
 
 export const orderOf = (runs: Run[]) => new Map(runs.flatMap((r) => (r.type === 'other' ? [] : r.stops.slice(1).map((key, i): [string, string] => [key, `${r.n}.${i + 1}`]))))
 
@@ -57,7 +57,6 @@ function infoOf(show: Show, key: string, ids: Map<string, string>, order: Map<st
   if (b?.kind === 'artnet') return `${b.ip} · U${b.universes.join(',')}`
   if (b?.kind === 'board') return `${b.ip} · ${b.outputs} outs`
   if (b?.kind === 'dmxin') return `${b.channels} ch`
-  if (b?.kind === 'cdj') return `player ${b.player}`
   if (b?.kind === 'audio') return b.device || 'audio in'
   return ''
 }

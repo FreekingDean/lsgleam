@@ -325,6 +325,10 @@ export function normalize(raw: Partial<Show>): Show {
       const { channels: _channels, names, ...rest } = sized as typeof sized & { channels?: number; names?: string[] | Record<string, string> }
       return (sized.kind === 'split' ? rest : { ...rest, names: Array.isArray(names) ? Object.fromEntries(names.flatMap((n, i) => (n.trim() ? [[`s${i + 1}`, n]] : []))) : names ?? {} }) as Block
     }
+    if ((sized.kind as string) === 'cdj') {
+      const { player: _player, ...rest } = sized as typeof sized & { player?: number }
+      return { ...rest, kind: 'audiosource' } as Block
+    }
     if (sized.kind === 'audioslice') Object.assign(sized, { apiPort: sized.apiPort ?? 8722, token: sized.token ?? '', smoothing: sized.smoothing ?? 0 })
     return sized
   })

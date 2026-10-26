@@ -175,7 +175,7 @@ function Editor() {
     baseline.current = loaded
     apply(loaded)
     const present = new Set(await t.existing())
-    const wanted = new Set([...loaded.blocks.filter((b) => b.kind !== 'scene' && b.kind !== 'composite' && b.kind !== 'cdj' && b.kind !== 'box' && b.kind !== 'tubeset').map((b) => b.id), SELECTOR_ID])
+    const wanted = new Set([...loaded.blocks.filter((b) => b.kind !== 'scene' && b.kind !== 'composite' && b.kind !== 'audiosource' && b.kind !== 'box' && b.kind !== 'tubeset').map((b) => b.id), SELECTOR_ID])
     await rebuild(loaded, [...wanted].filter((id) => !present.has(id) || rewired.includes(id)))
     const extra = [...present].filter((id) => !wanted.has(id))
     if (extra.length) await t.destroy(extra)

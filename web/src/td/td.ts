@@ -64,7 +64,7 @@ probe.destroy()
   }
 
   private buildCode(show: Show, block: Block): string | null {
-    if (block.kind === 'scene' || block.kind === 'composite' || block.kind === 'cdj' || block.kind === 'box' || block.kind === 'tubeset') return null
+    if (block.kind === 'scene' || block.kind === 'composite' || block.kind === 'audiosource' || block.kind === 'box' || block.kind === 'tubeset') return null
     const sources = j(sourcesOf(show, block.id))
     const b = placed(show, block)
     const copy = show.visualiser && SENDER_KINDS.includes(block.kind) ? `\n${VISUALISER}\nvisualise(${JSON.stringify(block.id)}, ${JSON.stringify(show.visualiser)})` : ''
