@@ -2,6 +2,19 @@ import { BLOCKS } from '../blocks'
 
 export const j = (v: unknown) => `json.loads(${JSON.stringify(JSON.stringify(v))})`
 
+export const LIVE = `
+import fnmatch
+import json
+LS = op('/project1/lsgleam')
+
+def matching(c, *patterns):
+    return [o for o in c.children if any(fnmatch.fnmatchcase(o.name, p) for p in patterns)]
+
+def find(name):
+    found = LS.findChildren(name=name, tags=['lsgleam']) if LS else []
+    return found[0] if found else None
+`
+
 export const PRELUDE = `
 import fnmatch
 import json
