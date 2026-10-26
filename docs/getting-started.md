@@ -32,7 +32,7 @@ The tabs under the header are the editor:
 
 - **layout**: the room, seen from above. Floors, rooms, fixtures, DMX nodes, controllers, audio gear, pixel controllers and LED tubes, and the cables between them. See [Layout](layout.md).
 - **show**: the logic that decides which scene is on. Inputs from the layout on the left, scenes on the right. See [Show and scenes](show-and-scenes.md).
-- **one tab per scene** (Fall, Winter… in the demo): what that scene does with its inputs and what it sends to the fixtures.
+- **one tab per scene** (Fall, Winter… in the example show): what that scene does with its inputs and what it sends to the fixtures.
 
 Composites you open get their own `› name` tab.
 

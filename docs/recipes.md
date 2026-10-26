@@ -2,28 +2,28 @@
 
 Worked examples. Each assumes the hardware is already on the [layout](layout.md).
 
-## DMX faders pick the season and turn MadMapper
+## DMX faders pick a section and turn MadMapper
 
-Four faders on a desk choose fall, winter, spring or summer. The highest fader that's up wins, the lights follow, and a MadMapper parameter (say a compass) turns 90° per season.
+Four faders on a desk choose one of four sections of the show (in the example show, the four seasons). The highest fader that's up wins, the lights follow, and a MadMapper parameter (say a compass) turns 90° per section.
 
 1. **Layout**: add a **DMX controller**, set Faders to 4 or more, and cable its DMX out into an **in** universe on your Art-Net node.
 2. **Layout**: add an **OSC out** and name it (e.g. MadMapper). Set:
-   - Address: what MadMapper should listen to, e.g. `/season`. In MadMapper, use OSC learn on the parameter.
+   - Address: what MadMapper should listen to, e.g. `/compass/rotation`. In MadMapper, use OSC learn on the parameter.
    - Host: the MadMapper machine's IP (`127.0.0.1` if it's the same computer). Port: 8010.
-   - Scale: 90, so seasons 0–3 send 0, 90, 180, 270.
+   - Scale: 90, so sections 0–3 send 0, 90, 180, 270.
    - Glide: 2 s, so the compass eases round instead of jumping.
 
    ![OSC out panel](images/oscout-panel.png)
 
-3. **Show tab**: add **Priority** (Logic). Its inputs default to `fall, winter, spring, summer`. Wire faders `ch1`–`ch4` from the Inputs rail into them.
+3. **Show tab**: add **Priority** (Logic). Name its four inputs after your sections (they default to `a, b, c, d`). Wire faders `ch1`–`ch4` from the Inputs rail into them.
 
    ![Priority panel](images/priority-panel.png)
 
-4. Wire Priority's `index` into **Scene select**'s `index` (scene 0 is the first scene, so keep the seasons in that order), and into the OSC out port on the Outputs rail.
+4. Wire Priority's `index` into **Scene select**'s `index` (scene 0 is the first scene, so keep the sections in that order), and into the OSC out port on the Outputs rail.
 
 ![Faders into Priority, out to OSC](images/recipe-priority-osc.png)
 
-Push fader 3: the index is 2, spring fades in, and MadMapper glides to 180. With fall and spring both up, spring wins. With nothing up the index is 0.
+Push fader 3: the index is 2, the third section fades in, and MadMapper glides to 180. With faders 1 and 3 both up, 3 wins. With nothing up the index is 0.
 
 ## Step forward and back every bar
 

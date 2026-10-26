@@ -10,7 +10,7 @@ export const priority: BlockDef<PriorityBlock> = {
   info: 'The index of the highest input that is up: later inputs win over earlier ones',
   tab: 'Logic',
   python,
-  create: (base, n) => ({ ...base, id: `prio${n}`, name: `prio${n}`, kind: 'priority', names: ['fall', 'winter', 'spring', 'summer'] }),
+  create: (base, n) => ({ ...base, id: `prio${n}`, name: `prio${n}`, kind: 'priority', names: ['a', 'b', 'c', 'd'] }),
   inputs: (b) => b.names.map((name, i) => typed(`in${i + 1}`, 'signal', `${i} ${name}`)),
   outputs: () => [typed('out', 'index', 'index')],
   subtitle: (b) => b.names.join(' < '),

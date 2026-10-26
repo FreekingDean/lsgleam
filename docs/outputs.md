@@ -48,7 +48,7 @@ Layout tab → Rig → **Visualiser IP**. TouchDesigner then also sends every un
 
 ## Simulator
 
-The **simulate** page is a 3D view of the layout. Without TouchDesigner, **preview: layout defaults** lights every fixture from its own values, or **preview: Fall** (any scene) shows what that scene sends. With several floors, **cut above** hides the floors on top. With TD connected, **live from TouchDesigner** reads the real DMX, so a wrong address shows up here first.
+The **simulate** page is a 3D view of the layout. Without TouchDesigner, **preview: layout defaults** lights every fixture from its own values, or **preview:** any scene shows what that scene sends. With several floors, **cut above** hides the floors on top. With TD connected, **live from TouchDesigner** reads the real DMX, so a wrong address shows up here first.
 
 ![Simulator](images/simulate.png)
 
