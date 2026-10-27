@@ -4,7 +4,7 @@ import { INPUTS_ID, OUTPUTS_ID, SENDER_KINDS, membersOf, scenesOf, SELECTOR_ID, 
 import { selectorSources, sourcesOf } from '../model/patch'
 import { PORTS } from '../model/ports'
 import { tubeGeometry } from '../model/geometry'
-import { j, PRELUDE } from './prelude'
+import { j, LIVE, PRELUDE } from './prelude'
 import VISUALISER from './visualiser.py?raw'
 import { AUDIOSLICE_BEAT_STEMS, AUDIOSLICE_STEMS, AUDIOSLICE_STREAMS, audioSliceAlpha, audioSlicePath, defOf, hasDef, stripConfig } from '../blocks'
 import { TINTS, showDir, inputsDir, outputsDir, spotOf, placed, railCode } from './tree'
@@ -22,6 +22,21 @@ export class Td {
 
   private run<T>(code: string): Promise<T> {
     return this.bridge.eval<T>(`${PRELUDE}\n${code}`)
+  }
+
+  private queued = new Map<string, string | null>()
+
+  private live(key: string, code: string): Promise<null> {
+    if (this.queued.has(key)) {
+      this.queued.set(key, code)
+      return Promise.resolve(null)
+    }
+    this.queued.set(key, null)
+    return this.bridge.eval<null>(`${LIVE}\n${code}`).finally(() => {
+      const next = this.queued.get(key)
+      this.queued.delete(key)
+      if (next) void this.live(key, next).catch(() => null)
+    })
   }
 
   loadShow() {
@@ -64,7 +79,7 @@ probe.destroy()
   }
 
   private buildCode(show: Show, block: Block): string | null {
-    if (block.kind === 'scene' || block.kind === 'composite' || block.kind === 'cdj' || block.kind === 'box' || block.kind === 'tubeset') return null
+    if (block.kind === 'scene' || block.kind === 'composite' || block.kind === 'audiosource' || block.kind === 'box' || block.kind === 'tubeset') return null
     const sources = j(sourcesOf(show, block.id))
     const b = placed(show, block)
     const copy = show.visualiser && SENDER_KINDS.includes(block.kind) ? `\n${VISUALISER}\nvisualise(${JSON.stringify(block.id)}, ${JSON.stringify(show.visualiser)})` : ''
@@ -142,7 +157,7 @@ if o:
   }
 
   setConstant(id: string, value: number) {
-    return this.run<null>(`find(${JSON.stringify(id)}).op('values').par.const0value = ${value}`)
+    return this.live(id, `find(${JSON.stringify(id)}).op('values').par.const0value = ${value}`)
   }
 
   setManual(id: string, active: number, count: number) {
@@ -171,7 +186,7 @@ if o:
   }
 
   setValue(id: string, index: number, value: number, prefixes: string[], channel: string) {
-    return this.run<null>(`
+    return this.live(`${id}:${prefixes.join()}:${channel}`, `
 root = find(${JSON.stringify(id)})
 for p in ${j(prefixes)}:
     o = root.op(p + 'values')

@@ -10,7 +10,7 @@ export const colorTable = (b: ColorsBlock): [string, number][][] => Array.from({
 export const colors: BlockDef<ColorsBlock> = {
   kind: 'colors',
   label: 'Colours (index → named colours)',
-  info: 'A table of named colours, one column per index (e.g. per season)',
+  info: 'A table of named colours, one column per index (e.g. per song or section)',
   tab: 'Math',
   python,
   create: (base, n) => ({ ...base, id: `col${n}`, name: `colours${n}`, kind: 'colors', steps: 4, rows: [{ name: 'main', colors: ['#ff4d00', '#2050ff', '#a040ff', '#ffd000'].map(colorOf) }] }),

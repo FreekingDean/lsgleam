@@ -23,7 +23,7 @@ export function unitsOf(show: Show): Unit[] {
     if (b.kind === 'audio') out.push({ key: b.id, block: b, name: b.name, placement: b.sim ?? floorSpot(devices++), inputs: audioInputs(b), outputs: [] })
     if (b.kind === 'box') out.push({ key: b.id, block: b, name: b.name, placement: b.sim ?? { position: [0, 0, 0], rotation: [0, 0, 0] }, inputs: [], outputs: [] })
     if (b.kind === 'dmxin') out.push({ key: b.id, block: b, name: b.name, placement: b.sim ?? floorSpot(devices++), inputs: [], outputs: [DMX_OUT] })
-    if (b.kind === 'cdj') out.push({ key: b.id, block: b, name: b.name, placement: b.sim ?? floorSpot(devices++), inputs: [], outputs: [typed('out', 'audio', 'audio out')] })
+    if (b.kind === 'audiosource') out.push({ key: b.id, block: b, name: b.name, placement: b.sim ?? floorSpot(devices++), inputs: [], outputs: [typed('out', 'audio', 'audio out')] })
     if (b.kind === 'tube') out.push({ key: b.id, block: b, name: b.name, placement: b.sim ?? lightSpot(lights++), inputs: [{ ...typed('in', 'pixel', 'in'), profile: b.protocol }], outputs: [{ ...typed('out', 'pixel', 'out'), profile: b.protocol }] })
     if (b.kind === 'board') out.push({ key: b.id, block: b, name: b.name, placement: b.sim ?? floorSpot(devices++), inputs: [], outputs: Array.from({ length: b.outputs }, (_, i) => ({ ...typed(`o${i + 1}`, 'pixel', `out ${i + 1}`), profile: b.protocol })) })
     if (b.kind === 'tubeset') {

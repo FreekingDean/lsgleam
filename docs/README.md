@@ -1,6 +1,6 @@
 # lsgleam docs
 
-Guides for building and running a show. The screenshots use `shows/seasons.json`.
+Guides for building and running a show. The screenshots use the example show `shows/seasons.json`.
 
 1. [Getting started](getting-started.md): run the UI, connect TouchDesigner, find your way around.
 2. [Layout](layout.md): floors, rooms, fixtures, DMX, pixels and cables.
@@ -13,7 +13,7 @@ Guides for building and running a show. The screenshots use `shows/seasons.json`
 
 ## Screenshots
 
-`web/scripts/screenshots.mjs` regenerates every image in `docs/images` from `shows/seasons.json`. It starts its own Vite server on port 5399, never connects to TouchDesigner, and drives Google Chrome through Playwright:
+`web/scripts/screenshots.mjs` regenerates every image in `docs/images` from the example show. It starts its own Vite server on port 5399, never connects to TouchDesigner, and drives Google Chrome through Playwright:
 
 ```sh
 cd web && npm install && npm run shots

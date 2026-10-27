@@ -18,7 +18,7 @@ const OPERATOR_TABS: Tab[] = ['Logic', 'Math', 'Time'].map((title) => ({ title, 
 const HARDWARE: Category[] = [
   { title: 'Space', items: [defined('box')] },
   { title: 'DMX', items: [defined('artnet'), defined('dmxin')] },
-  { title: 'Audio', items: [defined('cdj'), defined('audio')] },
+  { title: 'Audio', items: [defined('audiosource'), defined('audio')] },
   { title: 'Software', items: [defined('blt'), defined('audioslice'), defined('oscout')] },
 ]
 

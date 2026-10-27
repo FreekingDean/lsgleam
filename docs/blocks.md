@@ -2,7 +2,7 @@
 
 Every block in the palette, grouped by palette tab. Names are as the palette shows them. Each block's panel repeats the essentials in its help text.
 
-Port types: **signal** (0–1: energy, fader, on/off), **index** (whole number: step, song, season), **number** (raw value: BPM), **audio**, **colour** (red, green, blue, white, amber, UV), **look** (colour + dimmer), **multichannel** (several values on one wire).
+Port types: **signal** (0–1: energy, fader, on/off), **index** (whole number: step, song, section), **number** (raw value: BPM), **audio**, **colour** (red, green, blue, white, amber, UV), **look** (colour + dimmer), **multichannel** (several values on one wire).
 
 ## Layout tab
 
@@ -13,7 +13,7 @@ Port types: **signal** (0–1: energy, fader, on/off), **index** (whole number: 
 | Box (room, stage, bar) | A room, stage or other space. | Width, depth, height, locked |
 | Art-Net / sACN node | The interface TouchDesigner sends DMX through and listens on. | Protocol, IP, active, universes (out or in) |
 | DMX controller (faders in) | A desk or fader box; one signal per fader on the Inputs rail. | Faders |
-| Audio source (CDJ) | A player sending audio into an audio input. | Player |
+| Audio source | Anything sending audio into an audio input: a mixer, player, mic or laptop. | – |
 | Audio input (interface) | The sound card; one audio port per channel or stereo pair. | Device, channels, stereo pairs |
 | Beat Link Trigger (OSC) | Pioneer decks via Beat Link Trigger: playing, on air, beat, BPM, song. | OSC port, decks, master, signals, songs |
 | AudioSlice (OSC) | Stem energy, hits and beats from AudioSlice. | OSC port, signals, smoothing, push to AudioSlice |
@@ -66,8 +66,8 @@ Port types: **signal** (0–1: energy, fader, on/off), **index** (whole number: 
 | Pattern (fan-out) | Spreads one signal over N slots by a pattern (all, alternate, chase, outside in, fill…). | Slots, mode, advance (by step or on each trigger), every N, minimum |
 | Range (signal × amount → window) | Squeezes a signal into a brightness window that widens with `amount`. | Tame min/max, wild min/max |
 | Add (offset) | Adds an amount: index + 1 picks the next colour. | Amount |
-| Colours (index → named colours) | A table of named colours, one column per index (e.g. per season). Each colour is RGB plus White, Amber and UV (DMX 0–255), sent as set; a fixture uses the ones it has. Double-click for the palette view. | Rows, steps |
-| Values (index → named numbers) | The same for numbers, e.g. per-season minimums. | Rows, steps |
+| Colours (index → named colours) | A table of named colours, one column per index (e.g. per song or section). Each colour is RGB plus White, Amber and UV (DMX 0–255), sent as set; a fixture uses the ones it has. Double-click for the palette view. | Rows, steps |
+| Values (index → named numbers) | The same for numbers, e.g. per-section minimums. | Rows, steps |
 | Composite (your own block) | Double-click to build it from inputs, blocks and outputs inside. | – |
 
 ### Time

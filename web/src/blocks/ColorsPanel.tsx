@@ -30,7 +30,7 @@ export function ColorsPanel({ block, onPatch, onOpenPalette }: Props & { block: 
           </div>
         </div>
       ))}
-      <div className="help">Each row is a colour output (red, green, blue from the swatch, plus white, amber and UV as DMX 0–255, sent as set); the column follows the `index` input (wrapping), so wire the season count in and each row gives that season's colour. Feed them into scene Colour inputs, then into a fixture output's `color` or a Looks block's `color`.</div>
+      <div className="help">Each row is a colour output (red, green, blue from the swatch, plus white, amber and UV as DMX 0–255, sent as set); the column follows the `index` input (wrapping), so wire a song or section index in and each row gives that step's colour. Feed them into scene Colour inputs, then into a fixture output's `color` or a Looks block's `color`.</div>
     </>
   )
 }

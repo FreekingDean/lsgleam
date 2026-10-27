@@ -66,7 +66,7 @@ main .react-flow { flex: 1; }
 .td-node.level, .td-node.gate, .td-node.fade, .td-node.timer, .td-node.steps, .td-node.pattern, .td-node.drop, .td-node.hold, .td-node.range, .td-node.sequence, .td-node.scenes { border-color: #6cb86c; }
 .td-node.fixture, .td-node.light, .td-node.group, .td-node.strip { border-color: #f2b544; }
 .td-node.artnet { border-color: #5c8ed6; }
-.td-node.cdj { border-color: #e06c6c; }
+.td-node.audiosource { border-color: #e06c6c; }
 .td-node.unit .td-node-name { font-weight: 600; }
 .td-node.scene, .td-node.manual, .td-node.input { border-color: #b07ddc; }
 .td-node.colors, .td-node.values, .td-node.equals, .td-node.constant, .td-node.latch, .td-node.and, .td-node.not, .td-node.mix, .td-node.counter { border-color: #6cb86c; }

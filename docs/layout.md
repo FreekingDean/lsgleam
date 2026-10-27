@@ -62,7 +62,7 @@ Cable an out universe to the first fixture's DMX in, then that fixture's DMX out
 
 Then press **repatch** in the header: it numbers addresses along every chain from 1, so nothing overlaps.
 
-A **DMX controller (faders in)** is a lighting desk or fader box. Set how many faders it has and cable its DMX out into an **in** universe on a node. Its faders then show up on the show tab's Inputs rail as `ch1`, `ch2`…, ready to choose seasons, force a drop or black out.
+A **DMX controller (faders in)** is a lighting desk or fader box. Set how many faders it has and cable its DMX out into an **in** universe on a node. Its faders then show up on the show tab's Inputs rail as `ch1`, `ch2`…, ready to pick a scene, force a drop or black out.
 
 ![DMX controller panel](images/dmx-controller-panel.png)
 
@@ -70,10 +70,10 @@ A **DMX controller (faders in)** is a lighting desk or fader box. Set how many f
 
 ## Audio and software sources
 
-- **Audio source (CDJ)** and **Audio input (interface)**: cable each player into an interface channel. Each input becomes an audio signal on the show tab, for a Level block.
+- **Audio source** and **Audio input (interface)**: cable each source (a DJ mixer, player, mic or laptop) into a channel on an audio interface such as a Focusrite. Each input becomes an audio signal on the show tab, for a Level block.
 - **Beat Link Trigger (OSC)**: Pioneer deck state (playing, on air, beat, BPM, song) over OSC. List your cue songs in its panel and `song` becomes an index you can match.
 - **AudioSlice (OSC)**: stem energy and hits (`kick/energy`, `snare/onset`, `beat/energy`…). **Push to AudioSlice** sets AudioSlice up to send them.
-- **OSC out**: sends a value to another app, e.g. MadMapper. See [Recipes](recipes.md#dmx-faders-pick-the-season-and-turn-madmapper).
+- **OSC out**: sends a value to another app, e.g. MadMapper. See [Recipes](recipes.md#dmx-faders-pick-a-section-and-turn-madmapper).
 
 ## Pixels: LED tubes and controllers
 

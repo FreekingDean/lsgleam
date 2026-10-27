@@ -1,6 +1,6 @@
 # Show and scenes
 
-A **scene** is one way of lighting the room: a season, a drop, a battle. The **show** tab decides how much of each scene is on at any moment.
+A **scene** is one way of lighting the room: a base look, a drop, a battle. The **show** tab decides how much of each scene is on at any moment.
 
 ## The show tab
 
@@ -34,13 +34,13 @@ The scene panel sets **Fade in** and **Fade out** in seconds: how long `on` take
 
 ![Scene select panel](images/scene-select-panel.png)
 
-For layered rules (battle beats drop beats season), use Not and And: battle `on` = battle; drop `on` = drop × Not(battle); season = Not(battle) × Not(drop).
+For layered rules (battle beats drop beats base), use Not and And: battle `on` = battle; drop `on` = drop × Not(battle); base = Not(battle) × Not(drop).
 
 ## Inside a scene
 
 Double-click a scene node, or click its tab, to open it.
 
-![Fall scene](images/scene-tab.png)
+![A scene tab](images/scene-tab.png)
 
 - **Inputs** palette tab: an Input block (signal, index, audio, number, colour or multichannel) adds an input port to the scene node. Wire the show-tab logic into that port and it comes out here. The scene also has the Inputs rail on its left, for sources you want straight from the layout.
 - **Outputs** palette tab: what the scene sends.

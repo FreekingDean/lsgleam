@@ -1,0 +1,1 @@
+export const AudioSourcePanel = () => <div className="help">Something making sound: a DJ mixer, player, mic or laptop. Cable its audio out to an audio input on the layout tab; the input's signals then carry this source's name.</div>

@@ -24,7 +24,7 @@ export function ValuesPanel({ block, onPatch }: Props & { block: ValuesBlock }) 
           </div>
         </div>
       ))}
-      <div className="help">Each row is a signal output; the column follows the `index` input (wrapping). Wire Season into index and feed rows like "min" and "max" into a Range's tame/wild min and max.</div>
+      <div className="help">Each row is a signal output; the column follows the `index` input (wrapping). Wire a song or section index in and feed rows like "min" and "max" into a Range's tame/wild min and max.</div>
     </>
   )
 }
