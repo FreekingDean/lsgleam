@@ -1,7 +1,7 @@
 import { syncSets } from './edit'
 import { FIXTURES, compiledOf, type StoredProfile, type Values } from './fixtures'
 import type { ModeChannel, OflCapability, OflChannel, OflFixture, OflSlot } from './ofl'
-import { type Point, type TubeBlock, type TubeDesign, EMPTY_SHOW, FIXTURE_PORT, memberPort, NODE_H, NODE_W, scenesOf, type Aims, type Block, type Cable, type ColorResponse, type FixtureBlock, type GroupBlock, type LightBlock, hasProfile, SOURCE_KINDS, type Kind, type Patch, type Placement, type Position, type Scene, type Show, type Wire } from './show'
+import { type Point, type TubeBlock, type TubeDesign, EMPTY_SHOW, FIXTURE_PORT, memberPort, NODE_H, NODE_W, scenesOf, type Aims, type Block, type Cable, type ColorResponse, type FixtureBlock, type GroupBlock, type LightBlock, hasProfile, NO_RESPONSE, SOURCE_KINDS, type Kind, type Patch, type Placement, type Position, type Scene, type Show, type Wire } from './show'
 import { blockHeight, hasInput, inputPorts, outputPorts } from './ports'
 import { pathLength } from './geometry'
 import { pruneCables } from './units'
@@ -197,8 +197,8 @@ function setsFromTubes(show: Show): Show {
 type OldResponse = Partial<ColorResponse> & { strength?: [number, number, number]; compensate?: boolean }
 
 function multiplierOf({ multiplier, gamma = 1, strength, compensate }: OldResponse): ColorResponse {
-  if (multiplier) return { multiplier, gamma }
-  return { multiplier: compensate && strength ? strength.map((s) => Math.min(...strength) / s) as ColorResponse['multiplier'] : [1, 1, 1], gamma }
+  const rgb = multiplier ?? (compensate && strength ? strength.map((s) => Math.min(...strength) / s) : [])
+  return { multiplier: NO_RESPONSE.multiplier.map((one, c) => rgb[c] ?? one), gamma }
 }
 
 type LegacyChannel = { name: string; label: string; default: number; options?: string[] }

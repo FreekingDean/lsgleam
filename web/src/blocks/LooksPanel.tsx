@@ -1,6 +1,6 @@
 import type { PatternAdvance, Scene } from '../model/show'
 import { colorOf } from '../model/format'
-import { ColorExtras } from '../panels/fields'
+import { ColorExtras, litStyle } from '../panels/fields'
 import { type Props, Every } from '../panels/shared'
 import type { LooksBlock } from './looks'
 
@@ -29,7 +29,7 @@ export function LooksPanel({ block, driven, onPatch }: Props & { block: LooksBlo
             <button title="delete" disabled={block.scenes.length === 1} onClick={() => update(block.scenes.filter((_, k) => k !== i))}>×</button>
           </div>
           <div className="look-body">
-            <input type="color" value={s.color.hex} disabled={driven.has('color')} title={driven.has('color') ? 'colour comes from the wired color input' : undefined} style={driven.has('color') ? { opacity: 0.3 } : undefined} onChange={(e) => set(i, { color: { ...s.color, hex: e.target.value } })} />
+            <input type="color" className="lit" value={s.color.hex} disabled={driven.has('color')} title={driven.has('color') ? 'colour comes from the wired color input' : undefined} style={{ ...litStyle(s.color), ...(driven.has('color') ? { opacity: 0.3 } : {}) }} onChange={(e) => set(i, { color: { ...s.color, hex: e.target.value } })} />
             <label>dimmer</label>
             <input type="number" min={0} max={1} step={0.05} value={s.window[0]} title="dimmer min" onChange={(e) => set(i, { window: [Number(e.target.value), s.window[1]] })} />
             <span>–</span>

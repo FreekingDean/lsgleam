@@ -1,4 +1,4 @@
-import { ColorExtras, NumField } from '../panels/fields'
+import { ColorExtras, NumField, litStyle } from '../panels/fields'
 import { BLACK, colorOf } from '../model/format'
 import type { Color } from '../model/show'
 import type { Props } from '../panels/shared'
@@ -25,7 +25,7 @@ export function ColorsPanel({ block, onPatch, onOpenPalette }: Props & { block: 
           <div className="color-steps">
             {steps.map((k) => {
               const color = r.colors[k] ?? BLACK
-              return <label key={k}><span>{k}</span><input type="color" title={`index ${k}`} value={color.hex} onChange={(e) => setColor(i, k, { ...color, hex: e.target.value })} /><ColorExtras value={color} onCommit={(c) => setColor(i, k, c)} /></label>
+              return <label key={k}><span>{k}</span><input type="color" className="lit" style={litStyle(color)} title={`index ${k}`} value={color.hex} onChange={(e) => setColor(i, k, { ...color, hex: e.target.value })} /><ColorExtras value={color} onCommit={(c) => setColor(i, k, c)} /></label>
             })}
           </div>
         </div>

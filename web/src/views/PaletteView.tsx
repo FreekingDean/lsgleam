@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { allProfiles } from '../model/fixtures'
-import { NumberBox } from '../panels/fields'
-import { BLACK, EXTRAS, colorOf, hexToRgb, isRgb, previewLight, responseOf, rgbToHex, toSrgb } from '../model/format'
-import { profileOf, type Color, type ColorResponse, type ColorsBlock, type Show } from '../model/show'
+import { NumberBox, litStyle } from '../panels/fields'
+import { BLACK, EMITTERS, EXTRAS, colorOf, colorValues, hexToRgb, isRgb, previewLight, responseOf, rgbToHex, toSrgb } from '../model/format'
+import { fixtureMode, profileOf, type Color, type ColorResponse, type ColorsBlock, type Show } from '../model/show'
 
 type Props = { show: Show; block: ColorsBlock; onPatch: (patch: Partial<ColorsBlock>) => void; onResponse: (profile: string, response: ColorResponse) => void; onClose: () => void }
 
-const CHANNELS = ['Red', 'Green', 'Blue']
+const CHANNELS = ['Red', 'Green', 'Blue', ...EXTRAS.map(([, , label]) => label)]
 const MAX_BRIGHTNESS = 4
 const MIN_GAMMA = 0.5
 const MAX_GAMMA = 3
@@ -24,12 +24,13 @@ function Slider({ label, value, min, max, step, onChange, onCommit }: { label: s
   )
 }
 
-function Discs({ light, className }: { light: number[]; className: string }) {
+function Discs({ light, mix, shown, className }: { light: number[]; mix: number[]; shown: number[]; className: string }) {
   return (
-    <div className={`discs ${className}`} title={rgbToHex(light.map(toSrgb))}>
-      {light.map((l, c) => {
-        const disc = `rgb(${[0, 1, 2].map((n) => (n === c ? Math.round(toSrgb(l) * 255) : 0)).join(' ')})`
-        return <span key={c} style={{ background: `radial-gradient(circle closest-side, ${disc} 85%, transparent)` }} />
+    <div className={`discs ${className}`} title={rgbToHex(mix.map(toSrgb))}>
+      {shown.map((c, k) => {
+        const disc = `rgb(${EMITTERS[c].map((t) => Math.round(toSrgb(light[c] * t) * 255)).join(' ')})`
+        const angle = ((k * 360) / shown.length - 150) * (Math.PI / 180)
+        return <span key={c} style={{ left: `${50 + 15 * Math.cos(angle)}%`, top: `${47.5 + 15 * Math.sin(angle)}%`, background: `radial-gradient(circle closest-side, ${disc} 85%, transparent)` }} />
       })}
     </div>
   )
@@ -39,12 +40,12 @@ const dmxOf = (color: Color) => hexToRgb(color.hex).map((v) => Math.round(v * 25
 const extrasOf = (color: Color) => (EXTRAS.some(([key]) => color[key]) ? EXTRAS.map(([key, short]) => `${short} ${Math.round(color[key] * 255)}`).join(' ') : '')
 const percent = (level: number) => `${Math.round(Math.min(level, 1) * 100)}%`
 
-function ResponseEditor({ response, onChange, onCommit }: { response: ColorResponse; onChange: (r: ColorResponse) => void; onCommit: (r: ColorResponse) => void }) {
-  const withBrightness = (c: number, v: number) => ({ ...response, multiplier: response.multiplier.map((m, n) => (n === c ? v : m)) as ColorResponse['multiplier'] })
+function ResponseEditor({ response, shown, onChange, onCommit }: { response: ColorResponse; shown: number[]; onChange: (r: ColorResponse) => void; onCommit: (r: ColorResponse) => void }) {
+  const withBrightness = (c: number, v: number) => ({ ...response, multiplier: response.multiplier.map((m, n) => (n === c ? v : m)) })
   return (
     <>
       <h4>LED brightness</h4>
-      {CHANNELS.map((name, c) => <Slider key={name} label={name} value={response.multiplier[c]} min={0} max={MAX_BRIGHTNESS} step={0.01} onChange={(v) => onChange(withBrightness(c, v))} onCommit={(v) => onCommit(v === undefined ? response : withBrightness(c, v))} />)}
+      {shown.map((c) => <Slider key={c} label={CHANNELS[c]} value={response.multiplier[c]} min={0} max={MAX_BRIGHTNESS} step={0.01} onChange={(v) => onChange(withBrightness(c, v))} onCommit={(v) => onCommit(v === undefined ? response : withBrightness(c, v))} />)}
       <Slider label="Gamma" value={response.gamma} min={MIN_GAMMA} max={MAX_GAMMA} step={0.05} onChange={(gamma) => onChange({ ...response, gamma })} onCommit={(gamma) => onCommit(gamma === undefined ? response : { ...response, gamma })} />
     </>
   )
@@ -57,6 +58,10 @@ export function PaletteView({ show, block, onPatch, onResponse, onClose }: Props
   const [dragging, setDragging] = useState<ColorResponse | null>(null)
   const [selected, setSelected] = useState({ row: 0, step: 0 })
   const response = dragging ?? responseOf(show, profileId)
+  const profile = profiles.find((p) => p.id === profileId)!
+  const modes = show.blocks.flatMap((b) => (b.kind === 'fixture' && profileOf(b).id === profileId ? [fixtureMode(b)] : []))
+  const channels = modes.length ? modes.flatMap((m) => m.channels) : profile.attrs
+  const shown = [0, 1, 2, ...EXTRAS.flatMap(([key], n) => (channels.some((ch) => ch.attribute === key) ? [3 + n] : []))]
   const steps = Array.from({ length: block.steps }, (_, k) => k)
   const rows = (next: ColorsBlock['rows']) => onPatch({ rows: next })
   const setColor = (i: number, k: number, color: Color) => rows(block.rows.map((r, n) => (n === i ? { ...r, colors: steps.map((s) => (s === k ? color : r.colors[s] ?? BLACK)) } : r)))
@@ -65,7 +70,7 @@ export function PaletteView({ show, block, onPatch, onResponse, onClose }: Props
   const row = Math.min(selected.row, block.rows.length - 1)
   const step = Math.min(selected.step, block.steps - 1)
   const selectedColor = block.rows[row].colors[step] ?? BLACK
-  const calibration = previewLight(hexToRgb(selectedColor.hex), response)
+  const calibration = previewLight(colorValues(selectedColor), response, shown)
   const commitResponse = (r: ColorResponse) => {
     setDragging(null)
     if (JSON.stringify(r) !== JSON.stringify(responseOf(show, profileId))) onResponse(profileId, r)
@@ -96,11 +101,11 @@ export function PaletteView({ show, block, onPatch, onResponse, onClose }: Props
                 </div>
                 {steps.map((k) => {
                   const color = r.colors[k] ?? BLACK
-                  const { light, level } = previewLight(hexToRgb(color.hex), response)
+                  const { light, mix, level } = previewLight(colorValues(color), response, shown)
                   return (
                     <label key={k} className={`palette-cell${i === row && k === step ? ' selected' : ''}`} onClick={() => setSelected({ row: i, step: k })}>
-                      <input type="color" className="palette-swatch" value={color.hex} onChange={(e) => setColor(i, k, { ...color, hex: e.target.value })} />
-                      <Discs light={light} className="palette-light" />
+                      <input type="color" className="palette-swatch lit" style={litStyle(color)} value={color.hex} onChange={(e) => setColor(i, k, { ...color, hex: e.target.value })} />
+                      <Discs light={light} mix={mix} shown={shown} className="palette-light" />
                       <span>{dmxOf(color)}</span>
                       {extrasOf(color) && <span>{extrasOf(color)}</span>}
                       <span>light {percent(level)}</span>
@@ -120,13 +125,13 @@ export function PaletteView({ show, block, onPatch, onResponse, onClose }: Props
               {profiles.map((p) => <option key={p.id} value={p.id}>{p.label}{used.has(p.id) ? '' : ' · not in this show'}</option>)}
             </select>
           </div>
-          <Discs light={calibration.light} className="palette-calibrate" />
+          <Discs {...calibration} shown={shown} className="palette-calibrate" />
           <h4>White, amber, UV</h4>
           {EXTRAS.map(([key, , label]) => <Slider key={key} label={label} value={Math.round(selectedColor[key] * 255)} min={0} max={255} step={1} onChange={(v) => setColor(row, step, { ...selectedColor, [key]: v / 255 })} onCommit={(v) => v !== undefined && setColor(row, step, { ...selectedColor, [key]: v / 255 })} />)}
-          <div className="help">Sent as set to fixtures that have these channels (DMX 0–255); fixtures without them ignore them. Not shown in this preview.</div>
-          <div className="help">{block.rows[row].name} · index {step} on {profiles.find((p) => p.id === profileId)?.label}: DMX {dmxOf(selectedColor)}{extrasOf(selectedColor) && ` ${extrasOf(selectedColor)}`}, light {percent(calibration.level)}</div>
+          <div className="help">Sent as set to fixtures that have these channels (DMX 0–255); fixtures without them ignore them. The preview shows them only if this fixture type has them.</div>
+          <div className="help">{block.rows[row].name} · index {step} on {profile.label}: DMX {dmxOf(selectedColor)}{extrasOf(selectedColor) && ` ${extrasOf(selectedColor)}`}, light {percent(calibration.level)}</div>
           <div className="help">Put this colour on the real fixture and adjust LED brightness until the centre matches what you see. Raise gamma if low values look dimmer than expected. Only changes this preview, not the show.</div>
-          <ResponseEditor response={response} onChange={setDragging} onCommit={commitResponse} />
+          <ResponseEditor response={response} shown={shown} onChange={setDragging} onCommit={commitResponse} />
           <div className="help">Saved per fixture type in the show. Click a swatch to calibrate with it. Under each swatch is its light on that fixture, the DMX red, green and blue TD sends and its overall light level.</div>
           <div className="designer-actions">
             <button onClick={onClose}>close</button>

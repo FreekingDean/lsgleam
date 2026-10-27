@@ -1,4 +1,5 @@
 import type { FixtureProfile } from './fixtures'
+import { TINTS } from './ofl'
 import { type Color, type Show, type ColorResponse, NO_RESPONSE } from './show'
 
 const FOOT = 0.3048
@@ -28,8 +29,12 @@ export const BLACK = colorOf('#000000')
 export const isRgb = (p: FixtureProfile) => p.color
 export const responseOf = (show: Show, profile: string) => show.responses?.[profile] ?? NO_RESPONSE
 export const toSrgb = (l: number) => (l <= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055)
-export const previewLight = (rgb: number[], r: ColorResponse) => {
-  const light = rgb.map((v, c) => v ** r.gamma * r.multiplier[c])
-  const level = Math.max(...light)
-  return { light: light.map((l) => l / Math.max(1, level)), level }
+export const EMITTERS = [[1, 0, 0], [0, 1, 0], [0, 0, 1], TINTS.white, TINTS.amber, TINTS.uv]
+const mixOf = (values: number[]) => [0, 1, 2].map((i) => values.reduce((sum, v, c) => sum + v * EMITTERS[c][i], 0))
+export const litHex = (c: Color) => rgbToHex(mixOf(colorValues(c)))
+export const previewLight = (values: number[], r: ColorResponse, shown: number[]) => {
+  const light = values.map((v, c) => (shown.includes(c) ? v ** r.gamma * r.multiplier[c] : 0))
+  const level = Math.max(...mixOf(light))
+  const scale = Math.max(1, level)
+  return { light: light.map((l) => l / scale), mix: mixOf(light).map((m) => m / scale), level }
 }

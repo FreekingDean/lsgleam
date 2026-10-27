@@ -82,8 +82,8 @@ export type Cable = { from: string; fromPort: string; to: string; port: string }
 export type Show = { nextId: number; blocks: Block[]; wires: Wire[]; cables: Cable[]; rails?: Record<string, { x: number; y: number }>; designs?: TubeDesign[]; profiles?: StoredProfile[]; responses?: Record<string, ColorResponse>; floors?: Floor[]; visualiser?: string }
 export type FloorPlan = { src: string; x: number; z: number; width: number; height: number; rotation: number; opacity: number; locked: boolean }
 export type Floor = { id: string; name: string; elevation: number; floorplan?: FloorPlan }
-export type ColorResponse = { multiplier: [number, number, number]; gamma: number }
-export const NO_RESPONSE: ColorResponse = { multiplier: [1, 1, 1], gamma: 1 }
+export type ColorResponse = { multiplier: number[]; gamma: number }
+export const NO_RESPONSE: ColorResponse = { multiplier: [1, 1, 1, 1, 1, 1], gamma: 1 }
 
 export const EMPTY_SHOW: Show = { nextId: 1, blocks: [], wires: [], cables: [] }
 export const SELECTOR_ID = 'lsgleam_scene'

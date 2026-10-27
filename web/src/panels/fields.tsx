@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { EXTRAS, parseLength } from '../model/format'
+import { useState, type CSSProperties } from 'react'
+import { EXTRAS, litHex, parseLength } from '../model/format'
 import type { Color } from '../model/show'
 
 export function Field({ label, value, onCommit, type = 'text', step, placeholder }: { label: string; value: string | number; onCommit: (v: string) => void; type?: string; step?: number; placeholder?: string }) {
@@ -36,6 +36,8 @@ export function NumberBox({ value, onCommit, max = 1 }: { value: number; onCommi
     />
   )
 }
+
+export const litStyle = (c: Color) => ({ '--lit': litHex(c) }) as CSSProperties
 
 export function ColorExtras({ value, onCommit, disabled }: { value: Color; onCommit: (c: Color) => void; disabled?: boolean }) {
   return (

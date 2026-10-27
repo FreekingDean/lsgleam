@@ -1,4 +1,4 @@
-import { ColorExtras, NumberBox, NumField } from '../panels/fields'
+import { ColorExtras, NumberBox, NumField, litStyle } from '../panels/fields'
 import { memberPort, POSITION_PORT, profileOf, type GroupPosition } from '../model/show'
 import { type Props, Slider, PatternFields, Wired } from '../panels/shared'
 import { type GroupBlock, type Wipe, type WipeOrder, COLOR_B_PORT, fixturesOf, PROGRESS_PORT, WIPE_OFF, WIPE_ORDERS } from './group'
@@ -49,7 +49,7 @@ function WipeFields({ block, driven, onPatch }: Props & { block: GroupBlock }) {
             <div className="par">
               <label>Colour B</label>
               <span className="color-field">
-                <input type="color" key={wipe.colorB.hex} defaultValue={wipe.colorB.hex} onBlur={(e) => e.target.value !== wipe.colorB.hex && set({ colorB: { ...wipe.colorB, hex: e.target.value } })} />
+                <input type="color" className="lit" style={litStyle(wipe.colorB)} key={wipe.colorB.hex} defaultValue={wipe.colorB.hex} onBlur={(e) => e.target.value !== wipe.colorB.hex && set({ colorB: { ...wipe.colorB, hex: e.target.value } })} />
                 <ColorExtras value={wipe.colorB} onCommit={(colorB) => set({ colorB })} />
               </span>
             </div>

@@ -355,6 +355,6 @@ export function decode(mode: CompiledMode, dmx: number[]): Record<string, number
   return out
 }
 
-const TINTS: Record<string, number[]> = { white: [1, 1, 1], amber: [1, 0.75, 0], uv: [0.4, 0, 1] }
+export const TINTS = { white: [1, 1, 1], amber: [1, 0.75, 0], uv: [0.2, 0, 0.5] }
 
 const hexRgb = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16) / 255)

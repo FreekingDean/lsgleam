@@ -215,9 +215,6 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .palette-cell.selected .palette-light { outline: 2px solid var(--accent); }
 .discs { position: relative; aspect-ratio: 1; background: #000; border-radius: 4px; overflow: hidden; isolation: isolate; }
 .discs span { position: absolute; width: 56%; aspect-ratio: 1; transform: translate(-50%, -50%); mix-blend-mode: screen; }
-.discs span:nth-child(1) { left: 37%; top: 40%; }
-.discs span:nth-child(2) { left: 63%; top: 40%; }
-.discs span:nth-child(3) { left: 50%; top: 62.5%; }
 .palette-light { width: 64px; }
 .palette-calibrate { width: 100%; margin: 8px 0; }
 .palette-view .palette-swatch { width: 64px; height: 48px; padding: 0; border: 1px solid var(--border); border-radius: 4px; background: none; }
@@ -346,6 +343,8 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .react-flow__node.other-floor { opacity: 0.3; }
 .color-field { display: flex; gap: 6px; align-items: center; min-width: 0; }
 .color-field input[type=color] { flex: 0 0 40px; padding: 0; height: 24px; border: none; background: none; }
+input.lit::-webkit-color-swatch { background: var(--lit) !important; }
+input.lit::-moz-color-swatch { background: var(--lit) !important; }
 .color-extras { display: flex; gap: 4px; align-items: center; min-width: 0; }
 .color-extras label { flex: none; display: flex; align-items: center; gap: 2px; font-size: 10px; color: var(--muted); }
 .color-extras label input { flex: 0 0 40px; width: 40px; min-width: 40px; padding: 1px 2px; font-size: 11px; }

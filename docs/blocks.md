@@ -66,7 +66,7 @@ Port types: **signal** (0–1: energy, fader, on/off), **index** (whole number: 
 | Pattern (fan-out) | Spreads one signal over N slots by a pattern (all, alternate, chase, outside in, fill…). | Slots, mode, advance (by step or on each trigger), every N, minimum |
 | Range (signal × amount → window) | Squeezes a signal into a brightness window that widens with `amount`. | Tame min/max, wild min/max |
 | Add (offset) | Adds an amount: index + 1 picks the next colour. | Amount |
-| Colours (index → named colours) | A table of named colours, one column per index (e.g. per song or section). Each colour is RGB plus White, Amber and UV (DMX 0–255), sent as set; a fixture uses the ones it has. Double-click for the palette view. | Rows, steps |
+| Colours (index → named colours) | A table of named colours, one column per index (e.g. per song or section). Each colour is RGB plus White, Amber and UV (DMX 0–255), sent as set; a fixture uses the ones it has. Double-click for the palette view, which previews each colour as light on a chosen fixture type (W/A/UV only if it has them). | Rows, steps |
 | Values (index → named numbers) | The same for numbers, e.g. per-section minimums. | Rows, steps |
 | Composite (your own block) | Double-click to build it from inputs, blocks and outputs inside. | – |
 
