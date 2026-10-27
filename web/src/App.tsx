@@ -13,7 +13,7 @@ import { setDesign, placeUnit, copyBlocks, diffShows, pasteBlocks, moveScene, ne
 import { addWire, canWire, drivenPorts, outOfRooms, removeWires } from './model/wiring'
 import { downstream, repatch } from './model/patch'
 import { FIXTURES, compiledOf, setCustomProfiles, type StoredProfile } from './model/fixtures'
-import { addComposite, addDesign, addPalette, setProfile, type ColorPalette } from './model/library'
+import { addComposite, addDesign, addPalette, retype, setProfile, type ColorPalette } from './model/library'
 import { LibraryView } from './views/LibraryView'
 import { ProfileEditor } from './views/ProfileEditor'
 import { BlockNode, RailNode, ZoneNode, type FlowNode } from './editor/BlockNode'
@@ -503,6 +503,10 @@ function Editor() {
       return
     }
     const prev = showRef.current.blocks.find((b) => b.id === selectedId)
+    if (block.kind === 'fixture' && 'profile' in patch) {
+      commitDiff(retype(showRef.current, [selectedId], block.profile))
+      return
+    }
     if (block.kind === 'tubeset') {
       commitDiff(next)
       return
@@ -619,10 +623,14 @@ function Editor() {
   const setValue = useCallback((key: string, value: number, member?: string) => { if (sel) setValueOf(sel, key, value, member) }, [sel, setValueOf])
 
   const patchMany = useCallback((patches: [string, Partial<Block>][]) => {
+    if (patches.length && patches.every(([, p]) => 'profile' in p)) {
+      commitDiff(retype(showRef.current, patches.map(([id]) => id), (patches[0][1] as { profile: string }).profile))
+      return
+    }
     let next = showRef.current
     for (const [id, patch] of patches) next = patchBlock(next, id, patch)
     commit(next, () => rebuild(next, patches.map(([id]) => id)))
-  }, [commit, rebuild])
+  }, [commit, commitDiff, rebuild])
 
   const placeMany = useCallback((placements: [string, Placement, boolean | undefined][]) => {
     let next = showRef.current

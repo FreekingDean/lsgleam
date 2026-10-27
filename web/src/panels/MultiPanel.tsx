@@ -1,7 +1,8 @@
 import { NumberBox } from './fields'
 import { RotateButtons } from './Placement'
 import { turned } from '../model/rotation'
-import { INPUT_TYPES, hasProfile, profileOf, type Block, type Placement, type Show } from '../model/show'
+import { allProfiles } from '../model/fixtures'
+import { INPUT_TYPES, hasProfile, profileOf, type Block, type FixtureBlock, type Placement, type Show } from '../model/show'
 import { PATTERN_MODES } from '../model/catalog'
 import { ceilingAt, onWall, unitsOf, type Unit } from '../model/units'
 import { parseLength } from '../model/format'
@@ -84,6 +85,22 @@ function PlacementFields({ show, units, onPlace }: { show: Show; units: Unit[]; 
   )
 }
 
+function FixtureType({ blocks, onPatch }: { blocks: Block[]; onPatch: Props['onPatch'] }) {
+  const fixtures = blocks.filter((b) => b.kind === 'fixture')
+  if (!fixtures.length || fixtures.length !== blocks.length) return null
+  const ids = fixtures.map((b) => (b as FixtureBlock).profile)
+  const mixed = !same(ids)
+  return (
+    <div className={`par${mixed ? ' mixed' : ''}`}>
+      <label>Type</label>
+      <select value={mixed ? '' : ids[0]} onChange={(e) => e.target.value && onPatch(fixtures.map((b) => [b.id, { profile: e.target.value }]))}>
+        {mixed && <option value="">mixed</option>}
+        {allProfiles().map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+      </select>
+    </div>
+  )
+}
+
 function SharedParams({ blocks, onPatch }: { blocks: Block[]; onPatch: Props['onPatch'] }) {
   const records = blocks.map((b) => b as unknown as Record<string, unknown>)
   const kinds = new Set(blocks.map((b) => b.kind))
@@ -151,6 +168,7 @@ export function MultiPanel({ show, ids, layout, onPatch, onPlace, onValue }: Pro
   return (
     <>
       {units.length > 1 && <PlacementFields show={show} units={units} onPlace={onPlace} />}
+      {blocks.length > 0 && <FixtureType blocks={blocks} onPatch={onPatch} />}
       {blocks.length > 0 && <SharedParams blocks={blocks} onPatch={onPatch} />}
       {blocks.length > 0 && <Channels blocks={blocks} onValue={onValue} />}
       <div className="help">Settings every selected node has. Greyed fields differ between them; editing one sets it on all.</div>

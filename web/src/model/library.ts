@@ -1,9 +1,9 @@
-import { FIXTURES, compiledOf, setCustomProfiles, type StoredProfile } from './fixtures'
+import { FIXTURES, compiledOf, findProfile, modeOf, setCustomProfiles, type StoredProfile } from './fixtures'
 import { compile, unresolved } from './ofl'
 import { isLegacy, legacyFixture } from './migrate'
 import { normalize } from './migrate'
 import { toColor } from './format'
-import { LAYOUT_KINDS, PIXEL_PROTOCOLS, hasProfile, type Block, type Color, type ColorRow, type Show, type TubeDesign } from './show'
+import { LAYOUT_KINDS, PIXEL_PROTOCOLS, hasProfile, type Block, type Color, type FixtureBlock, type ColorRow, type Show, type TubeDesign } from './show'
 import { copyBlocks, newBlock, pasteBlocks, patchBlock, type Clip } from './edit'
 
 export type ColorPalette = { name: string; steps: number; rows: ColorRow[] }
@@ -145,6 +145,19 @@ export function setProfile(show: Show, profile: StoredProfile): Show {
     const values = Object.fromEntries(next.attrs.map((a) => [a.key, b.values[a.key] ?? a.default]))
     return patchBlock(s, b.id, b.kind === 'fixture' ? { values, mode: next.modes.some((m) => m.name === b.mode) ? b.mode : next.modes[0].name } : { values })
   }, { ...show, profiles })
+}
+
+export function retype(show: Show, ids: string[], profile: string): Show {
+  const next = findProfile(profile)
+  const fixtures = show.blocks.filter((b): b is FixtureBlock => b.kind === 'fixture' && ids.includes(b.id) && b.profile !== profile)
+  const gone = new Set(fixtures.map((b) => b.id))
+  const retyped = fixtures.reduce<Show>((s, b) => {
+    const count = modeOf(findProfile(b.profile), b.mode).channels.length
+    const mode = [...next.modes].sort((x, y) => Math.abs(x.channels.length - count) - Math.abs(y.channels.length - count))[0]
+    const values = Object.fromEntries(next.attrs.map((a) => [a.key, b.values[a.key] ?? a.default]))
+    return patchBlock(s, b.id, { profile, mode: mode.name, values })
+  }, show)
+  return { ...retyped, wires: retyped.wires.filter((w) => !gone.has(w.to)) }
 }
 
 export const addDesign = (show: Show, design: TubeDesign): Show => ({ ...show, nextId: show.nextId + 1, designs: [...(show.designs ?? []), { ...design, id: `design${show.nextId}` }] })

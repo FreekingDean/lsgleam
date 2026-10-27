@@ -50,6 +50,8 @@ For more types:
 
 A fixture's panel has its **Mode** (the channel count), its **Address**, and sliders for its own values. Those values are what it shows when no scene is driving it.
 
+To swap fixtures to another type, pick it under **Type** in the fixture panel, or select several fixtures on the layout and set **Type** once for all of them. Name, place and address stay, values carry over where both types have the channel, and the mode with the closest channel count is picked. The fixtures' patches are cleared, so repatch them from each scene's patch panel; overlap warnings flag any address clashes. To swap to a type not in the list, add it first with **library → Open Fixture Library**.
+
 A mode without a dimmer channel still gets an **Intensity** input: TouchDesigner multiplies every colour channel (red, green, blue, white, amber, UV) by it, so you dim it like any other fixture. Inputs for channels the current mode lacks stay wireable and do nothing until you switch to a mode that has them.
 
 ![Fixture panel](images/fixture-panel.png)
