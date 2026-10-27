@@ -1,4 +1,4 @@
-import { NumberBox, NumField } from '../panels/fields'
+import { ColorExtras, NumberBox, NumField } from '../panels/fields'
 import { memberPort, POSITION_PORT, profileOf, type GroupPosition } from '../model/show'
 import { type Props, Slider, PatternFields, Wired } from '../panels/shared'
 import { type GroupBlock, type Wipe, type WipeOrder, COLOR_B_PORT, fixturesOf, PROGRESS_PORT, WIPE_OFF, WIPE_ORDERS } from './group'
@@ -48,7 +48,10 @@ function WipeFields({ block, driven, onPatch }: Props & { block: GroupBlock }) {
           <Wired label="Colour B" wired={driven.has(COLOR_B_PORT)}>
             <div className="par">
               <label>Colour B</label>
-              <input type="color" key={wipe.colorB} defaultValue={wipe.colorB} onBlur={(e) => e.target.value !== wipe.colorB && set({ colorB: e.target.value })} />
+              <span className="color-field">
+                <input type="color" key={wipe.colorB.hex} defaultValue={wipe.colorB.hex} onBlur={(e) => e.target.value !== wipe.colorB.hex && set({ colorB: { ...wipe.colorB, hex: e.target.value } })} />
+                <ColorExtras value={wipe.colorB} onCommit={(colorB) => set({ colorB })} />
+              </span>
             </div>
           </Wired>
           <div className="par">

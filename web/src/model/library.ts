@@ -2,7 +2,8 @@ import { FIXTURES, compiledOf, setCustomProfiles, type StoredProfile } from './f
 import { compile, unresolved } from './ofl'
 import { isLegacy, legacyFixture } from './migrate'
 import { normalize } from './migrate'
-import { LAYOUT_KINDS, PIXEL_PROTOCOLS, hasProfile, type Block, type ColorRow, type Show, type TubeDesign } from './show'
+import { toColor } from './format'
+import { LAYOUT_KINDS, PIXEL_PROTOCOLS, hasProfile, type Block, type Color, type ColorRow, type Show, type TubeDesign } from './show'
 import { copyBlocks, newBlock, pasteBlocks, patchBlock, type Clip } from './edit'
 
 export type ColorPalette = { name: string; steps: number; rows: ColorRow[] }
@@ -20,6 +21,8 @@ function fail(message: string): never {
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 const isText = (v: unknown): v is string => typeof v === 'string' && v.trim() !== ''
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
+const isLevel = (v: unknown) => isNum(v) && v >= 0 && v <= 1
+const isColor = (c: unknown) => (typeof c === 'string' ? HEX.test(c) : isObj(c) && typeof c.hex === 'string' && HEX.test(c.hex) && isLevel(c.white) && isLevel(c.amber) && isLevel(c.uv))
 const listOf = (v: unknown, what: string): unknown[] => (Array.isArray(v) ? v : fail(`${what} must be a list`))
 
 export function profileError(p: StoredProfile): string | null {
@@ -71,8 +74,8 @@ function parsePalette(raw: unknown, what: string): ColorPalette {
   const rows = listOf(raw.rows, `${what} rows`).map((r, i) => {
     if (!isObj(r) || typeof r.name !== 'string') fail(`${what} row ${i + 1} needs a name`)
     const colors = listOf(r.colors, `${what} row ${i + 1} colours`)
-    if (!colors.every((c) => typeof c === 'string' && HEX.test(c))) fail(`${what} row ${i + 1}: colours must be #rrggbb`)
-    return { name: r.name, colors: colors as string[] }
+    if (!colors.every(isColor)) fail(`${what} row ${i + 1}: colours must be #rrggbb or { hex, white, amber, uv }`)
+    return { name: r.name, colors: colors.map((c) => toColor(c as Color | string)) }
   })
   if (!rows.length) fail(`${what} has no rows`)
   return { name: raw.name, steps: raw.steps as number, rows }

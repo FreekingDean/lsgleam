@@ -1,4 +1,4 @@
-import { type Block, type Wire, type Show, SOURCE_KINDS, FIXTURE_PORT, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, RGB_ATTRS, LOOK_ATTRS, profileOf } from './show'
+import { type Block, type Wire, type Show, SOURCE_KINDS, FIXTURE_PORT, POSITION_PORT, PATTERN_PORT, LOOK_PORT, COLOR_PORT, COLOR_ATTRS, RGB_ATTRS, LOOK_ATTRS, isLight, profileOf } from './show'
 import { pruneWires, inputPorts, outputPorts, blockHeight } from './ports'
 import { ELEMENT_TYPES, blockDef } from '../blocks'
 import { inRooms } from './units'
@@ -7,6 +7,7 @@ export function drivenPorts(show: Show, id: string, tab: string | null) {
   const block = show.blocks.find((b) => b.id === id)
   const wired = new Set(show.wires.filter((w) => w.to === id && (w.scene ?? null) === tab).map((w) => w.port))
   if (block) for (const [port, channels] of exclusions(block)) if (wired.has(port)) for (const ch of channels) wired.add(ch)
+  if (block && isLight(block) && (wired.has(LOOK_PORT) || wired.has(COLOR_PORT))) for (const ch of COLOR_ATTRS) wired.add(ch)
   return wired
 }
 

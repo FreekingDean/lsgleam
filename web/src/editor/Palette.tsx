@@ -33,7 +33,7 @@ const INPUTS: Category = { title: 'Inputs (from outside)', items: [
   { label: 'Signal (0–1: energy, fader, on/off)', item: { kind: 'input', type: 'signal' } },
   { label: 'Index (whole number: beat, song, step)', item: { kind: 'input', type: 'index' } },
   { label: 'Number (raw value: BPM, pitch)', item: { kind: 'input', type: 'number' } },
-  { label: 'Colour (Red, Green, Blue)', item: { kind: 'input', type: 'color' } },
+  { label: 'Colour (R, G, B, W, A, UV)', item: { kind: 'input', type: 'color' } },
   { label: 'Multichannel (several signals on one wire)', item: { kind: 'input', type: 'multi' } },
 ] }
 
@@ -55,7 +55,7 @@ const scene = (profiles: FixtureProfile[]): Tab[] => [
     { label: 'Index (whole number: beat, song, step)', item: { kind: 'input', type: 'index' } },
     { label: 'Audio (raw sound, for Level)', item: { kind: 'input', type: 'audio' } },
     { label: 'Number (raw value: BPM, pitch)', item: { kind: 'input', type: 'number' } },
-    { label: 'Colour (Red, Green, Blue)', item: { kind: 'input', type: 'color' } },
+    { label: 'Colour (R, G, B, W, A, UV)', item: { kind: 'input', type: 'color' } },
     { label: 'Multichannel (several signals on one wire)', item: { kind: 'input', type: 'multi' } },
   ] }] },
   { title: 'Outputs', sections: [{ title: 'Outputs', items: [...profiles.flatMap((f) => [{ label: `${f.label} out`, item: { kind: 'light', profile: f.id } as PaletteItem }, { label: `${f.label} group out`, item: { kind: 'group', profile: f.id } as PaletteItem }]), defined('strip')] }, { title: 'Values (for OSC out)', items: [

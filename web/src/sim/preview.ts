@@ -1,4 +1,4 @@
-import { FIXTURE_PORT, isLight, profileOf, type FixtureBlock, type LightBlock, type GroupBlock, type Show, type StripBlock, type TubeBlock } from '../model/show'
+import { COLOR_ATTRS, FIXTURE_PORT, isLight, profileOf, type FixtureBlock, type LightBlock, type GroupBlock, type Show, type StripBlock, type TubeBlock } from '../model/show'
 import { valuePairs } from '../model/fixtures'
 import { encode } from '../model/ofl'
 import { hexToRgb } from '../model/format'
@@ -60,7 +60,7 @@ export function previewDmx(show: Show, scene: string): DmxValues {
     const aims = light?.kind === 'group' && member !== undefined ? light.aims[member] ?? {} : {}
     const aimed = light ? profileOf(light).position ?? [] : []
     const values = { ...valuesOf(fixture), ...(light ? valuesOf(light) : {}), ...Object.fromEntries(aimed.flatMap((k) => (aims[k] === undefined ? [] : [[k, aims[k]]]))) }
-    if (light?.kind === 'group' && member !== undefined && wipeOn(light)) [values.red, values.green, values.blue] = wipeMix(light, wipeRanks(show, light)[Number(member)], [values.red ?? 1, values.green ?? 1, values.blue ?? 1])
+    if (light?.kind === 'group' && member !== undefined && wipeOn(light)) wipeMix(light, wipeRanks(show, light)[Number(member)], COLOR_ATTRS.map((a, i) => values[a] ?? (i < 3 ? 1 : 0))).forEach((v, i) => { values[COLOR_ATTRS[i]] = v })
     const u = universe(`${f.node}:${f.universe}`)
     encode(f.mode, values).forEach((v, i) => {
       const at = f.address - 1 + i

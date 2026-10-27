@@ -1,11 +1,11 @@
 def wipe_sides(c, by_port, values, wipe):
     a = by_port.pop('color', None)
     if a is None:
-        a = constant(c, 'wipe_a', [(n, values.get(n, 1)) for n in ('red', 'green', 'blue')])
+        a = constant(c, 'wipe_a', [(n, values.get(n, 1 if n in ('red', 'green', 'blue') else 0)) for n in COLOR_ATTRS])
         a.nodeX, a.nodeY = -900, 700
     other = by_port.pop('colorB', None)
     if other is None:
-        other = constant(c, 'wipe_b', list(zip(('red', 'green', 'blue'), wipe['color'])))
+        other = constant(c, 'wipe_b', list(zip(COLOR_ATTRS, wipe['color'])))
     else:
         other = as_attrs(c, 'colorB', other)
     other.nodeX, other.nodeY = -900, 800
@@ -53,7 +53,7 @@ def build_group(b, pairs, pos, wheel, sources, masks, members, wipe=None):
     look = by_port.pop('look', None)
     if look is not None:
         colors = c.create(selectCHOP, 'look_colors')
-        colors.par.channames = 'Red Green Blue'
+        colors.par.channames = ' '.join(COLOR_CHANS)
         look_dim = c.create(selectCHOP, 'look_dimmer')
         look_dim.par.channames = 'Dimmer'
         colors.nodeX, look_dim.nodeX = -900, -900
@@ -79,7 +79,7 @@ def build_group(b, pairs, pos, wheel, sources, masks, members, wipe=None):
             own['color'] = wipe_member(c, p, wipe, a, diff, progress, wipe['ranks'][i], len(members), y)
             if wheel:
                 own['color_wheel'] = wheel_pick(c, p + 'wipe', own['color'], wheel)
-        feeds = [own.get(port, end) for port, end in by_port.items() if port in names or port in ('look', 'color', 'look_wheel', 'color_wheel')]
+        feeds = [own.get(port, end) for port, end in sorted(by_port.items(), key=lambda kv: kv[0] not in COLOR_FEEDS) if port in names or port in COLOR_FEEDS]
         if slots is not None:
             sel = c.create(selectCHOP, p + 'slot')
             sel.par.channames = 'slot%d' % (i + 1)

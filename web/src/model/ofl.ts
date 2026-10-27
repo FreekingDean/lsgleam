@@ -351,8 +351,10 @@ export function decode(mode: CompiledMode, dmx: number[]): Record<string, number
   })
   if (mode.channels.some((ch) => ch.encoding.type === 'hue')) [out.red, out.green, out.blue] = hsvToRgb(hsv[0], hsv[1], 1)
   if (wheel && out.red === undefined) [out.red, out.green, out.blue] = hexRgb(wheel)
-  if (out.white) for (const a of RGB) out[a] = clip((out[a] ?? 0) + out.white)
+  for (const [a, tint] of Object.entries(TINTS)) if (out[a]) RGB.forEach((c, i) => { out[c] = clip((out[c] ?? 0) + out[a] * tint[i]) })
   return out
 }
+
+const TINTS: Record<string, number[]> = { white: [1, 1, 1], amber: [1, 0.75, 0], uv: [0.4, 0, 1] }
 
 const hexRgb = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16) / 255)

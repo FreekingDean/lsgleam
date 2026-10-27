@@ -11,8 +11,8 @@ def build_scenes(b, sources, looks):
         by_port['offset'].outputConnectors[0].connect(shifted.inputConnectors[1])
         index = shifted
     sw, wrap, counter = indexed_switch(c, 'scene', index, by_port.get('next'), len(looks), 0, b['every'])
-    for k, (r, g, bl, lo, hi) in enumerate(looks):
-        const = constant(c, 'scene%d' % (k + 1), [('Red', r), ('Green', g), ('Blue', bl), ('lo', lo), ('hi', hi)])
+    for k, (color, lo, hi) in enumerate(looks):
+        const = constant(c, 'scene%d' % (k + 1), list(zip(COLOR_CHANS, color)) + [('lo', lo), ('hi', hi)])
         const.nodeX, const.nodeY = 0, 100 + k * 100
         const.outputConnectors[0].connect(sw)
     wild = by_port.get('wild') or constant(c, 'nowild', [('wild', 0)])
@@ -23,7 +23,7 @@ def build_scenes(b, sources, looks):
     wild.outputConnectors[0].connect(calm.inputConnectors[0])
     colors = by_port.get('color') or c.create(selectCHOP, 'colors')
     if 'color' not in by_port:
-        colors.par.channames = 'Red Green Blue'
+        colors.par.channames = ' '.join(COLOR_CHANS)
     lo = c.create(selectCHOP, 'lo')
     lo.par.channames = 'lo'
     hi = c.create(selectCHOP, 'hi')

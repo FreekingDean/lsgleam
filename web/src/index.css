@@ -344,3 +344,10 @@ header .toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; 
 .floor-tabs button { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; font: inherit; cursor: pointer; }
 .floor-tabs button.on, .floorplan-tools button.on { border-color: var(--accent); color: var(--accent); }
 .react-flow__node.other-floor { opacity: 0.3; }
+.color-field { display: flex; gap: 6px; align-items: center; min-width: 0; }
+.color-field input[type=color] { flex: 0 0 40px; padding: 0; height: 24px; border: none; background: none; }
+.color-extras { display: flex; gap: 4px; align-items: center; min-width: 0; }
+.color-extras label { display: flex; align-items: center; gap: 2px; font-size: 10px; color: var(--muted); }
+.color-extras label input { width: 40px; min-width: 0; padding: 1px 2px; font-size: 11px; }
+.color-steps .color-extras { flex-direction: column; align-items: flex-end; }
+.look > .color-extras { margin-top: 6px; }

@@ -1,7 +1,7 @@
 def build_mix(b, sources):
     c = new_block(b)
     by_port = ports(c, sources)
-    blank = [('Red', 0), ('Green', 0), ('Blue', 0)] if b['type'] == 'color' else [('out', 0)]
+    blank = [(n, 0) for n in COLOR_CHANS] if b['type'] == 'color' else [('out', 0)]
     a = by_port.get('a') or constant(c, 'noa', blank)
     z = by_port.get('b') or constant(c, 'nob', blank)
     m = by_port.get('mix') or constant(c, 'nomix', [('mix', 0)])

@@ -6,6 +6,7 @@ import { blockHeight, hasInput, inputPorts, outputPorts } from './ports'
 import { pathLength } from './geometry'
 import { pruneCables } from './units'
 import { FLOOR_1 } from './floors'
+import { toColor } from './format'
 
 const LEGACY_KINDS: Record<string, Kind> = { scenes: 'looks' }
 const LIGHT_KINDS = ['fixture', 'group']
@@ -319,7 +320,9 @@ export function normalize(raw: Partial<Show>): Show {
     if (sized.kind === 'drop') sized.beats = sized.beats ?? 12
     if (sized.kind === 'strip') Object.assign(sized, { stops: sized.stops ?? [{ at: 0, color: '#ff2060' }, { at: 1, color: '#2060ff' }], spread: sized.spread ?? 0, along: sized.along ?? 'tube' })
     if (sized.kind === 'tube') sized.length = sized.length ?? Math.round(pathLength(sized.path) * 1000) / 1000
-    if (sized.kind === 'looks') sized.scenes = sized.scenes.map(({ level, ...s }: Scene & { level?: number }) => ({ ...s, window: s.window ?? [0, level ?? 1] }))
+    if (sized.kind === 'looks') sized.scenes = sized.scenes.map(({ level, ...s }: Scene & { level?: number }) => ({ ...s, color: toColor(s.color), window: s.window ?? [0, level ?? 1] }))
+    if (sized.kind === 'colors') sized.rows = sized.rows.map((r) => ({ ...r, colors: r.colors.map(toColor) }))
+    if (sized.kind === 'group' && sized.wipe) sized.wipe = { ...sized.wipe, colorB: toColor(sized.wipe.colorB) }
     if (sized.kind === 'audio') Object.assign(sized, { channels: sized.channels ?? Math.max(2, raw.cables?.filter((c) => c.to === sized.id).length ?? 0), stereo: sized.stereo ?? false })
     if (sized.kind === 'combine' || sized.kind === 'split') {
       const { channels: _channels, names, ...rest } = sized as typeof sized & { channels?: number; names?: string[] | Record<string, string> }

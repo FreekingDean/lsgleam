@@ -1,4 +1,5 @@
 import { BLOCKS } from '../blocks'
+import { COLOR_ATTRS, COLOR_CHANS } from '../model/show'
 
 export const j = (v: unknown) => `json.loads(${JSON.stringify(JSON.stringify(v))})`
 
@@ -9,6 +10,9 @@ import td
 
 ROOT = op('/project1')
 SHOW_DAT = 'lsgleam_show'
+COLOR_CHANS = ${JSON.stringify(COLOR_CHANS)}
+COLOR_ATTRS = ${JSON.stringify(COLOR_ATTRS)}
+COLOR_FEEDS = ('look', 'color', 'look_wheel', 'color_wheel')
 
 def home():
     ls = ROOT.op('lsgleam')
@@ -549,8 +553,8 @@ def wheel_pick(c, name, rgb, wheel):
 
 def as_attrs(c, name, end):
     ren = c.create(renameCHOP, name + '_attrs')
-    ren.par.renamefrom = 'Red Green Blue Dimmer'
-    ren.par.renameto = 'red green blue intensity'
+    ren.par.renamefrom = ' '.join(COLOR_CHANS + ['Dimmer'])
+    ren.par.renameto = ' '.join(COLOR_ATTRS + ['intensity'])
     ren.nodeX, ren.nodeY = end.nodeX + 100, end.nodeY
     end.outputConnectors[0].connect(ren.inputConnectors[0])
     return ren

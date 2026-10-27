@@ -23,7 +23,7 @@ const profileDetail = (p: StoredProfile) => {
 const NO_PICKS: Picks = { fixtures: [], designs: [], palettes: [], composites: [] }
 
 function Swatches({ palette }: { palette: ColorPalette }) {
-  return <span className="library-swatches">{palette.rows[0].colors.slice(0, palette.steps).map((c, i) => <span key={i} style={{ background: c }} />)}</span>
+  return <span className="library-swatches">{palette.rows[0].colors.slice(0, palette.steps).map((c, i) => <span key={i} style={{ background: c.hex }} />)}</span>
 }
 
 function Item({ label, detail, onUse }: { label: ReactNode; detail: string; onUse: () => void }) {

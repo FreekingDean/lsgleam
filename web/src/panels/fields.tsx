@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { parseLength } from '../model/format'
+import { EXTRAS, parseLength } from '../model/format'
+import type { Color } from '../model/show'
 
 export function Field({ label, value, onCommit, type = 'text', step, placeholder }: { label: string; value: string | number; onCommit: (v: string) => void; type?: string; step?: number; placeholder?: string }) {
   const [text, setText] = useState(String(value))
@@ -33,5 +34,28 @@ export function NumberBox({ value, onCommit, max = 1 }: { value: number; onCommi
       onBlur={(e) => { const v = Math.max(0, Math.min(max, Number(e.target.value))); if (!Number.isNaN(v) && v !== value) onCommit(v) }}
       onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
     />
+  )
+}
+
+export function ColorExtras({ value, onCommit, disabled }: { value: Color; onCommit: (c: Color) => void; disabled?: boolean }) {
+  return (
+    <span className="color-extras">
+      {EXTRAS.map(([key, short, label]) => (
+        <label key={key} title={`${label}, DMX 0–255`}>
+          {short}
+          <input
+            type="number"
+            min={0}
+            max={255}
+            step={1}
+            disabled={disabled}
+            key={value[key]}
+            defaultValue={Math.round(value[key] * 255)}
+            onBlur={(e) => { const v = Math.max(0, Math.min(255, Math.round(Number(e.target.value)))) / 255; if (!Number.isNaN(v) && v !== value[key]) onCommit({ ...value, [key]: v }) }}
+            onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+          />
+        </label>
+      ))}
+    </span>
   )
 }

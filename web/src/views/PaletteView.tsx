@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { allProfiles } from '../model/fixtures'
 import { NumberBox } from '../panels/fields'
-import { hexToRgb, isRgb, previewLight, responseOf, rgbToHex, toSrgb } from '../model/format'
-import { profileOf, type ColorResponse, type ColorsBlock, type Show } from '../model/show'
+import { BLACK, EXTRAS, colorOf, hexToRgb, isRgb, previewLight, responseOf, rgbToHex, toSrgb } from '../model/format'
+import { profileOf, type Color, type ColorResponse, type ColorsBlock, type Show } from '../model/show'
 
 type Props = { show: Show; block: ColorsBlock; onPatch: (patch: Partial<ColorsBlock>) => void; onResponse: (profile: string, response: ColorResponse) => void; onClose: () => void }
 
@@ -35,7 +35,8 @@ function Discs({ light, className }: { light: number[]; className: string }) {
   )
 }
 
-const dmxOf = (color: string) => hexToRgb(color).map((v) => Math.round(v * 255)).join(' ')
+const dmxOf = (color: Color) => hexToRgb(color.hex).map((v) => Math.round(v * 255)).join(' ')
+const extrasOf = (color: Color) => (EXTRAS.some(([key]) => color[key]) ? EXTRAS.map(([key, short]) => `${short} ${Math.round(color[key] * 255)}`).join(' ') : '')
 const percent = (level: number) => `${Math.round(Math.min(level, 1) * 100)}%`
 
 function ResponseEditor({ response, onChange, onCommit }: { response: ColorResponse; onChange: (r: ColorResponse) => void; onCommit: (r: ColorResponse) => void }) {
@@ -58,13 +59,13 @@ export function PaletteView({ show, block, onPatch, onResponse, onClose }: Props
   const response = dragging ?? responseOf(show, profileId)
   const steps = Array.from({ length: block.steps }, (_, k) => k)
   const rows = (next: ColorsBlock['rows']) => onPatch({ rows: next })
-  const setColor = (i: number, k: number, color: string) => rows(block.rows.map((r, n) => (n === i ? { ...r, colors: steps.map((s) => (s === k ? color : r.colors[s] ?? '#000000')) } : r)))
-  const addStep = () => onPatch({ steps: block.steps + 1, rows: block.rows.map((r) => ({ ...r, colors: [...steps.map((s) => r.colors[s] ?? '#000000'), r.colors[block.steps - 1] ?? '#ffffff'] })) })
-  const removeStep = (k: number) => onPatch({ steps: block.steps - 1, rows: block.rows.map((r) => ({ ...r, colors: steps.filter((s) => s !== k).map((s) => r.colors[s] ?? '#000000') })) })
+  const setColor = (i: number, k: number, color: Color) => rows(block.rows.map((r, n) => (n === i ? { ...r, colors: steps.map((s) => (s === k ? color : r.colors[s] ?? BLACK)) } : r)))
+  const addStep = () => onPatch({ steps: block.steps + 1, rows: block.rows.map((r) => ({ ...r, colors: [...steps.map((s) => r.colors[s] ?? BLACK), r.colors[block.steps - 1] ?? colorOf('#ffffff')] })) })
+  const removeStep = (k: number) => onPatch({ steps: block.steps - 1, rows: block.rows.map((r) => ({ ...r, colors: steps.filter((s) => s !== k).map((s) => r.colors[s] ?? BLACK) })) })
   const row = Math.min(selected.row, block.rows.length - 1)
   const step = Math.min(selected.step, block.steps - 1)
-  const selectedColor = block.rows[row].colors[step] ?? '#000000'
-  const calibration = previewLight(hexToRgb(selectedColor), response)
+  const selectedColor = block.rows[row].colors[step] ?? BLACK
+  const calibration = previewLight(hexToRgb(selectedColor.hex), response)
   const commitResponse = (r: ColorResponse) => {
     setDragging(null)
     if (JSON.stringify(r) !== JSON.stringify(responseOf(show, profileId))) onResponse(profileId, r)
@@ -94,20 +95,21 @@ export function PaletteView({ show, block, onPatch, onResponse, onClose }: Props
                   <button title="delete row" disabled={block.rows.length === 1} onClick={() => rows(block.rows.filter((_, n) => n !== i))}>×</button>
                 </div>
                 {steps.map((k) => {
-                  const color = r.colors[k] ?? '#000000'
-                  const { light, level } = previewLight(hexToRgb(color), response)
+                  const color = r.colors[k] ?? BLACK
+                  const { light, level } = previewLight(hexToRgb(color.hex), response)
                   return (
                     <label key={k} className={`palette-cell${i === row && k === step ? ' selected' : ''}`} onClick={() => setSelected({ row: i, step: k })}>
-                      <input type="color" className="palette-swatch" value={color} onChange={(e) => setColor(i, k, e.target.value)} />
+                      <input type="color" className="palette-swatch" value={color.hex} onChange={(e) => setColor(i, k, { ...color, hex: e.target.value })} />
                       <Discs light={light} className="palette-light" />
                       <span>{dmxOf(color)}</span>
+                      {extrasOf(color) && <span>{extrasOf(color)}</span>}
                       <span>light {percent(level)}</span>
                     </label>
                   )
                 })}
               </div>
             ))}
-            <button onClick={() => rows([...block.rows, { name: `colour ${block.rows.length + 1}`, colors: steps.map(() => '#ffffff') }])}>+ row</button>
+            <button onClick={() => rows([...block.rows, { name: `colour ${block.rows.length + 1}`, colors: steps.map(() => colorOf('#ffffff')) }])}>+ row</button>
           </div>
         </div>
         <aside className="designer-side pars">
@@ -119,7 +121,10 @@ export function PaletteView({ show, block, onPatch, onResponse, onClose }: Props
             </select>
           </div>
           <Discs light={calibration.light} className="palette-calibrate" />
-          <div className="help">{block.rows[row].name} · index {step} on {profiles.find((p) => p.id === profileId)?.label}: DMX {dmxOf(selectedColor)}, light {percent(calibration.level)}</div>
+          <h4>White, amber, UV</h4>
+          {EXTRAS.map(([key, , label]) => <Slider key={key} label={label} value={Math.round(selectedColor[key] * 255)} min={0} max={255} step={1} onChange={(v) => setColor(row, step, { ...selectedColor, [key]: v / 255 })} onCommit={(v) => v !== undefined && setColor(row, step, { ...selectedColor, [key]: v / 255 })} />)}
+          <div className="help">Sent as set to fixtures that have these channels (DMX 0–255); fixtures without them ignore them. Not shown in this preview.</div>
+          <div className="help">{block.rows[row].name} · index {step} on {profiles.find((p) => p.id === profileId)?.label}: DMX {dmxOf(selectedColor)}{extrasOf(selectedColor) && ` ${extrasOf(selectedColor)}`}, light {percent(calibration.level)}</div>
           <div className="help">Put this colour on the real fixture and adjust LED brightness until the centre matches what you see. Raise gamma if low values look dimmer than expected. Only changes this preview, not the show.</div>
           <ResponseEditor response={response} onChange={setDragging} onCommit={commitResponse} />
           <div className="help">Saved per fixture type in the show. Click a swatch to calibrate with it. Under each swatch is its light on that fixture, the DMX red, green and blue TD sends and its overall light level.</div>
