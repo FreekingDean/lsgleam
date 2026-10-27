@@ -78,7 +78,10 @@ def values_of(c, attrs, chans, hsv, tag, y):
             if t == 'plain':
                 parts.append(pick(c, name, attrs, keys, names, 100, y))
             elif t == 'dimmed':
-                parts.append(combine(c, name, 'mul', [pick(c, name + '_color', attrs, keys, names, 100, y), select(c, name + '_level', attrs, 'intensity', 100, y - 100)], 250, y))
+                level = select(c, name + '_level', attrs, 'intensity', 100, y - 100)
+                for j, (k, n) in enumerate(chunk):
+                    parts.append(combine(c, '%s_%d' % (name, j), 'mul', [pick(c, '%s_%d_color' % (name, j), attrs, [k], [n], 100, y), level], 250, y))
+                    y -= 100
             else:
                 parts.append(pick(c, name, hsv[t], ['*'], names, 250, y))
             y -= 200
