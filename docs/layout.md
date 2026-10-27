@@ -50,6 +50,8 @@ For more types:
 
 A fixture's panel has its **Mode** (the channel count), its **Address**, and sliders for its own values. Those values are what it shows when no scene is driving it.
 
+A mode without a dimmer channel still gets an **Intensity** input: TouchDesigner multiplies every colour channel (red, green, blue, white, amber, UV) by it, so you dim it like any other fixture. Inputs for channels the current mode lacks stay wireable and do nothing until you switch to a mode that has them.
+
 ![Fixture panel](images/fixture-panel.png)
 
 ## DMX: nodes, chains and controllers
